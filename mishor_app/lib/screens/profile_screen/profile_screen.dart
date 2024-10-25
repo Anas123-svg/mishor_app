@@ -1,7 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
+import 'package:mishor_app/utilities/app_colors.dart';
+import 'package:mishor_app/utilities/app_images.dart';
+import 'package:mishor_app/widgets/helping_global/appbar.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -13,34 +14,44 @@ class _ProfileScreen extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Profile',
-          style: TextStyle(
-            fontSize: 22.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.redAccent,
-        elevation: 0,
-      ),
+      appBar: const  CustomAppbar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 60.r,
-                backgroundColor: Colors.redAccent,
-                child: CircleAvatar(
-                  radius: 57.r,
-                  backgroundImage: NetworkImage(
-                      'https://your-image-url.com/image.jpg'), 
-                )
+              // Profile Picture with Edit Option
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 60.r,
+                    backgroundColor: AppColors.primary,
+                    child: CircleAvatar(
+                      radius: 57.r,
+                      backgroundImage: NetworkImage(
+                        'https://randomuser'),
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Implement change profile picture action
+                      },
+                      child: CircleAvatar(
+                        radius: 15.r,
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.camera_alt, size: 16.w, color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 20.h),
+              // Name and Email
               Text(
                 'John Doe',
                 style: TextStyle(
@@ -59,15 +70,16 @@ class _ProfileScreen extends State<ProfileScreen> {
               ),
               SizedBox(height: 20.h),
 
+              // Profile Options Container
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.shade200,
-                      blurRadius: 8.r,
-                      spreadRadius: 2.r,
+                      color: Colors.grey.shade300,
+                      blurRadius: 16.r,
+                      spreadRadius: 1.r,
                     ),
                   ],
                 ),
@@ -77,6 +89,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.person_outline,
                       label: 'Edit Profile',
                       onTap: () {
+                        // Implement edit profile action
                       },
                     ),
                     _buildDivider(),
@@ -84,6 +97,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.lock_outline,
                       label: 'Change Password',
                       onTap: () {
+                        // Implement change password action
                       },
                     ),
                     _buildDivider(),
@@ -91,6 +105,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.history,
                       label: 'Order History',
                       onTap: () {
+                        // Implement order history action
                       },
                     ),
                     _buildDivider(),
@@ -98,6 +113,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.notifications_outlined,
                       label: 'Notification Settings',
                       onTap: () {
+                        // Implement notification settings action
                       },
                     ),
                     _buildDivider(),
@@ -105,6 +121,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.help_outline,
                       label: 'Help & Support',
                       onTap: () {
+                        // Implement help & support action
                       },
                     ),
                     _buildDivider(),
@@ -112,6 +129,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.logout,
                       label: 'Logout',
                       onTap: () {
+                        // Implement logout action
                       },
                       isLogout: true,
                     ),
@@ -131,17 +149,40 @@ class _ProfileScreen extends State<ProfileScreen> {
     required VoidCallback onTap,
     bool isLogout = false,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: isLogout ? Colors.redAccent : Colors.black87, size: 28.w),
-      title: Text(
-        label,
-        style: TextStyle(
-          fontSize: 18.sp,
-          color: isLogout ? Colors.redAccent : Colors.black87,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(16.r),
+          // Add subtle hover effect
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade200,
+              blurRadius: 4.r,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isLogout ? Color(0xFFD42427) : Colors.black87, size: 28.w),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  color: isLogout ? Color(0xFFD42427) : Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 18.w, color: Colors.grey.shade400),
+          ],
         ),
       ),
-      trailing: Icon(Icons.arrow_forward_ios, size: 18.w, color: Colors.grey.shade400),
-      onTap: onTap,
     );
   }
 

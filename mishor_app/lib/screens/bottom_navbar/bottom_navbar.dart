@@ -34,8 +34,8 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.redAccent,
-              Colors.redAccent,
+              AppColors.primary,
+              AppColors.primary,
             ], 
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -62,31 +62,31 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
           items: [
             BottomNavigationBarItem(
               icon: currentIndex == 0
-                  ? Image.asset(AppImages.home, height: 21.h, width: 21.w)
+                  ? Image.asset(AppImages.home_highlighted, height: 21.h, width: 21.w)
                   : Image.asset(AppImages.home, height: 21.h, width: 21.w),
               label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: currentIndex == 1
-                  ? Image.asset(AppImages.assigned, height: 21.h, width: 21.w)
+                  ? Image.asset(AppImages.assigned_highlighted, height: 21.h, width: 21.w)
                   : Image.asset(AppImages.assigned, height: 21.h, width: 21.w),
               label: 'Assigned',
             ),
             BottomNavigationBarItem(
               icon: currentIndex == 2
-                  ? Image.asset(AppImages.completed, height: 21.h, width: 21.w)
+                  ? Image.asset(AppImages.completed_highlighted, height: 21.h, width: 21.w)
                   : Image.asset(AppImages.completed, height: 21.h, width: 21.w),
               label: 'Completed',
             ),
-           /* BottomNavigationBarItem(
-              icon: currentIndex == 3
-                  ? Image.asset(AppImages.highlightedControlIcon, height: 21.h, width: 21.w)
-                  : Image.asset(AppImages.controlIcon, height: 21.h, width: 21.w),
-              label: 'Control',
-            ),*/
             BottomNavigationBarItem(
               icon: currentIndex == 3
-                  ? Image.asset(AppImages.profile, height: 21.h, width: 21.w)
+                  ? Image.asset(AppImages.Rejected_highlighted, height: 21.h, width: 21.w)
+                  : Image.asset(AppImages.Rejected, height: 21.h, width: 21.w),
+              label: 'Rejected',
+            ),
+            BottomNavigationBarItem(
+              icon: currentIndex == 4
+                  ? Image.asset(AppImages.profile_highlighted, height: 21.h, width: 21.w)
                   : Image.asset(AppImages.profile, height: 21.h, width: 21.w),
               label: 'Profile',
             ),
