@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
-
+use App\Http\Controllers\TemplateController;
 //admin routes
 Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register']);
@@ -50,4 +50,15 @@ Route::prefix('user')->group(function () {
         Route::put('/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
+});
+
+
+Route::prefix('templates')->group(function () {
+    Route::get('/', action:[TemplateController::class, 'index']);
+    Route::post('/', [TemplateController::class, 'store']); 
+    Route::get('/{template}', [TemplateController::class, 'show']); 
+    Route::put('/{template}', [TemplateController::class, 'update']); 
+    Route::delete('/{template}', [TemplateController::class, 'destroy']);
+    //Route::middleware('auth:sanctum')->group(function () {
+    //});
 });
