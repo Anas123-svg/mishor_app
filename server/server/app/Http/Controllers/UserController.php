@@ -98,6 +98,15 @@ class UserController extends Controller
         ]);
     }
 
+
+    public function showByToken(Request $request)
+    {
+        $user = $request->user();
+        return response()->json($user);
+    }
+    
+
+
     public function destroy($id)
     {
         $user = User::findOrFail($id);

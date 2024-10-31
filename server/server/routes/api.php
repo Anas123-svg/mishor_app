@@ -14,6 +14,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AdminController::class, 'logout']);
         Route::get('/', [AdminController::class, 'index']);
+        Route::get('/show', [AdminController::class, 'showByToken']); //get by token
         Route::get('/{id}', [AdminController::class, 'show']);
         Route::put('/{id}', [AdminController::class, 'update']);
         Route::delete('/{id}', [AdminController::class, 'destroy']);
@@ -28,6 +29,7 @@ Route::prefix('client')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [ClientController::class, 'logout']);
         Route::get('/', [ClientController::class, 'index']);
+        Route::get('/show', [ClientController::class, 'showByToken']);
         Route::get('/{id}', [ClientController::class, 'show']);
         Route::put('/{id}', [ClientController::class, 'update']);
         Route::delete('/{id}', [ClientController::class, 'destroy']);
@@ -43,6 +45,7 @@ Route::prefix('user')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [UserController::class, 'logout']);
         Route::get('/', [UserController::class, 'index']);
+        Route::get('/show', [UserController::class, 'showByToken']); 
         Route::get('/{id}', [UserController::class, 'show']);
         Route::put('/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);

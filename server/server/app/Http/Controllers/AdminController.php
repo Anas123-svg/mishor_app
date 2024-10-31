@@ -78,6 +78,11 @@ class AdminController extends Controller
         return response()->json($admin);
     }
 
+    public function showByToken(Request $request)
+    {
+        $admin = $request->user();
+        return response()->json($admin);
+    }
     public function update(Request $request, $id)
     {
         $admin = Admin::find($id);

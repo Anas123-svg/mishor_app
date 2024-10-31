@@ -6,7 +6,7 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Log;
 class ClientController extends Controller
 {
     public function register(Request $request)
@@ -30,7 +30,27 @@ class ClientController extends Controller
 
         return response()->json(['message' => 'Client registered successfully', 'client' => $client], 201);
     }
-
+    public function showByToken(Request $request)
+    {
+        Log::info('function called');
+        $client = $request->user();
+    
+        Log::info('Client retrieved by token', [
+            'client_id' => $client ? $client->id : null, 
+            'timestamp' => now(), 
+        ]);
+    
+        if ($client) {
+            return response()->json($client);
+        }
+    
+        Log::warning('Client not found when attempting to retrieve by token', [
+            'timestamp' => now(),
+        ]);
+    
+        return response()->json(['error' => 'Client not found'], 404);
+    }
+    
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
