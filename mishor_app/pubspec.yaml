@@ -35,6 +35,9 @@ dependencies:
   fl_chart: ^0.69.0
   charts_flutter: 
   dropdown_search: ^6.0.1
+  dio: ^5.7.0
+  http: ^1.2.2
+
 
 
 

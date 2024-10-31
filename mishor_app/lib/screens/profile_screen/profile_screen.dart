@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
-import 'package:mishor_app/utilities/app_images.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -100,22 +99,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                         // Implement change password action
                       },
                     ),
-                    _buildDivider(),
-                    _buildProfileOption(
-                      icon: Icons.history,
-                      label: 'Order History',
-                      onTap: () {
-                        // Implement order history action
-                      },
-                    ),
-                    _buildDivider(),
-                    _buildProfileOption(
-                      icon: Icons.notifications_outlined,
-                      label: 'Notification Settings',
-                      onTap: () {
-                        // Implement notification settings action
-                      },
-                    ),
+
                     _buildDivider(),
                     _buildProfileOption(
                       icon: Icons.help_outline,

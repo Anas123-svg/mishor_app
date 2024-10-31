@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:mishor_app/controllers/auth_controller.dart';
+import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
+import 'package:mishor_app/widgets/helping_global/inspection_list.dart';
 
 class AssignedScreen extends StatefulWidget {
   const AssignedScreen({super.key});
@@ -77,11 +82,13 @@ class _AssignedScreenState extends State<AssignedScreen> {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      //Navigator.push()
+                      Get.toNamed(AppRoutes.template);
+                      /*ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Inspection ${index + 1} selected')),
-                      );
+                      );*/
                     },
-                    child: _buildInspectionCard(index),
+                    child: buildInspectionCard(index: index),
                   );
                 },
               ),
@@ -98,92 +105,6 @@ class _AssignedScreenState extends State<AssignedScreen> {
         child: Icon(Icons.add, color: Colors.white, size: 28.r),
         onPressed: () {
         },
-      ),
-    );
-  }
-
-  Widget _buildInspectionCard(int index) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.h),
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            blurRadius: 10.r,
-            spreadRadius: 1.r,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primary,
-            ),
-            child: CircleAvatar(
-              radius: 25.r,
-              backgroundColor: Colors.transparent,
-              child: Text(
-                '${index + 1}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: 20.sp,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Completed Inspection ${index + 1}',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Location: Completed Location ${index + 1}',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.black54,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Date: ${DateTime.now().subtract(Duration(days: index)).toLocal().toString().split(' ')[0]}',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.black54,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Status: Assigned',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            color: Colors.grey.shade500,
-            size: 18.r,
-          ),
-        ],
       ),
     );
   }

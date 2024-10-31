@@ -5,9 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/routes/app_pages.dart';
 
-
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

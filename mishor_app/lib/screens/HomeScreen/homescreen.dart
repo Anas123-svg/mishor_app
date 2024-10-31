@@ -116,12 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        child: Icon(Icons.add, color: Colors.white),
-        onPressed: () {
-        },
-      ),
+
     );
   }
 

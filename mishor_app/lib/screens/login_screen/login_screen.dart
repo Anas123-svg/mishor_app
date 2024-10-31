@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:mishor_app/routes/app_routes.dart';
+import 'package:mishor_app/controllers/auth_controller.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/utilities/app_images.dart';
-import 'package:mishor_app/widgets/helping_global/drawer.dart';
+import 'package:mishor_app/routes/app_routes.dart';
+import 'package:mishor_app/widgets/helping_global/text_field.dart';
 
 class LoginScreen extends StatelessWidget {
+  final _authController = Get.put(AuthController());
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, designSize: Size(360, 690), minTextAdapt: true);
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -24,42 +28,13 @@ class LoginScreen extends StatelessWidget {
                 height: 100.h,
               ),
               SizedBox(height: 40.h),
-
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: Color(0xFFD42427)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Color(0xFFD42427)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Color(0xFFD42427)),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(Icons.email, color: Color(0xFFD42427)),
-                ),
+              CustomTextField(
+                controller: _emailController,label: 'Email',icon: Icons.email,
               ),
               SizedBox(height: 20.h),
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: Color(0xFFD42427)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Color(0xFFD42427)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Color(0xFFD42427)),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(Icons.lock, color: Color(0xFFD42427)),
-                ),
+
+              CustomTextField(
+                controller: _passwordController,label: 'Password',icon: Icons.lock,obscureText: true,
               ),
               SizedBox(height: 10.h),
 
@@ -79,29 +54,36 @@ class LoginScreen extends StatelessWidget {
               ),
               SizedBox(height: 20.h),
 
-              SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                  ),
-                  onPressed: () {
-                    Get.offNamed(AppRoutes.bottomNavBar);
-                  },
-                  child: Text(
-                    'Sign In',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+              Obx(() {
+                return _authController.isLoading.value
+                    ? CircularProgressIndicator()
+                    : SizedBox(
+                        width: double.infinity,
+                        height: 50.h,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                          ),
+                          onPressed: () {
+                            _authController.login(
+                              _emailController.text,
+                              _passwordController.text,
+                            );
+                          },
+                          child: Text(
+                            'Sign In',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+              }),
               SizedBox(height: 20.h),
 
               Row(
@@ -117,7 +99,6 @@ class LoginScreen extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       Get.toNamed(AppRoutes.signup);
-                     // Get.(AppRoutes.signup);
                     },
                     child: Text(
                       'Sign Up',

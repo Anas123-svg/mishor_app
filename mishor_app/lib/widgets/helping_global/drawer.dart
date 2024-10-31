@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 
-class drawer extends StatelessWidget { // Ensure class name follows naming conventions
+class drawer extends StatelessWidget { 
   const drawer({super.key});
 
   @override
