@@ -28,8 +28,10 @@ class AdminController extends Controller
             'role' => $request->role,
             'profile_image' => $request->profile_image
         ]);
+        $token = $admin->createToken('authToken')->plainTextToken;
 
-        return response()->json(['message' => 'Admin registered successfully', 'admin' => $admin], 201);
+
+        return response()->json(['token'=>$token,'message' => 'Admin registered successfully', 'admin' => $admin], 201);
     }
 
 

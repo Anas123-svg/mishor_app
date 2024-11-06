@@ -27,8 +27,8 @@ class ClientController extends Controller
             'password' => $request->password,
             'profile_image' => $request->profile_image
         ]);
-
-        return response()->json(['message' => 'Client registered successfully', 'client' => $client], 201);
+        $token = $client->createToken('ClientToken')->plainTextToken;
+        return response()->json( ['token'=>$token, 'message' => 'Client registered successfully', 'client' => $client], 201);
     }
     public function showByToken(Request $request)
     {

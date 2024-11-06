@@ -6,6 +6,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\ClientTemplateController;
+use App\Http\Controllers\UserTemplateController;
 //admin routes
 Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register']);
@@ -52,6 +54,7 @@ Route::prefix('user')->group(function () {
     });
 });
 
+//templates
 
 Route::prefix('templates')->group(function () {
     Route::get('/', action:[TemplateController::class, 'index']);
@@ -61,4 +64,34 @@ Route::prefix('templates')->group(function () {
     Route::delete('/{template}', [TemplateController::class, 'destroy']);
     //Route::middleware('auth:sanctum')->group(function () {
     //});
+});
+
+//assign client templates
+
+Route::prefix('client-templates')->group(function () {
+    Route::get('/', action:[ClientTemplateController	::class, 'index']);
+    Route::post('/', [ClientTemplateController::class, 'store']); 
+    Route::get('/{template}', [ClientTemplateController::class, 'show']); 
+    Route::put('/{template}', [ClientTemplateController::class, 'update']); 
+    Route::delete('/{template}', [ClientTemplateController::class, 'destroy']);
+    Route::get('/client/{clientId}', [ClientTemplateController::class, 'getTemplatesByClient']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('by-token/client', [ClientTemplateController::class, 'getTemplatesByAuthenticatedClient']);
+    });
+});
+
+//assign user templates
+
+Route::prefix('user-templates')->group(function () {
+    Route::get('/', [UserTemplateController::class, 'index']);  
+    Route::post('/', [UserTemplateController::class, 'store']); 
+    Route::get('/{id}', [UserTemplateController::class, 'show']);
+    Route::put('/{id}', [UserTemplateController::class, 'update']); 
+    Route::delete('/{id}', [UserTemplateController::class, 'destroy']); 
+    Route::get('/user/{userId}', [UserTemplateController::class, 'getTemplatesByUser']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('by-token/user', [UserTemplateController::class, 'getTemplatesByAuthenticatedUser']);
+
+    });
 });

@@ -21,5 +21,11 @@ class Template extends Model
         return $this->hasMany(CustomTable::class);
     }
 
+    public function templates()
+    {
+        return $this->hasMany(ClientTemplate::class);
+    }
+
+
     
 }

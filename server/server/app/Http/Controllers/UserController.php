@@ -29,8 +29,11 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'is_verified' => false,
         ]);
+        $token = $user->createToken('user-token')->plainTextToken;
+
 
         return response()->json([
+            'token' => $token,
             'message' => 'User registered successfully',
             'user' => $user,
         ], 201);
