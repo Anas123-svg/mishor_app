@@ -8,6 +8,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\ClientTemplateController;
 use App\Http\Controllers\UserTemplateController;
+use App\Http\Controllers\AssessmentController;
 //admin routes
 Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register']);
@@ -92,6 +93,23 @@ Route::prefix('user-templates')->group(function () {
     Route::get('/user/{userId}', [UserTemplateController::class, 'getTemplatesByUser']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('by-token/user', [UserTemplateController::class, 'getTemplatesByAuthenticatedUser']);
+    });
+});
+
+//assessments
+
+Route::prefix('assessments')->group(function () {
+    Route::get('/', action:[AssessmentController	::class, 'index']);
+    Route::post('/', [AssessmentController::class, 'store']); 
+    Route::get('/{id}', [AssessmentController::class, 'show']); 
+    Route::put('/{id}', [AssessmentController::class, 'update']); 
+    Route::delete('/{id}', [AssessmentController::class, 'destroy']);
+    Route::get('/client/{clientId}', [AssessmentController::class, 'getAssessmentsByClientId']);
+    Route::get('/user/{userId}', [AssessmentController::class, 'getAssessmentsByUserId']);
+
+   Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/client', [AssessmentController::class, 'getAssessmentsForAuthenticatedClient']);
+    Route::get('/user', [AssessmentController::class, 'getAssessmentsForAuthenticatedUser']);
 
     });
 });
