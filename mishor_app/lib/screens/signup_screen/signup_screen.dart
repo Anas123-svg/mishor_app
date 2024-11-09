@@ -12,6 +12,8 @@ class SignUpScreen extends StatelessWidget {
   final AuthController _authController = Get.put(AuthController());
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
@@ -42,23 +44,37 @@ class SignUpScreen extends StatelessWidget {
                 height: 100.h,
               ),
               SizedBox(height: 30.h),
-
               CustomTextField(
-                controller: _nameController,label: 'Name',icon: Icons.person,
+                controller: _nameController,
+                label: 'Name',
+                icon: Icons.person,
               ),
               SizedBox(height: 15.h),
-
               CustomTextField(
-                controller: _emailController,label: 'Email',icon: Icons.email,
+                controller: _emailController,
+                label: 'Email',
+                icon: Icons.email,
               ),
               SizedBox(height: 15.h),
-
               CustomTextField(
-                controller: _passwordController,label: 'Password',icon: Icons.lock,obscureText: true,
+                controller: _passwordController,
+                label: 'Password',
+                icon: Icons.lock,
+                obscureText: true,
+              ),
+              CustomTextField(
+                controller: _confirmPasswordController,
+                label: 'Confirm Password',
+                icon: Icons.lock,
+                obscureText: true,
               ),
               SizedBox(height: 15.h),
-
-              CustomTextField(controller: _phoneController,label: 'Phone',icon: Icons.phone,keyboardType: TextInputType.phone,),
+              CustomTextField(
+                controller: _phoneController,
+                label: 'Phone',
+                icon: Icons.phone,
+                keyboardType: TextInputType.phone,
+              ),
               SizedBox(height: 15.h),
               Obx(() {
                 if (_authController.isLoading.value) {
@@ -93,7 +109,6 @@ class SignUpScreen extends StatelessWidget {
                 }
               }),
               SizedBox(height: 30.h),
-
               Obx(() {
                 return SizedBox(
                   width: double.infinity,
@@ -108,14 +123,24 @@ class SignUpScreen extends StatelessWidget {
                     onPressed: _authController.selectedClient.value == null
                         ? null
                         : () {
-                            final selectedClientId = _authController.selectedClient.value?.id;
-                            _authController.signUp(
-                              _emailController.text,
-                              _passwordController.text,
-                              _phoneController.text,
-                              _nameController.text,
-                              selectedClientId,
-                            );
+                            final int? selectedClientId =
+                                _authController.selectedClient.value?.id;
+                                print("Selected Client ID: $selectedClientId");
+
+
+                            if (selectedClientId != null) {
+                              _authController.signUp(
+                                _emailController.text,
+                                _passwordController.text,
+                                _confirmPasswordController.text,
+                                _phoneController.text,
+                                _nameController.text,
+                                selectedClientId,
+                              );
+                            } else {
+                              Get.snackbar("Error",
+                                  "Please select a client id error.");
+                            }
                           },
                     child: Text(
                       'Sign Up',
@@ -135,7 +160,10 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool obscureText = false, TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildTextField(
+      TextEditingController controller, String label, IconData icon,
+      {bool obscureText = false,
+      TextInputType keyboardType = TextInputType.text}) {
     return TextField(
       controller: controller,
       obscureText: obscureText,

@@ -27,15 +27,16 @@ Future<void> login(String email, String password) async {
 }
 
 
-  Future<void> signUp(String email, String password, String phone, String name, String? Client) async {
+  Future<void> signUp(String email, String password,String confirmPassword, String phone, String name, int Client) async {
     isLoading.value = true;
     try {
-      bool isRegistered = await _authService.signUp(email, password, phone, name, Client);
+      bool isRegistered = await _authService.signUp(email, password,confirmPassword, phone, name, Client);
       if (isRegistered) {
         Get.toNamed(AppRoutes.bottomNavBar);
       }
     } catch (e) {
       Get.snackbar("Sign Up Failed", e.toString());
+      print(e);
     } finally {
       isLoading.value = false;
     }
@@ -53,7 +54,4 @@ Future<void> login(String email, String password) async {
       isLoading.value = false;
     }
   }
-
-
-
 }
