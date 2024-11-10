@@ -14,20 +14,10 @@ const BoxedLogin = () => {
         <div className="flex h-full justify-center items-center px-4">
           <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words md:w-[450px] w-full border-none ">
             <div className="flex h-full flex-col justify-center gap-2 p-0 w-full">
-              <div className="mx-auto">
-                <Logo />
-              </div>
-              <p className="text-sm text-center text-dark my-3">Your Social Campaigns</p> 
+              <h2 className="text-2xl text-center text-dark my-3">
+                Admin Login
+              </h2>
               <AuthLogin />
-              <div className="flex gap-2 text-base text-ld font-medium mt-6 items-center justify-center">
-                <p>New to MaterialM?</p>
-                <Link
-                  href={"/auth/register"}
-                  className="text-primary text-sm font-medium"
-                >
-                  Create an account
-                </Link>
-              </div>
             </div>
           </div>
         </div>
