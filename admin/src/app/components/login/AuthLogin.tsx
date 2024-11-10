@@ -2,11 +2,21 @@
 import { Button, Label, TextInput } from "flowbite-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import useAuthStore from "@/store/authStore";
+import { login } from "@/hooks/auth";
 
 const AuthLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { user, setToken, setUser } = useAuthStore();
+
+  if (user) {
+    router.push("/");
+    return null;
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,10 +26,18 @@ const AuthLogin = () => {
     }
     setLoading(true);
     try {
-      // const res = await login({ email, password });
-      // console.log(res);
-    } catch (error) {
-      console.log(error);
+      const { user, token } = await login(email, password);
+      setUser(user);
+      setToken(token);
+      router.push("/");
+      toast.success("Logged in successfully");
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        toast.error("Invalid email or password");
+        setLoading(false);
+        return;
+      }
+      toast.error("Something went wrong, please try again");
     } finally {
       setLoading(false);
     }
@@ -37,6 +55,8 @@ const AuthLogin = () => {
             type="email"
             sizing="md"
             className="form-control"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="mb-8">
@@ -48,6 +68,8 @@ const AuthLogin = () => {
             type="password"
             sizing="md"
             className="form-control"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
         <Button

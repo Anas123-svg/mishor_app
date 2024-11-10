@@ -7,6 +7,7 @@ import NavItems from "./NavItems";
 import NavCollapse from "./NavCollapse";
 import SimpleBar from "simplebar-react";
 import { Icon } from "@iconify/react";
+import Logout from "@/app/components/logout";
 
 const SidebarLayout = () => {
   return (
@@ -20,7 +21,7 @@ const SidebarLayout = () => {
             <h1 className="text-white text-2xl bg-primary pb-6 px-4">
               Admin Panel
             </h1>
-            <SimpleBar className="h-[calc(100vh_-_120px)] bg-primary">
+            <SimpleBar className="h-[calc(100vh_-_150px)] bg-primary">
               <Sidebar.Items className="px-4">
                 <Sidebar.ItemGroup className="sidebar-nav">
                   {SidebarContent.map((item, index) => (
@@ -50,6 +51,7 @@ const SidebarLayout = () => {
                 </Sidebar.ItemGroup>
               </Sidebar.Items>
             </SimpleBar>
+            <Logout />
           </Sidebar>
         </div>
       </div>

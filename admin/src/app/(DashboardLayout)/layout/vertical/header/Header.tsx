@@ -4,9 +4,11 @@ import { Navbar } from "flowbite-react";
 import { Icon } from "@iconify/react";
 import { Drawer } from "flowbite-react";
 import MobileSidebar from "../sidebar/MobileSidebar";
+import useAuthStore from "@/store/authStore";
 
 const Header = () => {
   const [isSticky, setIsSticky] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,13 +56,20 @@ const Header = () => {
             </div>
 
             <div className="flex gap-4 items-center">
-              <h1>Admin</h1>
+              <div>
+                <h2>{user?.name}</h2>
+                {user?.role && (
+                  <p className="text-sm">
+                    {user?.role[0].toUpperCase() + user?.role.slice(1)}
+                  </p>
+                )}
+              </div>
               <span className="h-10 w-10 hover:text-primary hover:bg-lightprimary rounded-full flex justify-center items-center cursor-pointer group-hover/menu:bg-lightprimary group-hover/menu:text-primary">
                 <img
-                  src="/images/profile/user-1.jpg"
+                  src={user?.profile_image}
                   alt="logo"
-                  height="35"
-                  width="35"
+                  height="40"
+                  width="40"
                   className="rounded-full"
                 />
               </span>

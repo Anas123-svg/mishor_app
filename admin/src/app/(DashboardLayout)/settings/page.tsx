@@ -2,13 +2,17 @@
 import React, { useState } from "react";
 import { Button, TextInput, Card } from "flowbite-react";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
+import PhotosUploader from "@/app/components/Uploader";
+import useAuthStore from "@/store/authStore";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const Settings = () => {
+  const { user, token, setUser } = useAuthStore();
   const [personalInfo, setPersonalInfo] = useState({
-    profilePic: "/images/profile/user-1.jpg",
-    name: "John Doe",
-    email: "john@example.com",
+    profilePic: user?.profile_image,
+    name: user?.name,
+    email: user?.email,
   });
 
   const [passwords, setPasswords] = useState({
@@ -27,9 +31,31 @@ const Settings = () => {
     setPasswords((prevPasswords) => ({ ...prevPasswords, [name]: value }));
   };
 
-  const handlePersonalInfoSubmit = (e: React.FormEvent) => {
+  const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to save personal information
+    if (!personalInfo.name || !personalInfo.email || !personalInfo.profilePic) {
+      toast.error("Please fill all fields");
+      return;
+    }
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/${user?.id}`,
+        {
+          email: personalInfo.email,
+          name: personalInfo.name,
+          profile_image: personalInfo.profilePic,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setUser(response.data.admin);
+      toast.success(response.data.message || "Admin updated successfully");
+    } catch (error) {
+      toast.error("An error occurred while updating profile");
+    }
   };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -43,19 +69,12 @@ const Settings = () => {
       <Card className="w-full md:w-1/2 p-6">
         <h5 className="text-xl font-semibold mb-4">Personal Info</h5>
         <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
-          <div className="flex flex-col items-center">
-            <Image
-              src={personalInfo.profilePic}
-              alt="Profile"
-              width={100}
-              height={100}
-              className="rounded-full mb-3 border"
-            />
-            <Button color="light" className="flex items-center gap-2">
-              <Icon icon="solar:camera-linear" className="text-lg" />
-              Change Profile Picture
-            </Button>
-          </div>
+          <PhotosUploader
+            profilePic={personalInfo.profilePic || ""}
+            onChange={(url) =>
+              setPersonalInfo((prevInfo) => ({ ...prevInfo, profilePic: url }))
+            }
+          />
           <div className="flex items-center gap-2">
             <Icon
               icon="solar:user-circle-linear"

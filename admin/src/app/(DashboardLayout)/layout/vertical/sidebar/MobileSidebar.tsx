@@ -6,6 +6,7 @@ import NavItems from "./NavItems";
 import NavCollapse from "./NavCollapse";
 import SimpleBar from "simplebar-react";
 import { Icon } from "@iconify/react";
+import Logout from "@/app/components/logout";
 const MobileSidebar = () => {
   return (
     <>
@@ -18,7 +19,7 @@ const MobileSidebar = () => {
             Admin Panel
           </h1>
 
-          <SimpleBar className="h-[calc(100vh_-_100px)] bg-primary">
+          <SimpleBar className="h-[calc(100vh_-_150px)] bg-primary">
             <Sidebar.Items className="px-4">
               <Sidebar.ItemGroup className="sidebar-nav">
                 {SidebarContent.map((item, index) => (
@@ -48,6 +49,7 @@ const MobileSidebar = () => {
               </Sidebar.ItemGroup>
             </Sidebar.Items>
           </SimpleBar>
+          <Logout />
         </Sidebar>
       </div>
     </>
