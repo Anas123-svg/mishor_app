@@ -13,7 +13,6 @@ class UserController extends Controller
 {
     private function getAssessmentCounts($user)
     {
-        Log::info('login user:');
         $userCounts = User::where('id', $user->id)
             ->withCount([
                 'assessments as completed_assessments' => function ($query) {

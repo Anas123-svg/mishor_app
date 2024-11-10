@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 class AdminController extends Controller
 {
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -37,6 +39,8 @@ class AdminController extends Controller
 
     public function login(Request $request)
     {
+        Log::info(message: 'login user:');
+
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
