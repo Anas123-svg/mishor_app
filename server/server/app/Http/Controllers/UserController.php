@@ -13,6 +13,7 @@ class UserController extends Controller
 {
     private function getAssessmentCounts($user)
     {
+        Log::info('login user:');
         $userCounts = User::where('id', $user->id)
             ->withCount([
                 'assessments as completed_assessments' => function ($query) {
@@ -52,7 +53,7 @@ class UserController extends Controller
 
     public function register(Request $request)
     {
-        Log::info('Registering user:', ['request_data' => $request->all()]);
+        Log::info('Registering user:', context: ['request_data' => $request->all()]);
     
         try {
             $request->validate([
