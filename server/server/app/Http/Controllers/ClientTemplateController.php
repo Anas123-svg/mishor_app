@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\ClientTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -87,6 +85,4 @@ class ClientTemplateController extends Controller
             return response()->json(['error' => 'Something went wrong'], 500);
         }
     }
-
-
 }

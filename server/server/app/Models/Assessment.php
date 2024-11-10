@@ -9,7 +9,7 @@ class Assessment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['client_id', 'template_id', 'user_id', 'assessment', 'status'];
+    protected $fillable = ['client_id', 'template_id', 'user_id', 'assessment', 'status','name'];
     protected $casts = [
         'assessment' => 'array',  
     ];

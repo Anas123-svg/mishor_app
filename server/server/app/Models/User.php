@@ -26,4 +26,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Client::class);
     }
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class, 'user_id');
+    }
+
 }

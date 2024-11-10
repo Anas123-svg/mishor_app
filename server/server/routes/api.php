@@ -13,7 +13,7 @@ use App\Http\Controllers\AssessmentController;
 Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register']);
     Route::post('/login', [AdminController::class, 'login']);
-
+    
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AdminController::class, 'logout']);
         Route::get('/', [AdminController::class, 'index']);
@@ -28,10 +28,10 @@ Route::prefix('admin')->group(function () {
 Route::prefix('client')->group(function () {
     Route::post('/register', [ClientController::class, 'register']);
     Route::post('/login', [ClientController::class, 'login']);
+    Route::get('/', [ClientController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [ClientController::class, 'logout']);
-        Route::get('/', [ClientController::class, 'index']);
         Route::get('/show', [ClientController::class, 'showByToken']);
         Route::get('/{id}', [ClientController::class, 'show']);
         Route::put('/{id}', [ClientController::class, 'update']);
@@ -47,6 +47,8 @@ Route::prefix('user')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [UserController::class, 'logout']);
+        Route::get('/assessment-counts', [UserController::class, 'assessmentCountsByUser']);
+
         Route::get('/', [UserController::class, 'index']);
         Route::get('/show', [UserController::class, 'showByToken']); 
         Route::get('/{id}', [UserController::class, 'show']);
@@ -72,7 +74,7 @@ Route::prefix('templates')->group(function () {
 Route::prefix('client-templates')->group(function () {
     Route::get('/', action:[ClientTemplateController	::class, 'index']);
     Route::post('/', [ClientTemplateController::class, 'store']); 
-    Route::get('/{template}', [ClientTemplateController::class, 'show']); 
+    Route::get('/{template}', [ClientTemplateController::class, 'show']);
     Route::put('/{template}', [ClientTemplateController::class, 'update']); 
     Route::delete('/{template}', [ClientTemplateController::class, 'destroy']);
     Route::get('/client/{clientId}', [ClientTemplateController::class, 'getTemplatesByClient']);
@@ -97,7 +99,6 @@ Route::prefix('user-templates')->group(function () {
 });
 
 //assessments
-
 Route::prefix('assessments')->group(function () {
     Route::get('/', action:[AssessmentController	::class, 'index']);
     Route::post('/', [AssessmentController::class, 'store']); 
@@ -110,6 +111,5 @@ Route::prefix('assessments')->group(function () {
    Route::middleware('auth:sanctum')->group(function () {
     Route::get('/client', [AssessmentController::class, 'getAssessmentsForAuthenticatedClient']);
     Route::get('/user', [AssessmentController::class, 'getAssessmentsForAuthenticatedUser']);
-
     });
 });
