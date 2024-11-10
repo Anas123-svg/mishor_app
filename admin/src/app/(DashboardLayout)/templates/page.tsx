@@ -81,7 +81,7 @@ const TemplatePage = () => {
               <Table.HeadCell>Created By</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
-            <Table.Body className="divide-y divide-border dark:divide-darkborder">
+            <Table.Body className="divide-y divide-border dark:divide-darkborder whitespace-nowrap">
               {filteredData.length > 0 ? (
                 filteredData.map((item, index) => (
                   <Table.Row key={index}>

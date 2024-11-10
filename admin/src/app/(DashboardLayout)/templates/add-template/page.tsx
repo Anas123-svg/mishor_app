@@ -354,7 +354,18 @@ const AddTemplate: React.FC = () => {
           <Button color="primary" onClick={addField}>
             Add Field
           </Button>
-          <Button color="secondary" onClick={() => setFieldModalOpen(false)}>
+          <Button
+            color="secondary"
+            onClick={() => {
+              setNewField({
+                label: "",
+                fieldType: "text",
+                options: "",
+                required: false,
+              });
+              setFieldModalOpen(false);
+            }}
+          >
             Cancel
           </Button>
         </Modal.Footer>
@@ -429,7 +440,16 @@ const AddTemplate: React.FC = () => {
           </Button>
           <Button
             color="secondary"
-            onClick={() => setEditFieldModalOpen(false)}
+            onClick={() => {
+              setEditFieldIndex(null);
+              setNewField({
+                label: "",
+                fieldType: "text",
+                options: "",
+                required: false,
+              });
+              setEditFieldModalOpen(false);
+            }}
           >
             Cancel
           </Button>
@@ -477,7 +497,17 @@ const AddTemplate: React.FC = () => {
           <Button color="primary" onClick={addTable}>
             Add Table
           </Button>
-          <Button color="secondary" onClick={() => setTableModalOpen(false)}>
+          <Button
+            color="secondary"
+            onClick={() => {
+              setNewTable({
+                tableName: "",
+                columns: "",
+                rows: "",
+              });
+              setTableModalOpen(false);
+            }}
+          >
             Cancel
           </Button>
         </Modal.Footer>
@@ -527,7 +557,15 @@ const AddTemplate: React.FC = () => {
           </Button>
           <Button
             color="secondary"
-            onClick={() => setEditTableModalOpen(false)}
+            onClick={() => {
+              setEditTableIndex(null);
+              setNewTable({
+                tableName: "",
+                columns: "",
+                rows: "",
+              });
+              setEditTableModalOpen(false);
+            }}
           >
             Cancel
           </Button>

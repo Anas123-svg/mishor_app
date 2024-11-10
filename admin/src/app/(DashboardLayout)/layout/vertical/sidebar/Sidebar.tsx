@@ -6,9 +6,7 @@ import SidebarContent from "./Sidebaritems";
 import NavItems from "./NavItems";
 import NavCollapse from "./NavCollapse";
 import SimpleBar from "simplebar-react";
-import FullLogo from "../../shared/logo/FullLogo";
 import { Icon } from "@iconify/react";
-import Upgrade from "./Upgrade";
 
 const SidebarLayout = () => {
   return (
@@ -16,19 +14,18 @@ const SidebarLayout = () => {
       <div className="xl:block hidden">
         <div className="flex">
           <Sidebar
-            className="fixed menu-sidebar pt-6 bg-white dark:bg-darkgray z-[10]"
+            className="fixed menu-sidebar pt-6 bg-primary dark:bg-darkgray z-[10]"
             aria-label="Sidebar with multi-level dropdown example"
           >
-            <div className="mb-7 px-4 brand-logo">
-              <FullLogo />
-            </div>
-
-            <SimpleBar className="h-[calc(100vh_-_120px)]">
+            <h1 className="text-white text-2xl bg-primary pb-6 px-4">
+              Admin Panel
+            </h1>
+            <SimpleBar className="h-[calc(100vh_-_120px)] bg-primary">
               <Sidebar.Items className="px-4">
                 <Sidebar.ItemGroup className="sidebar-nav">
                   {SidebarContent.map((item, index) => (
                     <React.Fragment key={index}>
-                      <h5 className="text-link font-semibold text-sm caption">
+                      <h5 className="text-white font-semibold text-sm caption">
                         <span className="hide-menu">{item.heading}</span>
                       </h5>
                       <Icon
@@ -52,7 +49,6 @@ const SidebarLayout = () => {
                   ))}
                 </Sidebar.ItemGroup>
               </Sidebar.Items>
-              <Upgrade/>
             </SimpleBar>
           </Sidebar>
         </div>

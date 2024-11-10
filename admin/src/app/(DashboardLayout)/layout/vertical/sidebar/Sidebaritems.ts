@@ -23,7 +23,7 @@ import { uniqueId } from "lodash";
 
 const SidebarContent: MenuItem[] = [
   {
-    heading: "Dashboards",
+    heading: "Menu",
     children: [
       {
         name: "Dashboard",
@@ -31,68 +31,35 @@ const SidebarContent: MenuItem[] = [
         id: uniqueId(),
         url: "/",
       },
-    ],
-  },
-  {
-    heading: "Utilities",
-    children: [
       {
-        name: "Typography",
-        icon: "solar:text-circle-outline",
+        name: "Templates",
+        icon: "fluent:form-multiple-20-regular",
         id: uniqueId(),
-        url: "/ui/typography",
+        url: "/templates",
       },
       {
-        name: "Table",
-        icon: "solar:bedside-table-3-linear",
+        name: "Clients",
+        icon: "solar:users-group-two-rounded-line-duotone",
         id: uniqueId(),
-        url: "/ui/table",
+        url: "/clients",
       },
       {
-        name: "Form",
-        icon: "solar:password-minimalistic-outline",
+        name: "Assessments",
+        icon: "solar:notes-line-duotone",
         id: uniqueId(),
-        url: "/ui/form",
+        url: "/assessments",
       },
       {
-        name: "Shadow",
-        icon: "solar:airbuds-case-charge-outline",
+        name: "Admins",
+        icon: "solar:shield-user-line-duotone",
         id: uniqueId(),
-        url: "/ui/shadow",
-      },
-    ],
-  },
-  {
-    heading: "Auth",
-    children: [
-      {
-        name: "Login",
-        icon: "solar:login-2-linear",
-        id: uniqueId(),
-        url: "/auth/login",
+        url: "/admins",
       },
       {
-        name: "Register",
-        icon: "solar:shield-user-outline",
+        name: "Settings",
+        icon: "solar:settings-minimalistic-broken",
         id: uniqueId(),
-        url: "/auth/register",
-      },
-    ],
-  },
-  {
-    heading: "Extra",
-    children: [
-      {
-        name: "Icons",
-        icon: "solar:smile-circle-outline",
-        id: uniqueId(),
-        url: "/icons/solar",
-      },
-      {
-        name: "Sample Page",
-        icon: "solar:notes-minimalistic-outline",
-        id: uniqueId(),
-        url: "/sample-page",
+        url: "/settings",
       },
     ],
   },

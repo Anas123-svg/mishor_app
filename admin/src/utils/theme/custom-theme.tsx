@@ -4,8 +4,7 @@ const customTheme = {
     fullSized: "w-full",
     color: {
       primary: "bg-primary text-white hover:bg-primaryemphasis",
-      secondary:
-        "bg-secondary text-black hover:bg-secondaryemphasis hover:text-white",
+      secondary: "bg-secondary text-black hover:bg-secondaryemphasis",
       error: "bg-error text-white ",
       warning: "bg-warning text-white ",
       info: "bg-info text-white hover:bg-primaryemphasis",
