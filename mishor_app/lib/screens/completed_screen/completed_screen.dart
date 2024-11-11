@@ -15,6 +15,7 @@ class CompletedScreen extends StatefulWidget {
 
 class _CompletedScreenState extends State<CompletedScreen> {
   String searchQuery = '';
+  
   String selectedFilter = 'Completed';
 
   @override

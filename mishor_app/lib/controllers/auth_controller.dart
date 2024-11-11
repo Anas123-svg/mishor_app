@@ -3,6 +3,7 @@ import 'package:mishor_app/models/user.dart';
 import 'package:mishor_app/services/auth_service.dart';
 import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/models/client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
   var clients = <Client>[].obs;
@@ -19,7 +20,7 @@ Future<void> login(String email, String password) async {
     }
   } catch (e) {
     Get.snackbar("Login Failed", e.toString());
-    Get.offNamed(AppRoutes.bottomNavBar);
+   // Get.offNamed(AppRoutes.bottomNavBar);
     print(e);
   } finally {
     isLoading.value = false;
@@ -46,12 +47,26 @@ Future<void> login(String email, String password) async {
     try {
       isLoading.value = true;
       final response = await _authService.getClients();
-      print(response);
       clients.assignAll(response);
+      
+      if (clients.isNotEmpty) {
+        selectedClient.value = clients[0];
+      }
     } catch (e) {
       print("Error fetching clients: $e");
     } finally {
       isLoading.value = false;
     }
   }
+
+
+    Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('id');
+    String? userEmail = prefs.getString('email');
+    if (userId != null && userEmail != null) {
+      print('Loaded User ID: $userId, Email: $userEmail');
+    }
+  }
+
 }

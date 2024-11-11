@@ -1,49 +1,68 @@
 import 'package:dio/dio.dart';
 import 'package:mishor_app/models/user.dart';
 import 'package:mishor_app/models/client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class AuthService {
   static const String _baseUrl = 'http://127.0.0.1:8000/api';
   final Dio dio = Dio();
 
-  Future<User?> login(String email, String password) async {
-    try {
-      print('$_baseUrl/user/login');
-      final response = await dio.post(
-        '$_baseUrl/user/login',
-        data: {'email': email, 'password': password},
-        options: Options(
-          headers: {'Content-Type': 'application/json'},
-        ),
-      );
+Future<User?> login(String email, String password) async {
+  try {
+    print('$_baseUrl/user/login');
+    final response = await dio.post(
+      '$_baseUrl/user/login',
+      data: {'email': email, 'password': password},
+      options: Options(
+        headers: {'Content-Type': 'application/json'},
+      ),
+    );
 
-      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
-        final json = response.data;
-        print("Decoded JSON response: $json");
-        return User.fromJson(json);
+    if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+      final json = response.data;
+      print("Decoded JSON response: $json");
+
+      if (json['user'] != null) {
+        User user = User.fromJson(json);
+        
+      //  User user = User.fromJson(userData);
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_id', user.id.toString());
+        await prefs.setString('user_email', user.email);
+        await prefs.setString('user_name', user.name.toString());
+        await prefs.setString('user_token', json['token']);
+
+
+        return user;
       } else {
-        throw Exception('Failed to log in: Unexpected response format');
+        throw Exception('User data not found in the response');
       }
-    } on DioError catch (e) {
-      if (e.response != null) {
-        final responseData = e.response?.data;
-        if (responseData is String &&
-            e.response?.headers.value('content-type')?.contains('text/html') ==
-                true) {
-          throw Exception(
-              'Failed to log in: Server returned HTML response. Status code: ${e.response?.statusCode}');
-        } else if (responseData is Map<String, dynamic>) {
-          final errorMessage = responseData['message'] ?? 'Unknown error';
-          throw Exception('Failed to log in: $errorMessage');
-        } else {
-          throw Exception(
-              'Failed to log in: Status code ${e.response?.statusCode}');
-        }
+    } else {
+      throw Exception('Failed to log in: Unexpected response format');
+    }
+  } on DioError catch (e) {
+    if (e.response != null) {
+      final responseData = e.response?.data;
+      if (responseData is String &&
+          e.response?.headers.value('content-type')?.contains('text/html') == true) {
+        throw Exception(
+            'Failed to log in: Server returned HTML response. Status code: ${e.response?.statusCode}');
+      } else if (responseData is Map<String, dynamic>) {
+        final errorMessage = responseData['message'] ?? 'Unknown error';
+        throw Exception('Failed to log in: $errorMessage');
       } else {
-        throw Exception('Failed to log in: ${e.message}');
+        throw Exception('Failed to log in: Status code ${e.response?.statusCode}');
       }
+    } else {
+      throw Exception('Failed to log in: ${e.message}');
     }
   }
+}
+
+
+
 
 Future<bool> signUp(String email, String password, String confirmPassword,
     String phone, String name, int? client) async {

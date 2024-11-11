@@ -33,10 +33,13 @@ dependencies:
   get: 
   flutter_screenutil: ^5.9.3
   fl_chart: ^0.69.0
-  charts_flutter: 
+  charts_flutter:
+  intl: ^0.17.0
+
   dropdown_search: ^6.0.1
   dio: ^5.7.0
   http: ^1.2.2
+  shared_preferences: ^2.3.3
 
 
 

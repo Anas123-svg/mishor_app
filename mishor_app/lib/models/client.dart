@@ -15,7 +15,7 @@ class Client {
 
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
-      id: json['id'] ?? '',
+      id: json['id'] ?? 0,
       name: json['name'] ?? '',
 //      username: json['username'] ?? '',
       profileImage: json['profile_image'] ?? '',
@@ -32,4 +32,6 @@ class Client {
       'isVerified': isVerified ? 1 : 0,  
     };
   }
+
+  static empty() {}
 }

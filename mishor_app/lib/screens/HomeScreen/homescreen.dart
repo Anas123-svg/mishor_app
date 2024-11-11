@@ -1,42 +1,137 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mishor_app/models/assessment_stats.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
+import 'package:get/get.dart';
+import 'package:mishor_app/controllers/user_controller.dart';
+import 'package:mishor_app/controllers/home_screen_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
+  
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final int totalInspections = 150;
-  final int completedInspections = 120;
-  final int pendingInspections = 30;
-  final double compliancePercentage = 80.0;
+  final UserController userController = Get.find();
+  final HomeController homeController = Get.find();
   String searchQuery = '';
+  String? userId;
+  String? userEmail;
+  String? userName;
+  String? userToken;
+  bool isLoading = true;
 
-  List<String> assignedInspections = [
-    'Inspection 1',
-    'Inspection 2 (Rejected)',
-    'Inspection 3',
-    'Inspection 4 (Rejected)',
-  ];
+  List<String> assignedInspections = [];
 
-  List<BarChartGroupData> inspectionBarData = [
-    BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 30, color: AppColors.primary)]),
-    BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 40, color: Colors.green)]),
-    BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 50, color: Colors.blue)]),
-    BarChartGroupData(x: 4, barRods: [BarChartRodData(toY: 60, color: Colors.purple)]),
-    BarChartGroupData(x: 5, barRods: [BarChartRodData(toY: 80, color: Colors.orange)]),
-    BarChartGroupData(x: 6, barRods: [BarChartRodData(toY: 90, color: Colors.red)]),
-  ];
+  List<BarChartGroupData> inspectionBarData = [];
+
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+
+
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getString('user_id');
+      userEmail = prefs.getString('user_email');
+      userName = prefs.getString('user_name');
+      userToken = prefs.getString('user_token');
+    });
+
+    if (userToken != null) {
+      try {
+        await homeController.loadAssessmentCounts(userToken!);  
+        loadInspectionBarData();
+        loadAssignedInspections();
+        setState(() {
+          isLoading = false;
+        });
+      } catch (error) {
+        print('Error fetching assessment counts: $error');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+    void loadAssignedInspections() {
+    final assessmentStats = homeController.assessmentStats;
+    if (assessmentStats != null) {
+      setState(() {
+        assignedInspections = assessmentStats.rejectedAssessmentsList.map((assessment) {
+          return '${assessment.name} (${assessment.status[0].toUpperCase() + assessment.status.substring(1)})';
+        }).toList();
+      });
+    }
+  }
+
+
+void loadInspectionBarData() {
+  final assessmentStats = homeController.assessmentStats;
+  if (assessmentStats != null) {
+    setState(() {
+      inspectionBarData = assessmentStats.dailyApprovedCounts.entries.map((entry) {
+        int dayIndex = getDayIndex(entry.key);
+        return BarChartGroupData(
+          x: dayIndex,
+          barRods: [
+            BarChartRodData(
+              toY: entry.value.toDouble(), 
+              color: AppColors.primary, 
+              width: 16.w, 
+            ),
+          ],
+          showingTooltipIndicators: [0],
+        );
+      }).toList();
+    });
+  }
+}
+
+
+  int getDayIndex(String day) {
+    switch (day) {
+      case 'Monday': return 0;
+      case 'Tuesday': return 1;
+      case 'Wednesday': return 2;
+      case 'Thursday': return 3;
+      case 'Friday': return 4;
+      case 'Saturday': return 5;
+      case 'Sunday': return 6;
+      default: return -1;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    print("user id : {$userId}");
+    print("userEmail {$userEmail}");
+    print("User Name: $userName");
+    print("User Token: $userToken");
+    final assessmentStats = homeController.assessmentStats;
+  if (assessmentStats != null) {
+    print("Daily Approved Counts: ${assessmentStats.dailyApprovedCounts.entries}");
+  } else {
+    print("Assessment stats are not available.");
+  }
+ if (assessmentStats != null) {
+    print("assigned assessments : ${assessmentStats.rejectedAssessmentsList}");
+  } else {
+    print("Assessment stats are not available.");
+  }
+
     return Scaffold(
       appBar: const  CustomAppbar(),
       drawer: drawer(),
@@ -48,7 +143,15 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildWelcomeMessage(),
               SizedBox(height: 20.h),
-              _buildStatisticsCards(),
+              if (assessmentStats != null) ...[
+                _buildStatisticsCards(assessmentStats),
+              ] else if (isLoading) ...[
+                Center(child: CircularProgressIndicator()),
+              ] else ...[
+                Center(child: Text('Failed to load assessment data. Please try again later.')),
+              ],
+          
+              
               SizedBox(height: 20.h),
 
               Card(
@@ -133,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome, User!',
+              'Welcome, $userName',
               style: TextStyle(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
@@ -150,17 +253,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatisticsCards() {
+  Widget _buildStatisticsCards(AssessmentStats assessmentCount) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Expanded(child: _buildStatCard('Total', totalInspections.toString(), Icons.list)),
+        Expanded(child: _buildStatCard('Total', assessmentCount.totalAssessments.toString(), Icons.list)),
         SizedBox(width: 5.w),
-        Expanded(child: _buildStatCard('Completed', completedInspections.toString(), Icons.check_circle_outline)),
+        Expanded(child: _buildStatCard('Completed', assessmentCount.completedAssessments.toString(), Icons.check_circle_outline)),
         SizedBox(width: 5.w),
-        Expanded(child: _buildStatCard('Pending', pendingInspections.toString(), Icons.pending_actions)),
+        Expanded(child: _buildStatCard('Pending', assessmentCount.pendingAssessments.toString(), Icons.pending_actions)),
         SizedBox(width: 5.w),
-        Expanded(child: _buildStatCard('Compliance', '$compliancePercentage%', Icons.verified_user)),
+        Expanded(child: _buildStatCard('Rejected', assessmentCount.rejectedAssessments.toString(), Icons.cancel)),
       ],
     );
   }
@@ -296,8 +399,8 @@ Widget _buildStatCard(String title, String value, IconData icon) {
   double paddingValue = screenSize.width < 600 ? 8.w : 12.w;
 
   return Container(
-    width: cardWidth,
-    height: cardHeight,
+    width: cardWidth.w,
+    height: cardHeight.h,
     padding: EdgeInsets.all(paddingValue),
     decoration: BoxDecoration(
       color: AppColors.primary,
@@ -335,7 +438,6 @@ Widget _buildStatCard(String title, String value, IconData icon) {
     ),
   );
 }
-
 }
 
 
@@ -414,7 +516,7 @@ class InspectionsList extends StatelessWidget {
                       ),
                       IconButton(
                         icon: Icon(
-                          Icons.check_circle, 
+                          Icons.pending, 
                           color: !isFlagged ? Colors.green : Colors.grey,
                         ),
                         onPressed: () => onSignOff(inspection),
