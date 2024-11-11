@@ -1,57 +1,49 @@
 "use client";
-import React, { useState } from "react";
-import {
-  Badge,
-  Dropdown,
-  Modal,
-  Button,
-  TextInput,
-  Table,
-} from "flowbite-react";
+import React, { useEffect, useState } from "react";
+import { Badge, Dropdown, TextInput, Table } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
+import axios from "axios";
+import useAuthStore from "@/store/authStore";
+import { Client } from "@/types";
 
 const Clients = () => {
   const [search, setSearch] = useState("");
-  const [clients, setClients] = useState([
-    {
-      img: "/images/profile/user-2.jpg",
-      name: "Company A",
-      email: "contact@companya.com",
-      teamSize: 12,
-      status: "active",
-    },
-    {
-      img: "/images/profile/user-3.jpg",
-      name: "Company B",
-      email: "info@companyb.com",
-      teamSize: 8,
-      status: "pending",
-    },
-    {
-      img: "/images/profile/user-1.jpg",
-      name: "Company C",
-      email: "support@companyc.com",
-      teamSize: 15,
-      status: "rejected",
-    },
-  ]);
+  const { token } = useAuthStore();
+  const [clients, setClients] = useState<Client[]>([]);
+
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/client`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      setClients(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
   const actionOptions = [
     { icon: "solar:eye-outline", label: "View Details" },
-    { icon: "solar:check-circle-outline", label: "Approve" },
-    { icon: "solar:close-circle-outline", label: "Reject" },
+    { icon: "solar:check-circle-outline", label: "Verify" },
+    { icon: "solar:close-circle-outline", label: "Unverify" },
+    { icon: "solar:trash-bin-minimalistic-outline", label: "Delete" },
   ];
 
   return (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h5 className="text-xl font-semibold">Clients</h5>
-          <Button color="primary">Add Client</Button>
-        </div>
-
+        <h5 className="text-xl font-semibold mb-4">Clients</h5>
         <TextInput
           placeholder="Search Clients"
           value={search}
@@ -66,7 +58,7 @@ const Clients = () => {
               <Table.HeadCell>Name</Table.HeadCell>
               <Table.HeadCell>Email</Table.HeadCell>
               <Table.HeadCell>Team</Table.HeadCell>
-              <Table.HeadCell>Status</Table.HeadCell>
+              <Table.HeadCell>Verified</Table.HeadCell>
               <Table.HeadCell>Actions</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
@@ -82,8 +74,8 @@ const Clients = () => {
                     className="hover:bg-gray-100 dark:hover:bg-gray-900"
                   >
                     <Table.Cell className="p-4">
-                      <Image
-                        src={client.img}
+                      <img
+                        src={client.profile_image}
                         alt="Client Profile"
                         width={50}
                         height={50}
@@ -96,19 +88,10 @@ const Clients = () => {
                     <Table.Cell className="text-gray-500">
                       {client.email}
                     </Table.Cell>
-                    <Table.Cell>{client.teamSize} Users</Table.Cell>
+                    <Table.Cell>{client.team} Users</Table.Cell>
                     <Table.Cell>
-                      <Badge
-                        color={
-                          client.status === "active"
-                            ? "success"
-                            : client.status === "pending"
-                            ? "warning"
-                            : "failure"
-                        }
-                      >
-                        {client.status.charAt(0).toUpperCase() +
-                          client.status.slice(1)}
+                      <Badge color={client.is_verified ? "success" : "warning"}>
+                        {client.is_verified ? "Verified" : "Not Verified"}
                       </Badge>
                     </Table.Cell>
                     <Table.Cell>

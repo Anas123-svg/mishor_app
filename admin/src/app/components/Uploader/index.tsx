@@ -79,7 +79,7 @@ export default function ProfilePicUploader({
       <div className="relative w-32 h-32 mb-4">
         <img
           className="w-full h-full object-cover rounded-full border-4 border-gray-300"
-          src={profilePic || "/default-avatar.png"} // Fallback image if no profile pic is selected
+          src={profilePic || "/default-avatar.jpg"} // Fallback image if no profile pic is selected
           alt="Profile"
         />
 

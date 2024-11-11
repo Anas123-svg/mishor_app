@@ -1,53 +1,71 @@
+"use client";
 import React from "react";
-import SalesProfit from "../components/dashboard/SalesProfit";
-import TotalFollowers from "../components/dashboard/TotalFollowers";
-import TotalIncome from "../components/dashboard/TotalIncome";
-import PopularProducts from "../components/dashboard/PopularProducts";
-import EarningReports from "../components/dashboard/EarningReports";
-import BlogCards from "../components/dashboard/BlogCards";
-import Link from "next/link";
+import AssessmentOverview from "../components/dashboard/AssessmentOverview";
+import { Icon } from "@iconify/react";
+import RecentClients from "../components/dashboard/RecentClients";
 
-const page = () => {
+const DashboardPage = () => {
+  const statsData = [
+    {
+      title: "Total Clients",
+      count: 100,
+      iconColor: "bg-primary",
+      cardColor: "bg-lightprimary",
+    },
+    {
+      title: "Total Templates",
+      count: 100,
+      iconColor: "bg-success",
+      cardColor: "bg-lightsuccess",
+    },
+    {
+      title: "Total Assessments",
+      count: 100,
+      iconColor: "bg-warning",
+      cardColor: "bg-lightwarning",
+    },
+  ];
+
   return (
-    <>
-      <div className="grid grid-cols-12 gap-30">
-        <div className="lg:col-span-8 col-span-12">
-          <SalesProfit />
-        </div>
-        <div className="lg:col-span-4 col-span-12">
-          <div className="grid grid-cols-12 ">
-            <div className="col-span-12 mb-30">
-              <TotalFollowers />
-            </div>
-            <div className="col-span-12">
-              <TotalIncome />
-            </div>
-          </div>
-        </div>
-        <div className="lg:col-span-8 col-span-12">
-          <PopularProducts />
-        </div>
-        <div className="lg:col-span-4 col-span-12">
-          <EarningReports />
-        </div>
-        <div className="col-span-12">
-          <BlogCards />
-        </div>
-        <div className="col-span-12 text-center">
-          <p className="text-base">
-            Design and Developed by{" "}
-            <Link
-              href="https://wrappixel.com"
-              target="_blank"
-              className="pl-1 text-primary underline decoration-primary" 
-            >
-              wrappixel.com
-            </Link>
-          </p>
-        </div>
+    <div className="grid grid-cols-12 gap-6">
+      {/* Assessment Overview */}
+      <div className="lg:col-span-8 col-span-12">
+        <AssessmentOverview />
       </div>
-    </>
+
+      {/* Stats Cards Section */}
+      <div className="lg:col-span-4 col-span-12 space-y-6">
+        {statsData.map((stat, index) => (
+          <div
+            key={index}
+            className={`${stat.cardColor} rounded-lg p-6 flex items-center justify-between`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`w-16 h-16 rounded-full flex items-center justify-center text-white ${stat.iconColor}`}
+              >
+                <Icon
+                  icon="solar:users-group-rounded-bold-duotone"
+                  height={28}
+                />
+              </span>
+              <div>
+                <h5 className="text-lg font-semibold text-dark opacity-80">
+                  {stat.title}
+                </h5>
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-dark">{stat.count}</h1>
+          </div>
+        ))}
+      </div>
+
+      {/* Recent Clients Section */}
+      <div className="col-span-12">
+        <RecentClients />
+      </div>
+    </div>
   );
 };
 
-export default page;
+export default DashboardPage;
