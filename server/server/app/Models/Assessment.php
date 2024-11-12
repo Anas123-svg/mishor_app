@@ -12,7 +12,7 @@ class Assessment extends Model
     use HasApiTokens;
 
 
-    protected $fillable = ['client_id', 'template_id', 'user_id', 'assessment', 'status','name'];
+    protected $fillable = ['client_id', 'template_id', 'user_id', 'assessment', 'status','name', 'location'];
     protected $casts = [
         'assessment' => 'array',  
     ];

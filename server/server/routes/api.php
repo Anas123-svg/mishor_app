@@ -44,11 +44,11 @@ Route::prefix('client')->group(function () {
 Route::prefix('user')->group(function () {
     Route::post('/register', [UserController::class, 'register']);
     Route::post('/login', [UserController::class, 'login']);
-
+    
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [UserController::class, 'logout']);
         Route::get('/assessment-counts', [UserController::class, 'assessmentCountsByUser']);
-
+        Route::get('/completed-assessment-counts', [UserController::class, 'completedAssessmentCountsByUser']);
         Route::get('/', [UserController::class, 'index']);
         Route::get('/show', [UserController::class, 'showByToken']); 
         Route::get('/{id}', [UserController::class, 'show']);

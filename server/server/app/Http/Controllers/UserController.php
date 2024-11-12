@@ -147,7 +147,7 @@ class UserController extends Controller
         $dailyApprovedCounts = $this->getDailyApprovedCounts($user->id);
         $assignedAssessments = Assessment::where('user_id', $user->id)
         ->whereIn('status', ['rejected', 'pending']) 
-        ->get(['id', 'status', 'created_at', 'updated_at', 'name']);    
+        ->get(['id', 'status', 'created_at', 'updated_at', 'location', 'name']);    
         return response()->json([
             'user' => $userWithAssessmentCounts,
             'daily_approved_counts' => $dailyApprovedCounts,
@@ -213,6 +213,39 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'User deleted successfully',
+        ]);
+    }
+
+
+    public function completedAssessmentCountsByUser(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userWithAssessmentCounts = User::where('id', $user->id)
+            ->withCount([
+                'assessments as completed_assessments' => function ($query) {
+                    $query->where('status', 'approved');
+                },
+                'assessments as rejected_assessments' => function ($query) {
+                    $query->where('status', 'rejected');
+                },
+                'assessments as pending_assessments' => function ($query) {
+                    $query->where('status', 'pending');
+                },
+                'assessments as total_assessments'
+            ])->first();
+
+        $dailyApprovedCounts = $this->getDailyApprovedCounts($user->id);
+        $assignedAssessments = Assessment::where('user_id', $user->id)
+        ->whereIn('status', ['approved']) 
+        ->get(['id', 'status', 'created_at', 'updated_at', 'location', 'name']);    
+        return response()->json([
+            'user' => $userWithAssessmentCounts,
+            'daily_approved_counts' => $dailyApprovedCounts,
+            'assigned_assessments' => $assignedAssessments
         ]);
     }
 }

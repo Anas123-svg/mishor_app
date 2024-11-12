@@ -6,6 +6,7 @@ use App\Models\Assessment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Template;
 
 class AssessmentController extends Controller
 {
@@ -24,7 +25,6 @@ class AssessmentController extends Controller
      */
     public function store(Request $request)
     {
-        // Log the incoming request data
         Log::info('Creating new assessment', [
             'client_id' => $request->input('client_id'),
             'template_id' => $request->input('template_id'),
@@ -32,44 +32,48 @@ class AssessmentController extends Controller
             'status' => $request->input('status'),
         ]);
     
-        // Validate the request
         try {
-
-        $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'template_id' => 'required|exists:templates,id',
-            'user_id' => 'required|exists:users,id',
-            'assessment' => 'required',
-            'status' => 'required|in:approved,pending,completed',
-        ]);
-    }catch(\Exception $e){
-        // Log validation failure
-        Log::error('Validation failed for creating assessment', [
-            'error' => $e->getMessage(),
-            'client_id' => $request->input('client_id'),
-            'template_id' => $request->input('template_id'),
-            'user_id' => $request->input('user_id'),
-        ]);
+            $request->validate([
+                'client_id' => 'required|exists:clients,id',
+                'template_id' => 'required|exists:templates,id',
+                'user_id' => 'required|exists:users,id',
+                'status' => 'required|in:approved,pending,completed',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Validation failed for creating assessment', [
+                'error' => $e->getMessage(),
+                'client_id' => $request->input('client_id'),
+                'template_id' => $request->input('template_id'),
+                'user_id' => $request->input('user_id'),
+            ]);
     
-        return response()->json([
-            'message' => 'Failed to create assessment',
-            'error' => $e->getMessage()
-        ], 400);
-    }
+            return response()->json([
+                'message' => 'Failed to create assessment',
+                'error' => $e->getMessage()
+            ], 400);
+        }
     
-        // Log validation success
         Log::info('Validation successful for creating assessment');
     
         try {
-            // Get the assessment data from request
-            $assessmentData = $request->input('assessment');
+           
+            $template = Template::with(['fields', 'tables'])->findOrFail($request->input('template_id'));
     
-            // Log before creating the assessment
+            $assessmentData = [
+                'name' => $template->name,
+                'description' => $template->description,
+                'activity' => $template->Activity,
+                'reference' => $template->Reference,
+                'assessor' => $template->Assessor,
+                'date' => $template->Date,
+                'fields' => $template->fields,
+                'tables' => $template->tables,
+            ];
+    
             Log::info('Attempting to create the assessment', [
                 'assessment_data' => $assessmentData,
             ]);
     
-            // Create the assessment
             $assessment = Assessment::create([
                 'client_id' => $request->input('client_id'),
                 'template_id' => $request->input('template_id'),
@@ -78,7 +82,6 @@ class AssessmentController extends Controller
                 'status' => $request->input('status'),
             ]);
     
-            // Log successful creation
             Log::info('Assessment created successfully', [
                 'assessment_id' => $assessment->id,
                 'client_id' => $assessment->client_id,
@@ -86,12 +89,8 @@ class AssessmentController extends Controller
                 'status' => $assessment->status,
             ]);
     
-            return response()->json([
-                'assessment' => $assessment,
-                'message' => 'Template created successfully'
-            ], 201);
+            return $assessment;
         } catch (\Exception $e) {
-            // Log any exceptions
             Log::error('Error creating assessment', [
                 'error' => $e->getMessage(),
                 'client_id' => $request->input('client_id'),
@@ -105,7 +104,7 @@ class AssessmentController extends Controller
             ], 500);
         }
     }
-        
+            
 
     /**
      * @param  \App\Models\Assessment  $assessment

@@ -9,7 +9,7 @@ class Template extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description','Activity','Reference','Assessor','Date'];
+    protected $fillable = ['name', 'description','Activity','Reference','Assessor','Date','created_by'];    
 
     public function fields()
     {
