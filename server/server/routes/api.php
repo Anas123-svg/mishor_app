@@ -15,6 +15,8 @@ Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminController::class, 'login']);
 //    Route::post('/reset-password', [AdminController::class, 'resetPassword']);
     Route::put('client/{id}/verify', [ClientController::class, 'verify']);
+    Route::delete('clients/{id}', [ClientController::class, 'destroy']);
+
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AdminController::class, 'logout']);

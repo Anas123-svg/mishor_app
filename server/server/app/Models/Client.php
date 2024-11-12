@@ -17,6 +17,15 @@ class Client extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
 
     public function setPasswordAttribute($password)
     {

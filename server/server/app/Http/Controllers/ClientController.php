@@ -103,18 +103,6 @@ class ClientController extends Controller
         return response()->json(['message' => 'Client updated successfully', 'client' => $client]);
     }
 
-    public function destroy($id)
-    {
-        $client = Client::find($id);
-
-        if (!$client) {
-            return response()->json(['error' => 'Client not found'], 404);
-        }
-
-        $client->delete();
-
-        return response()->json(['message' => 'Client deleted successfully']);
-    }
 
     public function resetPassword(Request $request)
     {
@@ -163,5 +151,44 @@ class ClientController extends Controller
 
     return response()->json(['message' => 'Client verified successfully', 'client' => $client]);
 }
+
+public function destroy($id)
+{
+    Log::info('Attempting to delete client with ID: ' . $id);
+
+    $client = Client::find($id);
+
+    if (!$client) {
+        Log::warning('Client not found with ID: ' . $id);
+        return response()->json(['error' => 'Client not found'], 404);
+    }
+
+    \DB::beginTransaction();
+
+    try {
+        Log::info('Deleting related users for client ID: ' . $id);
+        $client->users()->delete();
+
+        Log::info('Deleting related assessments for client ID: ' . $id);
+        $client->assessments()->delete();
+
+        Log::info('Deleting client ID: ' . $id);
+        $client->delete();
+
+        \DB::commit();
+
+        Log::info('Client and related records deleted successfully for client ID: ' . $id);
+        return response()->json(['message' => 'Client and all related records deleted successfully'], 200);
+    } catch (\Exception $e) {
+        \DB::rollback();
+        Log::error('Error occurred while deleting client with ID: ' . $id, [
+            'error_message' => $e->getMessage(),
+            'stack_trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json(['error' => 'An error occurred while deleting the client'], 500);
+    }
+}
+
 
 }
