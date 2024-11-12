@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Client;
 use App\Models\Template;
 use App\Models\Assessment;
+use App\Models\User;
 class AdminController extends Controller
 {
 
@@ -157,18 +158,20 @@ class AdminController extends Controller
     {
         $totalClients = Client::count();
         $totalTemplates = Template::count();
+        $totalUsers = User::count();
     
         $createdAssessments = Assessment::get(['created_at']);
-        $recentClients = Client::latest()->take(5)->get();
-
+        $recentClients = Client::latest()->withCount('users')->take(5)->get();
     
         return response()->json([
             'total_clients' => $totalClients,
             'total_templates' => $totalTemplates,
+            'total_users' => $totalUsers,
             'created_assessments' => $createdAssessments,
             'recent_clients' => $recentClients
         ], 200);
     }
+    
     
 
     
