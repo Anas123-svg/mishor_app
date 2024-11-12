@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Badge,
   Dropdown,
@@ -10,58 +10,174 @@ import {
   Table,
 } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
+import ProfilePicUploader from "@/app/components/Uploader";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
+import { Admin } from "@/types";
+import axios from "axios";
+import useAuthStore from "@/store/authStore";
+import toast from "react-hot-toast";
 
 const Admins = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newAdmin, setNewAdmin] = useState({
+  const { token, user } = useAuthStore();
+  const [addAdmin, setAddAdmin] = useState({
     name: "",
     email: "",
     password: "",
     role: "admin",
-    profilePic: "",
+    profile_image: "",
   });
-  const [admins, setAdmins] = useState([
-    {
-      img: "/images/profile/user-1.jpg",
-      name: "John Doe",
-      email: "john@example.com",
-      role: "admin",
-    },
-    {
-      img: "/images/profile/user-1.jpg",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      role: "admin",
-    },
-    {
-      img: "/images/profile/user-1.jpg",
-      name: "Alice Johnson",
-      email: "alice@example.com",
-      role: "admin",
-    },
-  ]);
+  const [editAdmin, setEditAdmin] = useState<{
+    id: number | null;
+    name: string;
+    email: string;
+    role: string;
+    profile_image: string;
+  }>({
+    id: null,
+    name: "",
+    email: "",
+    role: "admin",
+    profile_image: "",
+  });
+  const [editingMode, setEditingMode] = useState(false);
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const tableActionData = [
-    { icon: "solar:pen-new-square-broken", listtitle: "Edit" },
-    { icon: "solar:trash-bin-minimalistic-outline", listtitle: "Delete" },
-  ];
+  const fetchAdmins = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setAdmins(response.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleAddAdmin = () => {
-    setAdmins([
-      ...admins,
-      { ...newAdmin, img: newAdmin.profilePic || "/images/profile/user-1.jpg" },
-    ]);
-    setIsModalOpen(false);
-    setNewAdmin({
-      name: "",
-      email: "",
-      password: "",
-      role: "admin",
-      profilePic: "",
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
+
+  const handleAddAdmin = async () => {
+    if (
+      !addAdmin.name ||
+      !addAdmin.email ||
+      !addAdmin.password ||
+      !addAdmin.profile_image ||
+      !addAdmin.role
+    ) {
+      return toast.error("Please fill all fields!");
+    }
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/register`,
+        addAdmin,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message || "Admin added successfully!");
+      setIsModalOpen(false);
+      setAddAdmin({
+        name: "",
+        email: "",
+        password: "",
+        role: "admin",
+        profile_image: "",
+      });
+    } catch (error) {
+      console.error("Error adding admin:", error);
+    } finally {
+      fetchAdmins();
+    }
+  };
+
+  const handleEditAdmin = async () => {
+    if (editAdmin.id === null) return;
+    if (
+      !editAdmin.name ||
+      !editAdmin.email ||
+      !editAdmin.role ||
+      !editAdmin.profile_image
+    ) {
+      return toast.error("Please fill all fields!");
+    }
+    setLoading(true);
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/${editAdmin.id}`,
+        {
+          name: editAdmin.name,
+          email: editAdmin.email,
+          role: editAdmin.role,
+          profile_image: editAdmin.profile_image,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message || "Admin updated successfully!");
+      setIsModalOpen(false);
+      setEditAdmin({
+        id: null,
+        name: "",
+        email: "",
+        role: "admin",
+        profile_image: "",
+      });
+      setEditingMode(false);
+    } catch (error) {
+      console.error("Error editing admin:", error);
+    } finally {
+      fetchAdmins();
+    }
+  };
+
+  const handleDeleteAdmin = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this admin?")) return;
+    setLoading(true);
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/admin/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error deleting admin:", error);
+    } finally {
+      fetchAdmins();
+    }
+  };
+
+  const openAddModal = () => {
+    setEditingMode(false);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (admin: Admin) => {
+    setEditAdmin({
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role,
+      profile_image: admin.profile_image,
     });
+    setEditingMode(true);
+    setIsModalOpen(true);
   };
 
   return (
@@ -69,7 +185,7 @@ const Admins = () => {
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
         <div className="flex justify-between items-center mb-4">
           <h5 className="card-title">Admins</h5>
-          <Button color="primary" onClick={() => setIsModalOpen(true)}>
+          <Button color="primary" onClick={openAddModal}>
             Add Admin
           </Button>
         </div>
@@ -103,8 +219,8 @@ const Admins = () => {
                     className="hover:bg-gray-100 dark:hover:bg-gray-900"
                   >
                     <Table.Cell className="p-4">
-                      <Image
-                        src={admin.img}
+                      <img
+                        src={admin.profile_image}
                         alt="Admin Profile"
                         width={50}
                         height={50}
@@ -130,69 +246,158 @@ const Admins = () => {
                           </span>
                         )}
                       >
-                        {tableActionData.map((action, i) => (
-                          <Dropdown.Item key={i} className="flex gap-3">
-                            <Icon icon={action.icon} height={18} />
-                            <span>{action.listtitle}</span>
-                          </Dropdown.Item>
-                        ))}
+                        <Dropdown.Item
+                          onClick={() => openEditModal(admin)}
+                          className="flex gap-3"
+                        >
+                          <Icon
+                            icon="solar:pen-new-square-broken"
+                            height={18}
+                          />
+                          <span>Edit</span>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          disabled={admin.id === user?.id}
+                          onClick={() => handleDeleteAdmin(admin.id)}
+                          className="flex gap-3"
+                        >
+                          <Icon
+                            icon="solar:trash-bin-minimalistic-outline"
+                            height={18}
+                          />
+                          <span>Delete</span>
+                        </Dropdown.Item>
                       </Dropdown>
                     </Table.Cell>
                   </Table.Row>
                 ))}
             </Table.Body>
           </Table>
+
+          {admins.length === 0 ||
+            (admins.filter(
+              (admin) =>
+                admin.name.toLowerCase().includes(search.toLowerCase()) ||
+                admin.email.toLowerCase().includes(search.toLowerCase())
+            ).length === 0 && (
+              <p className="text-center mt-5">No Admins Found</p>
+            ))}
         </div>
       </div>
 
-      {/* Add Admin Modal */}
-      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <Modal.Header>Add New Admin</Modal.Header>
+      {/* Add/Edit Admin Modal */}
+      <Modal
+        show={isModalOpen}
+        onClose={() => {
+          setEditingMode(false);
+          setAddAdmin({
+            name: "",
+            email: "",
+            password: "",
+            role: "admin",
+            profile_image: "",
+          });
+          setEditAdmin({
+            id: null,
+            name: "",
+            email: "",
+            role: "admin",
+            profile_image: "",
+          });
+          setIsModalOpen(false);
+        }}
+      >
+        <Modal.Header>
+          {editingMode ? "Edit Admin" : "Add New Admin"}
+        </Modal.Header>
         <Modal.Body>
+          <ProfilePicUploader
+            profilePic={
+              editingMode ? editAdmin.profile_image : addAdmin.profile_image
+            }
+            onChange={(url: string) =>
+              editingMode
+                ? setEditAdmin({ ...editAdmin, profile_image: url })
+                : setAddAdmin({ ...addAdmin, profile_image: url })
+            }
+          />
           <TextInput
             placeholder="Name"
-            value={newAdmin.name}
-            onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
-            className="mb-4"
+            value={editingMode ? editAdmin.name : addAdmin.name}
+            onChange={(e) =>
+              editingMode
+                ? setEditAdmin({ ...editAdmin, name: e.target.value })
+                : setAddAdmin({ ...addAdmin, name: e.target.value })
+            }
+            className="my-4"
           />
           <TextInput
             placeholder="Email"
-            value={newAdmin.email}
+            value={editingMode ? editAdmin.email : addAdmin.email}
             onChange={(e) =>
-              setNewAdmin({ ...newAdmin, email: e.target.value })
+              editingMode
+                ? setEditAdmin({ ...editAdmin, email: e.target.value })
+                : setAddAdmin({ ...addAdmin, email: e.target.value })
             }
             className="mb-4"
           />
-          <TextInput
-            type="password"
-            placeholder="Password"
-            value={newAdmin.password}
-            onChange={(e) =>
-              setNewAdmin({ ...newAdmin, password: e.target.value })
-            }
-            className="mb-4"
-          />
+          {/* Show password field only in Add mode */}
+          {!editingMode && (
+            <TextInput
+              type="password"
+              placeholder="Password"
+              value={addAdmin.password}
+              onChange={(e) =>
+                setAddAdmin({ ...addAdmin, password: e.target.value })
+              }
+              className="mb-4"
+            />
+          )}
           <Select
-            value={newAdmin.role}
-            onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
+            value={editingMode ? editAdmin.role : addAdmin.role}
+            onChange={(e) =>
+              editingMode
+                ? setEditAdmin({ ...editAdmin, role: e.target.value })
+                : setAddAdmin({ ...addAdmin, role: e.target.value })
+            }
             className="mb-4"
           >
             <option value="admin">Admin</option>
           </Select>
-          <TextInput
-            placeholder="Profile Picture URL"
-            value={newAdmin.profilePic}
-            onChange={(e) =>
-              setNewAdmin({ ...newAdmin, profilePic: e.target.value })
-            }
-            className="mb-4"
-          />
         </Modal.Body>
         <Modal.Footer>
-          <Button color="primary" onClick={handleAddAdmin}>
-            Add Admin
+          <Button
+            color="primary"
+            disabled={loading}
+            onClick={editingMode ? handleEditAdmin : handleAddAdmin}
+          >
+            {loading
+              ? "Loading..."
+              : editingMode
+              ? "Save Changes"
+              : "Add Admin"}
           </Button>
-          <Button color="secondary" onClick={() => setIsModalOpen(false)}>
+          <Button
+            color="secondary"
+            onClick={() => {
+              setEditingMode(false);
+              setAddAdmin({
+                name: "",
+                email: "",
+                password: "",
+                role: "admin",
+                profile_image: "",
+              });
+              setEditAdmin({
+                id: null,
+                name: "",
+                email: "",
+                role: "admin",
+                profile_image: "",
+              });
+              setIsModalOpen(false);
+            }}
+          >
             Cancel
           </Button>
         </Modal.Footer>

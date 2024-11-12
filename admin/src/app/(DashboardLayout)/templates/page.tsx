@@ -1,49 +1,39 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Badge, Dropdown, TextInput } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import { Table } from "flowbite-react";
 import Link from "next/link";
+import axios from "axios";
+import { Template } from "@/types";
+import useAuthStore from "@/store/authStore";
 
 const TemplatePage = () => {
-  // Initial data for templates
-  const TemplateTableData = [
-    {
-      title: "Marketing Campaign",
-      description: "A comprehensive template for marketing campaigns.",
-      createdBy: "John Doe",
-    },
-    {
-      title: "Project Plan",
-      description: "Template for project planning and management.",
-      createdBy: "Jane Smith",
-    },
-    {
-      title: "Sales Report",
-      description: "Detailed template for monthly sales reporting.",
-      createdBy: "Alice Johnson",
-    },
-  ];
-
-  // State to store search input and filtered data
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredData, setFilteredData] = useState(TemplateTableData);
-
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    // Filter data based on search term
-    const filteredTemplates = TemplateTableData.filter((template) =>
-      template.title.toLowerCase().includes(value.toLowerCase())
-    );
-
-    setFilteredData(filteredTemplates);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const { token } = useAuthStore();
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/templates`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTemplates(response.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // Action options
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
   const tableActionData = [
     {
       icon: "solar:pen-new-square-broken",
@@ -70,29 +60,38 @@ const TemplatePage = () => {
         <TextInput
           placeholder="Search Templates"
           value={searchTerm}
-          onChange={handleSearchChange}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="mb-3"
         />
         <div className="overflow-x-auto">
           <Table hoverable>
             <Table.Head>
-              <Table.HeadCell className="p-6">Title</Table.HeadCell>
+              <Table.HeadCell className="p-6">Name</Table.HeadCell>
               <Table.HeadCell>Description</Table.HeadCell>
               <Table.HeadCell>Created By</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y divide-border dark:divide-darkborder whitespace-nowrap">
-              {filteredData.length > 0 ? (
-                filteredData.map((item, index) => (
+              {templates
+                .filter(
+                  (template) =>
+                    template.name
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase()) ||
+                    template.description
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase())
+                )
+                .map((item, index) => (
                   <Table.Row key={index}>
                     <Table.Cell className="whitespace-nowrap ps-6">
-                      <h6 className="text-sm">{item.title}</h6>
+                      <h6 className="text-sm">{item.name}</h6>
                     </Table.Cell>
                     <Table.Cell>
                       <p className="text-sm text-wrap">{item.description}</p>
                     </Table.Cell>
                     <Table.Cell>
-                      <Badge color="success">{item.createdBy}</Badge>
+                      <Badge color="success">{item.created_by}</Badge>
                     </Table.Cell>
                     <Table.Cell>
                       <Dropdown
@@ -113,16 +112,21 @@ const TemplatePage = () => {
                       </Dropdown>
                     </Table.Cell>
                   </Table.Row>
-                ))
-              ) : (
-                <Table.Row>
-                  <Table.Cell colSpan={4} className="text-center py-4">
-                    No templates found
-                  </Table.Cell>
-                </Table.Row>
-              )}
+                ))}
             </Table.Body>
           </Table>
+          {templates.length === 0 ||
+            (templates.filter(
+              (template) =>
+                template.name
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase()) ||
+                template.description
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase())
+            ).length === 0 && (
+              <p className="text-center mt-5">No Templates Found</p>
+            ))}
         </div>
       </div>
     </>
