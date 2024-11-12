@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Models\Client;
+use App\Models\Template;
+use App\Models\Assessment;
 class AdminController extends Controller
 {
 
@@ -148,5 +151,25 @@ class AdminController extends Controller
         }    
         return response()->json(['message' => 'Password updated successfully'], 200);
     }
+
+
+    public function getStatistics()
+    {
+        $totalClients = Client::count();
+        $totalTemplates = Template::count();
+    
+        $createdAssessments = Assessment::get(['created_at']);
+        $recentClients = Client::latest()->take(5)->get();
+
+    
+        return response()->json([
+            'total_clients' => $totalClients,
+            'total_templates' => $totalTemplates,
+            'created_assessments' => $createdAssessments,
+            'recent_clients' => $recentClients
+        ], 200);
+    }
+    
+
     
 }

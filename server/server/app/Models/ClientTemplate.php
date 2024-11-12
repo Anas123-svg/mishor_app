@@ -12,7 +12,7 @@ class ClientTemplate extends Model
     use HasApiTokens;
 
 
-    protected $fillable = ['client_id', 'template_id'];
+    protected $fillable = ['client_id', 'template_id','status'];
 
     public function client()
     {

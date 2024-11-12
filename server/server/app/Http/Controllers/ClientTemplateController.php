@@ -7,7 +7,7 @@ class ClientTemplateController extends Controller
 {
     public function index()
     {
-        $clientTemplates = ClientTemplate::with(['client', 'template'])->get();
+        $clientTemplates = ClientTemplate::with(['client', 'template:id,name,description'])->get();
         return response()->json($clientTemplates);
     }
 
@@ -16,15 +16,16 @@ class ClientTemplateController extends Controller
         $request->validate([
             'client_id' => 'required|exists:clients,id',
             'template_id' => 'required|exists:templates,id',
+            'status' => 'nullable|in:pending,approved,rejected',
         ]);
 
-        $clientTemplate = ClientTemplate::create($request->only(['client_id', 'template_id']));
+        $clientTemplate = ClientTemplate::create($request->only(['client_id', 'template_id','status']));
         return response()->json($clientTemplate, 201);
     }
 
     public function show($id)
     {
-        $clientTemplate = ClientTemplate::with(['client', 'template'])->findOrFail($id);
+        $clientTemplate = ClientTemplate::with(['client', 'template:id,name,description'])->findOrFail($id);
         return response()->json($clientTemplate);
     }
 
@@ -35,9 +36,10 @@ class ClientTemplateController extends Controller
         $request->validate([
             'client_id' => 'required|exists:clients,id',
             'template_id' => 'required|exists:templates,id',
+            'status' => 'nullable|in:pending,approved,rejected',
         ]);
 
-        $clientTemplate->update($request->only(['client_id', 'template_id']));
+        $clientTemplate->update($request->only(['client_id', 'template_id','status']));
         return response()->json($clientTemplate);
     }
 
@@ -52,7 +54,7 @@ class ClientTemplateController extends Controller
 
     public function getTemplatesByClient($clientId)
     {
-        $clientTemplates = ClientTemplate::with('template')
+        $clientTemplates = ClientTemplate::with('template:id,name,description')
             ->where('client_id', $clientId)
             ->get();
 
@@ -69,7 +71,7 @@ class ClientTemplateController extends Controller
         Log::info('Fetching templates for authenticated client', ['client_id' => $clientId]);
 
         try {
-            $clientTemplates = ClientTemplate::with('template')
+            $clientTemplates = ClientTemplate::with('template:id,name,description')
                 ->where('client_id', $clientId)
                 ->get();
 

@@ -36,8 +36,11 @@ class AssessmentController extends Controller
             $request->validate([
                 'client_id' => 'required|exists:clients,id',
                 'template_id' => 'required|exists:templates,id',
-                'user_id' => 'required|exists:users,id',
-                'status' => 'required|in:approved,pending,completed',
+                'user_id' => 'nullable|exists:users,id',
+                'status' => 'nullable|in:approved,pending,completed',
+                'submited_to_admin'=>'nullable|bool',
+                'status_by_admin' => 'nullable|in:approved,rejected,pending',
+                'feedback_by_admin' => 'nullable|string',
             ]);
         } catch (\Exception $e) {
             Log::error('Validation failed for creating assessment', [
@@ -45,6 +48,7 @@ class AssessmentController extends Controller
                 'client_id' => $request->input('client_id'),
                 'template_id' => $request->input('template_id'),
                 'user_id' => $request->input('user_id'),
+
             ]);
     
             return response()->json([
@@ -90,6 +94,9 @@ class AssessmentController extends Controller
                 'user_id' => $request->input('user_id'),
                 'assessment' => $assessmentData,
                 'status' => $request->input('status'),
+                'submited_to_admin' => $request->input('submited_to_admin'),
+                'status_by_admin' => $request->input('status_by_admin'),
+                'feedback_by_admin' => $request->input('feedback_by_admin')
             ]);
     
             Log::info('Assessment created successfully', [
@@ -141,9 +148,12 @@ class AssessmentController extends Controller
             'user_id' => 'sometimes|exists:users,id',
             'assessment' => 'sometimes',
             'status' => 'sometimes|in:approved,pending,completed',
+            'submited_to_admin'=>'sometimes|boolean',
+            'feedback_by_admin' => 'sometimes|string',
+            'status_by_admin' => 'sometimes|in:approved,rejected,pending',
         ]);
 
-        $assessment->update($request->only(['client_id', 'template_id', 'user_id', 'assessment', 'status']));
+        $assessment->update($request->only(['client_id', 'template_id', 'user_id', 'assessment', 'status','submited_to_admin','status_by_admin']));
         return response()->json($assessment);
     }
 

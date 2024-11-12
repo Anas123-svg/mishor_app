@@ -14,6 +14,8 @@ Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register']);
     Route::post('/login', [AdminController::class, 'login']);
 //    Route::post('/reset-password', [AdminController::class, 'resetPassword']);
+   Route::get('/statistics', [AdminController::class, 'getStatistics']);
+
     Route::put('client/{id}/verify', [ClientController::class, 'verify']);
     Route::delete('clients/{id}', [ClientController::class, 'destroy']);
 
