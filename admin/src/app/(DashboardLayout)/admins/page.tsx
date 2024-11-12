@@ -149,17 +149,16 @@ const Admins = () => {
 
   const handleDeleteAdmin = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this admin?")) return;
-    setLoading(true);
     try {
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/admin/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      toast.success("Admin deleted successfully!");
+      fetchAdmins();
     } catch (error) {
       console.error("Error deleting admin:", error);
-    } finally {
-      fetchAdmins();
     }
   };
 
@@ -239,6 +238,7 @@ const Admins = () => {
                     <Table.Cell>
                       <Dropdown
                         label=""
+                        placement="left"
                         dismissOnClick={false}
                         renderTrigger={() => (
                           <span className="h-9 w-9 flex justify-center items-center rounded-full hover:bg-lightprimary hover:text-primary cursor-pointer">

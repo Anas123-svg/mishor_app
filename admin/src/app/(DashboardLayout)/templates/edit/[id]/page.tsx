@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Button,
@@ -11,6 +11,8 @@ import {
 import toast from "react-hot-toast";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import axios from "axios";
+import { useParams } from "next/navigation";
+import useAuthStore from "@/store/authStore";
 
 interface Field {
   label: string;
@@ -28,7 +30,9 @@ interface Table {
   rows: string;
 }
 
-const AddTemplate: React.FC = () => {
+const UpdateTemplate: React.FC = () => {
+  const { id } = useParams();
+  const { token } = useAuthStore();
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [fields, setFields] = useState<Field[]>([]);
@@ -39,6 +43,29 @@ const AddTemplate: React.FC = () => {
     useState<boolean>(false);
   const [isEditTableModalOpen, setEditTableModalOpen] =
     useState<boolean>(false);
+
+  const fetchTemplate = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/templates/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTitle(response.data.name);
+      setDescription(response.data.description);
+      setFields(response.data.fields);
+      setTables(response.data.tables);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplate();
+  }, []);
 
   const [newField, setNewField] = useState<Field>({
     label: "",
@@ -95,11 +122,11 @@ const AddTemplate: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/templates`,
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/templates/${id}`,
         data
       );
-      toast.success(response.data.message || "Template created successfully!");
+      toast.success(response.data.message || "Template updated successfully");
       setTitle("");
       setDescription("");
       setFields([]);
@@ -328,7 +355,7 @@ const AddTemplate: React.FC = () => {
         onClick={handleSubmit}
         className="w-full mt-4"
       >
-        {loading ? "Loading..." : "Create Template"}
+        {loading ? "Loading..." : "Update Template"}
       </Button>
 
       {/* Field Modal */}
@@ -666,4 +693,4 @@ const AddTemplate: React.FC = () => {
   );
 };
 
-export default AddTemplate;
+export default UpdateTemplate;

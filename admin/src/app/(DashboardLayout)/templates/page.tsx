@@ -4,10 +4,11 @@ import { Badge, Dropdown, TextInput } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import { Table } from "flowbite-react";
-import Link from "next/link";
 import axios from "axios";
 import { Template } from "@/types";
 import useAuthStore from "@/store/authStore";
+import Link from "next/link";
+import toast from "react-hot-toast";
 
 const TemplatePage = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -22,6 +23,7 @@ const TemplatePage = () => {
           },
         }
       );
+      console.log(response.data);
       setTemplates(response.data);
     } catch (err) {
       console.log(err);
@@ -34,16 +36,21 @@ const TemplatePage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const tableActionData = [
-    {
-      icon: "solar:pen-new-square-broken",
-      listtitle: "Edit",
-    },
-    {
-      icon: "solar:trash-bin-minimalistic-outline",
-      listtitle: "Delete",
-    },
-  ];
+  const handleDelete = (id: number) => async () => {
+    if (!window.confirm("Are you sure you want to delete this template?")) {
+      return;
+    }
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/templates/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Template deleted successfully");
+      fetchTemplates();
+    } catch (err) {
+      toast.error("Failed to delete template");
+      console.log(err);
+    }
+  };
 
   return (
     <>
@@ -67,11 +74,11 @@ const TemplatePage = () => {
           <Table hoverable>
             <Table.Head>
               <Table.HeadCell className="p-6">Name</Table.HeadCell>
-              <Table.HeadCell>Description</Table.HeadCell>
+              <Table.HeadCell className="max-w-lg">Description</Table.HeadCell>
               <Table.HeadCell>Created By</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
-            <Table.Body className="divide-y divide-border dark:divide-darkborder whitespace-nowrap">
+            <Table.Body className="divide-y divide-border dark:divide-darkborder">
               {templates
                 .filter(
                   (template) =>
@@ -84,18 +91,21 @@ const TemplatePage = () => {
                 )
                 .map((item, index) => (
                   <Table.Row key={index}>
-                    <Table.Cell className="whitespace-nowrap ps-6">
+                    <Table.Cell className="ps-6">
                       <h6 className="text-sm">{item.name}</h6>
                     </Table.Cell>
                     <Table.Cell>
-                      <p className="text-sm text-wrap">{item.description}</p>
+                      <p className="text-sm max-w-lg shrink-0 line-clamp-2">
+                        {item.description}
+                      </p>
                     </Table.Cell>
                     <Table.Cell>
-                      <Badge color="success">{item.created_by}</Badge>
+                      <Badge color="success">Admin</Badge>
                     </Table.Cell>
                     <Table.Cell>
                       <Dropdown
                         label=""
+                        placement="left"
                         dismissOnClick={false}
                         renderTrigger={() => (
                           <span className="h-9 w-9 flex justify-center items-center rounded-full hover:bg-lightprimary hover:text-primary cursor-pointer">
@@ -103,12 +113,38 @@ const TemplatePage = () => {
                           </span>
                         )}
                       >
-                        {tableActionData.map((action, index) => (
-                          <Dropdown.Item key={index} className="flex gap-3">
-                            <Icon icon={action.icon} height={18} />
-                            <span>{action.listtitle}</span>
-                          </Dropdown.Item>
-                        ))}
+                        <Dropdown.Item
+                          as={Link}
+                          href={`/templates/edit/${item.id}`}
+                          key={index}
+                          className="flex gap-3"
+                        >
+                          <Icon
+                            icon="solar:pen-new-square-broken"
+                            height={18}
+                          />
+                          <span>Edit</span>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          as="button"
+                          className="flex gap-3"
+                          onClick={handleDelete(item.id)}
+                        >
+                          <Icon
+                            icon="solar:trash-bin-minimalistic-outline"
+                            height={18}
+                          />
+                          <span>Delete</span>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          as={Link}
+                          href={`/templates/view/${item.id}`}
+                          key={index}
+                          className="flex gap-3"
+                        >
+                          <Icon icon="solar:eye-outline" height={18} />
+                          <span>View</span>
+                        </Dropdown.Item>
                       </Dropdown>
                     </Table.Cell>
                   </Table.Row>

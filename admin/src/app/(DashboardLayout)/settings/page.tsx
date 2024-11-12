@@ -58,9 +58,50 @@ const Settings = () => {
     }
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to change password
+    if (
+      !passwords.oldPassword ||
+      passwords.newPassword.length < 8 ||
+      passwords.confirmPassword.length < 8
+    ) {
+      toast.error(
+        "Please fill all fields and ensure password is at least 8 characters"
+      );
+      return;
+    }
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/reset-password`,
+        {
+          old_password: passwords.oldPassword,
+          new_password: passwords.newPassword,
+          new_password_confirmation: passwords.confirmPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message || "Password changed successfully");
+      setPasswords({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.log(error);
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        toast.error(error.response.data.error || "Old password is incorrect");
+        return;
+      }
+      toast.error("An error occurred while changing password");
+    }
   };
 
   return (

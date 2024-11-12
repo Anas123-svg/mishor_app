@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Badge,
   Dropdown,
@@ -11,12 +11,27 @@ import {
 } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
+import axios from "axios";
 
 const Assessments = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
+  const fetchAssessments = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments`
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssessments();
+  }, []);
 
   const [assessments, setAssessments] = useState([
     {
@@ -114,6 +129,7 @@ const Assessments = () => {
                     <Table.Cell>
                       <Dropdown
                         label=""
+                        placement="left"
                         dismissOnClick={false}
                         renderTrigger={() => (
                           <span className="h-9 w-9 flex justify-center items-center rounded-full hover:bg-lightprimary hover:text-primary cursor-pointer">
