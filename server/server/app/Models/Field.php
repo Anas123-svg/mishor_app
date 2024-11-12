@@ -9,10 +9,11 @@ class Field extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['template_id', 'label', 'type', 'attributes','value'];
+    protected $fillable = ['template_id', 'label', 'type', 'attributes','value','options'];
 
     protected $casts = [
         'attributes' => 'json',
+        'options' => 'json',
     ];
 
     public function template()

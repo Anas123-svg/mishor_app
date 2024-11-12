@@ -13,10 +13,12 @@ use App\Http\Controllers\AssessmentController;
 Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register']);
     Route::post('/login', [AdminController::class, 'login']);
-    
+//    Route::post('/reset-password', [AdminController::class, 'resetPassword']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AdminController::class, 'logout']);
         Route::get('/', [AdminController::class, 'index']);
+        Route::post('/reset-password', [AdminController::class, 'resetPassword']);
         Route::get('/show', [AdminController::class, 'showByToken']); //get by token
         Route::get('/{id}', [AdminController::class, 'show']);
         Route::put('/{id}', [AdminController::class, 'update']);
@@ -32,6 +34,7 @@ Route::prefix('client')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [ClientController::class, 'logout']);
+        Route::post('/reset-password', [ClientController::class, 'resetPassword']);
         Route::get('/show', [ClientController::class, 'showByToken']);
         Route::get('/{id}', [ClientController::class, 'show']);
         Route::put('/{id}', [ClientController::class, 'update']);

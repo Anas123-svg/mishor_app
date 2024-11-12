@@ -26,7 +26,7 @@ class AdminController extends Controller
         $admin = Admin::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password,
+            'password' =>$request->password, 
             'role' => $request->role,
             'profile_image' => $request->profile_image
         ]);
@@ -114,4 +114,39 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'Admin deleted successfully']);
     }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'old_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+    
+        $admin = Auth::user();
+    
+        if (!$admin) {
+            return response()->json(['error' => 'Admin not found'], 404);
+        }
+    
+        if (!Hash::check($request->old_password, $admin->password)) {
+            return response()->json(['error' => 'Old password is incorrect'], 400);
+        }
+    
+        if ($request->old_password === $request->new_password) {
+            return response()->json(['error' => 'New password cannot be the same as the old password'], 400);
+        }
+        try{
+            $admin->password = $request->new_password;
+            $admin->save();
+        }
+        catch(\Exception $e){
+            return response()->json(['error' => 'An error occurred while updating the password'], 400);
+        }    
+        return response()->json(['message' => 'Password updated successfully'], 200);
+    }
+    
 }

@@ -58,7 +58,6 @@ class AssessmentController extends Controller
         try {
             $template = Template::with(['fields', 'tables'])->findOrFail($request->input('template_id'));
     
-            // Transform tables data
             $tables = $template->tables->map(function ($table) {
                 return [
                     'id' => $table->id,

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 class ClientController extends Controller
 {
     public function register(Request $request)
@@ -114,4 +115,39 @@ class ClientController extends Controller
 
         return response()->json(['message' => 'Client deleted successfully']);
     }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'old_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+    
+        $client = Auth::user();
+    
+        if (!$client) {
+            return response()->json(['error' => 'Admin not found'], 404);
+        }
+    
+        if (!Hash::check($request->old_password, $client->password)) {
+            return response()->json(['error' => 'Old password is incorrect'], 400);
+        }
+    
+        if ($request->old_password === $request->new_password) {
+            return response()->json(['error' => 'New password cannot be the same as the old password'], 400);
+        }
+        try{
+            $client->password = $request->new_password;
+            $client->save();
+        }
+        catch(\Exception $e){
+            return response()->json(['error' => 'An error occurred while updating the password'], 400);
+        }    
+        return response()->json(['message' => 'Password updated successfully'], 200);
+    }
+
 }
