@@ -83,14 +83,15 @@ class ClientController extends Controller
 
     public function show($id)
     {
-        $client = Client::find($id);
-
+        $client = Client::with(['users', 'assessments'])->find($id);
+    
         if (!$client) {
             return response()->json(['error' => 'Client not found'], 404);
         }
-
+    
         return response()->json($client);
     }
+    
 
     public function update(Request $request, $id)
     {
