@@ -24,7 +24,6 @@ const Clients = () => {
           },
         }
       );
-      console.log(response.data);
       setClients(response.data);
     } catch (err) {
       console.log(err);
@@ -165,6 +164,14 @@ const Clients = () => {
                 ))}
             </Table.Body>
           </Table>
+          {clients.length === 0 ||
+            (clients.filter(
+              (client) =>
+                client.name.toLowerCase().includes(search.toLowerCase()) ||
+                client.email.toLowerCase().includes(search.toLowerCase())
+            ).length === 0 && (
+              <p className="text-center mt-5">No clients found</p>
+            ))}
         </div>
       </div>
     </>

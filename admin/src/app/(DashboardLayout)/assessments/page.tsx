@@ -23,7 +23,6 @@ const Assessments = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/assessments`
       );
-      console.log(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -66,9 +65,13 @@ const Assessments = () => {
   return (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between sm:items-center mb-4">
           <h5 className="text-xl font-semibold">Assessments</h5>
-          <Button color="primary" onClick={() => setIsModalOpen(true)}>
+          <Button
+            color="primary"
+            onClick={() => setIsModalOpen(true)}
+            className="w-fit"
+          >
             Assign Template
           </Button>
         </div>
@@ -112,7 +115,7 @@ const Assessments = () => {
                       {assessment.description}
                     </Table.Cell>
                     <Table.Cell>{assessment.client}</Table.Cell>
-                    <Table.Cell>
+                    <Table.Cell className="whitespace-nowrap">
                       <Badge
                         color={
                           assessment.status === "completed"
@@ -149,6 +152,16 @@ const Assessments = () => {
                 ))}
             </Table.Body>
           </Table>
+          {assessments.length === 0 ||
+            (assessments.filter(
+              (assessment) =>
+                assessment.title.toLowerCase().includes(search.toLowerCase()) ||
+                assessment.description
+                  .toLowerCase()
+                  .includes(search.toLowerCase())
+            ).length === 0 && (
+              <p className="text-center mt-5">No assessments found</p>
+            ))}
         </div>
       </div>
 

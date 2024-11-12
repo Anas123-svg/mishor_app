@@ -105,9 +105,9 @@ const Settings = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 p-6 bg-gray-100 dark:bg-darkgray rounded-lg shadow-md w-full">
+    <div className="flex flex-col md:flex-row gap-6 p-2 sm:p-6 bg-gray-100 dark:bg-darkgray rounded-lg shadow-md w-full">
       {/* Personal Info Form */}
-      <Card className="w-full md:w-1/2 p-6">
+      <Card className="w-full md:w-1/2">
         <h5 className="text-xl font-semibold mb-4">Personal Info</h5>
         <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
           <PhotosUploader
@@ -152,7 +152,7 @@ const Settings = () => {
       </Card>
 
       {/* Password Change Form */}
-      <Card className="w-full md:w-1/2 p-6 h-fit">
+      <Card className="w-full md:w-1/2 h-fit">
         <h5 className="text-xl font-semibold mb-4">Change Password</h5>
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div className="flex items-center gap-2">
