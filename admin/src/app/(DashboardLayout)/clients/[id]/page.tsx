@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   Badge,
@@ -13,9 +13,30 @@ import {
 } from "flowbite-react";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
+import axios from "axios";
+import { Client } from "@/types";
 
 const ClientDetails = () => {
-  // Sample data for users and assessments
+  const { id } = useParams();
+  const [client, setClient] = useState<Client>();
+
+  const fetchClientDetails = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/${id}`
+      );
+      setClient(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClientDetails();
+  }, []);
+
   const [clientUsers, setClientUsers] = useState([
     {
       id: 1,

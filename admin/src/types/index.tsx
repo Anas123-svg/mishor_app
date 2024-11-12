@@ -8,6 +8,24 @@ type Admin = {
   updated_at: string;
 };
 
+type User = {
+  id: number;
+  client_id: number;
+  name: string;
+  email: string;
+  phone: string;
+};
+
+type Client = {
+  id: number;
+  name: string;
+  email: string;
+  users_count: number;
+  is_verified: boolean;
+  users: User[];
+  profile_image: string;
+};
+
 type Field = {
   id: number;
   template_id: number;
@@ -26,40 +44,17 @@ type Table = {
   id: number;
   template_id: number;
   table_name: string;
-  table_data: [
-    {
-      table_name: string;
-      columns: [
-        {
-          column_id: number;
-          column_name: string;
-          data_type: string;
-        }
-      ];
-      rows: [
-        {
-          row_id: number;
-          data: [
-            {
-              column_id: number;
-              value: string;
-            }
-          ];
-        }
-      ];
-    }
-  ];
+  table_data: {
+    table_name: string;
+    columns: string[];
+    rows: {
+      [key: string]: {
+        [key: string]: string;
+      };
+    };
+  };
   created_at: string;
   updated_at: string;
-};
-
-type Client = {
-  id: number;
-  name: string;
-  email: string;
-  team: number;
-  is_verified: boolean;
-  profile_image: string;
 };
 
 type Template = {
