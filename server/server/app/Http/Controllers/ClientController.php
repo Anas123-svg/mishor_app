@@ -83,14 +83,30 @@ class ClientController extends Controller
 
     public function show($id)
     {
-        $client = Client::with(['users', 'assessments','ClientTemplate'])->find($id);
+        // Fetch client with relationships and handle errors if not found
+        $client = Client::with(['users', 'assessments', 'ClientTemplate.template'])->find($id);
     
         if (!$client) {
             return response()->json(['error' => 'Client not found'], 404);
         }
     
+        $client->ClientTemplate = $client->ClientTemplate->map(function ($clientTemplate) {
+            return [
+                'id' => $clientTemplate->id,
+                'client_id' => $clientTemplate->client_id,
+                'template_id' => $clientTemplate->template_id,
+                'created_at' => $clientTemplate->created_at,
+                'updated_at' => $clientTemplate->updated_at,
+                'status' => $clientTemplate->status,
+                'template_name' => $clientTemplate->template->name,
+                'description' => $clientTemplate->template->description,
+            ];
+        });
+    
         return response()->json($client);
     }
+    
+    
     
 
     public function update(Request $request, $id)
