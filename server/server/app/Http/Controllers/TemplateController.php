@@ -124,4 +124,23 @@ class TemplateController extends Controller
 
         return $processedRows;
     }
+    public function destroy($id)
+{
+    DB::transaction(function () use ($id) {
+        $template = Template::find($id);
+
+        if (!$template) {
+            return response()->json(['error' => 'Template not found'], 404);
+        }
+
+        $template->fields()->delete();
+
+        $template->tables()->delete();
+
+        $template->delete();
+    });
+
+    return response()->json(['message' => 'Template deleted successfully'], 200);
+}
+
 }
