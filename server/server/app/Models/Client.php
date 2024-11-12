@@ -26,6 +26,11 @@ class Client extends Authenticatable
     {
         return $this->hasMany(Assessment::class);
     }
+    public function ClientTemplate()
+    {
+        return $this->hasMany(ClientTemplate::class);
+    }
+
 
     public function setPasswordAttribute($password)
     {
