@@ -34,12 +34,12 @@ Route::prefix('client')->group(function () {
     Route::post('/register', [ClientController::class, 'register']);
     Route::post('/login', [ClientController::class, 'login']);
     Route::get('/', [ClientController::class, 'index']);
+    Route::get('/{id}', [ClientController::class, 'show']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [ClientController::class, 'logout']);
         Route::post('/reset-password', [ClientController::class, 'resetPassword']);
         Route::get('/show', [ClientController::class, 'showByToken']);
-        Route::get('/{id}', [ClientController::class, 'show']);
         Route::put('/{id}', [ClientController::class, 'update']);
         Route::delete('/{id}', [ClientController::class, 'destroy']);
     });
