@@ -56,8 +56,19 @@ class AssessmentController extends Controller
         Log::info('Validation successful for creating assessment');
     
         try {
-           
             $template = Template::with(['fields', 'tables'])->findOrFail($request->input('template_id'));
+    
+            // Transform tables data
+            $tables = $template->tables->map(function ($table) {
+                return [
+                    'id' => $table->id,
+                    'template_id' => $table->template_id,
+                    'table_name' => $table->table_name,
+                    'table_data' => json_decode($table->table_data, true), // Decode JSON to an associative array
+                    'created_at' => $table->created_at,
+                    'updated_at' => $table->updated_at
+                ];
+            });
     
             $assessmentData = [
                 'name' => $template->name,
@@ -67,7 +78,7 @@ class AssessmentController extends Controller
                 'assessor' => $template->Assessor,
                 'date' => $template->Date,
                 'fields' => $template->fields,
-                'tables' => $template->tables,
+                'tables' => $tables,
             ];
     
             Log::info('Attempting to create the assessment', [
@@ -104,7 +115,7 @@ class AssessmentController extends Controller
             ], 500);
         }
     }
-            
+                
 
     /**
      * @param  \App\Models\Assessment  $assessment
