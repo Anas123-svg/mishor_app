@@ -150,4 +150,18 @@ class ClientController extends Controller
         return response()->json(['message' => 'Password updated successfully'], 200);
     }
 
+    public function verify($id)
+{
+    $client = Client::find($id);
+
+    if (!$client) {
+        return response()->json(['error' => 'Client not found'], 404);
+    }
+
+    $client->is_verified = true;
+    $client->save();
+
+    return response()->json(['message' => 'Client verified successfully', 'client' => $client]);
+}
+
 }
