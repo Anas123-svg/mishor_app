@@ -67,7 +67,7 @@ class ClientController extends Controller
 
         if ($user && Hash::check($request->password, $user->password)) {
             if($user->is_verified == false){
-                return response()->json(['error' => 'Your account is not verified yet'], 401);
+                return response()->json(['error' => 'Your account is not verified yet'], 403);
             }
             $token = $user->createToken('authToken')->plainTextToken;
 
