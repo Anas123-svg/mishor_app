@@ -23,7 +23,6 @@ const TemplatePage = () => {
           },
         }
       );
-      console.log(response.data);
       setTemplates(response.data);
     } catch (err) {
       console.log(err);
@@ -75,7 +74,9 @@ const TemplatePage = () => {
             <Table.Head>
               <Table.HeadCell className="p-6">Name</Table.HeadCell>
               <Table.HeadCell className="max-w-lg">Description</Table.HeadCell>
-              <Table.HeadCell>Created By</Table.HeadCell>
+              <Table.HeadCell className="whitespace-nowrap">
+                Created By
+              </Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y divide-border dark:divide-darkborder">

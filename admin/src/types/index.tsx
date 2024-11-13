@@ -22,8 +22,18 @@ type Client = {
   email: string;
   users_count: number;
   is_verified: boolean;
-  users: User[];
+  users?: User[];
+  client_template: [
+    {
+      template_id: number;
+      template: {
+        name: string;
+      };
+    }
+  ];
   profile_image: string;
+  created_at: string;
+  updated_at: string;
 };
 
 type Field = {

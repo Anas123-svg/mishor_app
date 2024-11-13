@@ -13,6 +13,7 @@ import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import useAuthStore from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 interface Field {
   label: string;
@@ -33,6 +34,7 @@ interface Table {
 const UpdateTemplate: React.FC = () => {
   const { id } = useParams();
   const { token } = useAuthStore();
+  const router = useRouter();
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [fields, setFields] = useState<Field[]>([]);
@@ -56,8 +58,24 @@ const UpdateTemplate: React.FC = () => {
       );
       setTitle(response.data.name);
       setDescription(response.data.description);
-      setFields(response.data.fields);
-      setTables(response.data.tables);
+      setFields(
+        response.data.fields.map((f: any) => ({
+          label: f.label,
+          type: f.type,
+          options: f.options?.join(","),
+          attributes: {
+            placeholder: f.attributes.placeholder,
+            required: f.attributes.required,
+          },
+        }))
+      );
+      setTables(
+        response.data.tables.map((t: any) => ({
+          tableName: t.table_name,
+          columns: t.table_data.columns.join(","),
+          rows: Object.keys(t.table_data.rows).join(","),
+        }))
+      );
     } catch (err) {
       console.log(err);
     }
@@ -113,7 +131,8 @@ const UpdateTemplate: React.FC = () => {
         },
         value: null,
       })),
-      tables: tables.map((t) => ({
+      tables: tables.map((t, i) => ({
+        id: i,
         tableName: t.tableName,
         columns: t.columns.split(",").map((col) => col.trim()),
         rows: t.rows.split(",").map((row) => row.trim()),
@@ -127,19 +146,9 @@ const UpdateTemplate: React.FC = () => {
         data
       );
       toast.success(response.data.message || "Template updated successfully");
-      setTitle("");
-      setDescription("");
-      setFields([]);
-      setTables([]);
-      setNewField({
-        label: "",
-        type: "text",
-        options: "",
-        attributes: { placeholder: "", required: false },
-      });
-      setNewTable({ tableName: "", columns: "", rows: "" });
+      router.push("/templates");
     } catch (error) {
-      toast.error("Failed to create template");
+      toast.error("Failed to update template");
       console.error(error);
     } finally {
       setLoading(false);
@@ -246,7 +255,7 @@ const UpdateTemplate: React.FC = () => {
 
   return (
     <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
-      <h5 className="card-title mb-4">Add New Template</h5>
+      <h5 className="card-title mb-4">Update Template</h5>
       <TextInput
         placeholder="Template Title"
         value={title}

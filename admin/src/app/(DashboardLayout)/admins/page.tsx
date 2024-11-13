@@ -97,8 +97,9 @@ const Admins = () => {
         role: "admin",
         profile_image: "",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding admin:", error);
+      toast.error(error.response.data.email || "Error adding admin!");
     } finally {
       fetchAdmins();
     }
@@ -247,6 +248,7 @@ const Admins = () => {
                         )}
                       >
                         <Dropdown.Item
+                          disabled={admin.id === user?.id}
                           onClick={() => openEditModal(admin)}
                           className="flex gap-3"
                         >
@@ -254,7 +256,14 @@ const Admins = () => {
                             icon="solar:pen-new-square-broken"
                             height={18}
                           />
-                          <span>Edit</span>
+                          <span>Edit</span>{" "}
+                          {admin.id === user?.id && (
+                            <Icon
+                              icon="solar:forbidden-circle-linear"
+                              height={18}
+                              className="text-red-500"
+                            />
+                          )}
                         </Dropdown.Item>
                         <Dropdown.Item
                           disabled={admin.id === user?.id}
@@ -265,7 +274,14 @@ const Admins = () => {
                             icon="solar:trash-bin-minimalistic-outline"
                             height={18}
                           />
-                          <span>Delete</span>
+                          <span>Delete</span>{" "}
+                          {admin.id === user?.id && (
+                            <Icon
+                              icon="solar:forbidden-circle-linear"
+                              height={18}
+                              className="text-red-500 justify-self-end"
+                            />
+                          )}
                         </Dropdown.Item>
                       </Dropdown>
                     </Table.Cell>

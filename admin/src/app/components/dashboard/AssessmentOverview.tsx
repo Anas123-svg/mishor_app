@@ -1,44 +1,63 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Select } from "flowbite-react";
+import dayjs from "dayjs";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const AssessmentOverview = () => {
-  // Chart configuration for a single-line graph with a solid fill below the line
+const AssessmentOverview = ({
+  assessments,
+}: {
+  assessments: {
+    created_at: string;
+  }[];
+}) => {
+  // Extract unique years from assessments data
+  const years = Array.from(
+    new Set(
+      assessments.map((assessment) => dayjs(assessment.created_at).year())
+    )
+  ).sort();
+
+  // State for selected year and monthly data
+  const [selectedYear, setSelectedYear] = useState(years[years.length - 1]);
+  const [monthlyData, setMonthlyData] = useState<number[]>(Array(12).fill(0));
+
+  // Function to filter and count assessments per month for the selected year
+  useEffect(() => {
+    const monthlyCounts = Array(12).fill(0);
+    assessments.forEach((assessment) => {
+      const assessmentDate = dayjs(assessment.created_at);
+      if (assessmentDate.year() === selectedYear) {
+        const month = assessmentDate.month(); // 0 for Jan, 11 for Dec
+        monthlyCounts[month] += 1;
+      }
+    });
+    setMonthlyData(monthlyCounts);
+  }, [selectedYear, assessments]);
+
+  // Chart configuration
   const optionsLineChart: any = {
     chart: {
-      type: "line", // Line chart type
+      type: "line",
       fontFamily: "inherit",
       foreColor: "#adb0bb",
       fontSize: "12px",
       offsetX: 0,
       offsetY: 10,
-      animations: {
-        speed: 500,
-      },
-      toolbar: {
-        show: false,
-      },
+      animations: { speed: 500 },
+      toolbar: { show: false },
     },
-    colors: ["var(--color-primary)"], // Primary color for the line
-    dataLabels: {
-      enabled: false, // Disabling data labels
-    },
-    fill: {
-      type: "solid", // Set fill type to solid color
-      opacity: 0.5, // Increase the opacity to make the shaded area more visible
-    },
+    colors: ["var(--color-primary)"],
+    dataLabels: { enabled: false },
+    fill: { type: "solid", opacity: 0.5 },
     grid: {
       show: true,
       strokeDashArray: 3,
       borderColor: "#90A4AE50",
     },
-    stroke: {
-      curve: "smooth", // Smooth curve for the line
-      width: 2,
-    },
+    stroke: { curve: "smooth", width: 2 },
     xaxis: {
       categories: [
         "Jan",
@@ -53,33 +72,26 @@ const AssessmentOverview = () => {
         "Oct",
         "Nov",
         "Dec",
-      ], // Set months from Jan to Dec
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
+      ],
+      axisBorder: { show: false },
+      axisTicks: { show: false },
     },
     yaxis: {
       min: 0,
-      max: 100, // Adjust the range as needed
-      tickAmount: 4, // Number of ticks on the y-axis
+      labels: {
+        formatter: (value: number) => value.toFixed(0),
+      },
     },
-    legend: {
-      show: false, // Hide the legend
-    },
-    tooltip: {
-      theme: "dark", // Tooltip dark theme
-    },
+    legend: { show: false },
+    tooltip: { theme: "dark" },
   };
 
-  // Single line data series representing completed assessments over time
+  // Data series for chart based on monthlyData
   const assessmentData = {
     series: [
       {
         name: "Completed Assessments",
-        data: [5, 15, 30, 45, 60, 70, 85, 90, 100, 100, 95, 85], // Example data for each month
+        data: monthlyData,
       },
     ],
   };
@@ -88,11 +100,18 @@ const AssessmentOverview = () => {
     <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 w-full">
       <div className="flex justify-between items-center mb-4">
         <h5 className="text-lg font-semibold">Assessment Overview</h5>
-        <Select id="years" className="select-md" required>
-          <option>2021</option>
-          <option>2022</option>
-          <option>2023</option>
-          <option>2024</option>
+        <Select
+          id="years"
+          className="select-md"
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(Number(e.target.value))}
+          required
+        >
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
         </Select>
       </div>
       <div className="overflow-hidden">
