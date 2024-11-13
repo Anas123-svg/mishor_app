@@ -56,21 +56,26 @@ class ClientController extends Controller
     
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        Log::info(message: 'login user:');
 
-        if (!Auth::guard('web')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $user = Client::where('email', $request->email)->first();
+
+        if ($user && Hash::check($request->password, $user->password)) {
+            $token = $user->createToken('authToken')->plainTextToken;
+
+            return response()->json([
+                'token' => $token,
+                'user' => $user,
+            ], 200);
         }
 
-        $client = Auth::user();
-        if ($client->is_verified) {
-            $token = $client->createToken('ClientToken')->plainTextToken;
-            return response()->json(['message' => 'Logged in successfully', 'token' => $token, 'client' => $client], 200);
-        } else {
-            return response()->json(['message' => 'Waiting for approval'], 403);
-        }
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
-
     public function logout()
     {
         Auth::user()->tokens()->delete();
