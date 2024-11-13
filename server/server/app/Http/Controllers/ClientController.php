@@ -29,7 +29,7 @@ class ClientController extends Controller
             'profile_image' => $request->profile_image
         ]);
        // $token = $client->createToken('ClientToken')->plainTextToken;
-        return response()->json( ['message' => 'Wait for admin approval'], 201);
+        return response()->json( ['message' => 'You are registered successfully, Wait for admin approval'], 201);
     }
     public function showByToken(Request $request)
     {
