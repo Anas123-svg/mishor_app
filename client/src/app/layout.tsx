@@ -8,7 +8,7 @@ import customTheme from "@/utils/theme/custom-theme";
 import { Toaster } from "react-hot-toast";
 import useAuthStore from "@/store/authStore";
 import { loginBack } from "@/hooks/auth";
-import Login from "./components/login";
+import Auth from "./components/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,12 +46,12 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <title>Admin Panel</title>
+        <title>Client Panel</title>
         <ThemeModeScript />
       </head>
       <body className={`${inter.className}`}>
         <Flowbite theme={{ theme: customTheme }}>
-          {user ? children : <Login />}
+          {user ? children : <Auth />}
         </Flowbite>
         <Toaster />
       </body>

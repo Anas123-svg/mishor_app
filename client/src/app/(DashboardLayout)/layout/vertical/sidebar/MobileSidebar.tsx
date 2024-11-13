@@ -18,7 +18,7 @@ const MobileSidebar = () => {
         >
           <Link href="/">
             <h1 className="text-white text-2xl bg-primary pb-6 px-4">
-              Admin Panel
+              Client Panel
             </h1>
           </Link>
           <SimpleBar className="h-[calc(100vh_-_150px)] bg-primary">
