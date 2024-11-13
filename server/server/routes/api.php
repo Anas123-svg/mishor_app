@@ -10,6 +10,7 @@ use App\Http\Controllers\ClientTemplateController;
 use App\Http\Controllers\UserTemplateController;
 use App\Http\Controllers\AssessmentController;
 //admin routes
+
 Route::prefix('admin')->group(function () {
     Route::post('/register', [AdminController::class, 'register']);
     Route::post('/login', [AdminController::class, 'login']);
@@ -32,6 +33,7 @@ Route::prefix('admin')->group(function () {
 });
 
 //client routes
+Route::middleware('auth:sanctum')->get('/client/show', [ClientController::class, 'showByToken']);
 Route::prefix('client')->group(function () {
     Route::post('/register', [ClientController::class, 'register']);
     Route::post('/login', [ClientController::class, 'login']);
@@ -41,7 +43,7 @@ Route::prefix('client')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [ClientController::class, 'logout']);
         Route::post('/reset-password', [ClientController::class, 'resetPassword']);
-        Route::get('/show', [ClientController::class, 'showByToken']);
+     //   Route::get('/show', [ClientController::class, 'showByToken']);
         Route::put('/{id}', [ClientController::class, 'update']);
         Route::delete('/{id}', [ClientController::class, 'destroy']);
     });

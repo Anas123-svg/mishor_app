@@ -33,27 +33,30 @@ class ClientController extends Controller
     
         return response()->json(['message' => 'You are registered successfully, Wait for admin approval'], 201);
     }
-        public function showByToken(Request $request)
+    public function showByToken(Request $request)
+
     {
-        Log::info('function called');
-        $client = $request->user();
+        Log::info('API endpoint hit');
+
+        Log::info('Function called', ['token' => $request->header('Authorization')]);
     
-        Log::info('Client retrieved by token', [
-            'client_id' => $client ? $client->id : null, 
-            'timestamp' => now(), 
-        ]);
+        $client = $request->user();  
     
-        if ($client) {
-            return response()->json($client);
+        if (!$client) {
+            Log::warning('Client not found or authentication failed', [
+                'timestamp' => now(),
+            ]);
+            return response()->json(['error' => 'Client not authenticated'], 401);
         }
     
-        Log::warning('Client not found when attempting to retrieve by token', [
+        Log::info('Client retrieved by token', [
+            'client_id' => $client->id,
             'timestamp' => now(),
         ]);
     
-        return response()->json(['error' => 'Client not found'], 404);
+        return response()->json($client);
     }
-    
+        
     public function login(Request $request)
     {
         Log::info(message: 'login user:');
