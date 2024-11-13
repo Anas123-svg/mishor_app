@@ -17,21 +17,23 @@ class ClientController extends Controller
             'email' => 'required|string|email|max:255|unique:clients',
             'password' => 'required|string|min:8',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
-
+    
+        $profileImage = $request->profile_image ? $request->profile_image : 'https://res.cloudinary.com/dewqsghdi/image/upload/v1731457888/5045878_xmzjj4.png';
+    
         $client = Client::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password,
-            'profile_image' => $request->profile_image
+            'password' => bcrypt($request->password),
+            'profile_image' => $profileImage
         ]);
-       // $token = $client->createToken('ClientToken')->plainTextToken;
-        return response()->json( ['message' => 'You are registered successfully, Wait for admin approval'], 201);
+    
+        return response()->json(['message' => 'You are registered successfully, Wait for admin approval'], 201);
     }
-    public function showByToken(Request $request)
+        public function showByToken(Request $request)
     {
         Log::info('function called');
         $client = $request->user();
