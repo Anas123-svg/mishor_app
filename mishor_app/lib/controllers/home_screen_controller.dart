@@ -15,4 +15,17 @@ class HomeController {
       print("Error fetching assessment counts: $e");
     }
   }
+
+  AssessmentStats? _approvedAssessmentStats;
+
+  AssessmentStats? get approvedAssessmentStats => _approvedAssessmentStats;
+  Future<void> loadApprovedAssessmentCounts(String token) async {
+    try {
+      _approvedAssessmentStats = await _homeService.fetchApprovedAssessment(token);
+      print("Assessment counts fetched successfully: ${_approvedAssessmentStats!.completedAssessments}");
+    } catch (e) {
+      print("Error fetching assessment counts: $e");
+    }
+  }
+
 }

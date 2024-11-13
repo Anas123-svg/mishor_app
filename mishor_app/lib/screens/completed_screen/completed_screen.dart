@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:mishor_app/controllers/home_screen_controller.dart';
+import 'package:mishor_app/models/assessment_stats.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
 import 'package:mishor_app/widgets/helping_global/inspection_list.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CompletedScreen extends StatefulWidget {
   const CompletedScreen({super.key});
@@ -14,12 +18,52 @@ class CompletedScreen extends StatefulWidget {
 }
 
 class _CompletedScreenState extends State<CompletedScreen> {
+  final HomeController homeController = Get.find();
+  String? userToken;
+  bool isLoading = true;
+  List<Assessment> completedInspections = [];
   String searchQuery = '';
-  
+  String filterStatus = 'All';
   String selectedFilter = 'Completed';
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userToken = prefs.getString('user_token');
+    });
+
+    if (userToken != null) {
+      try {
+        await homeController.loadApprovedAssessmentCounts(userToken!);
+        loadAssignedInspections();
+      } catch (error) {
+        print('Error fetching assessment counts: $error');
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  void loadAssignedInspections() {
+    final assessmentStats = homeController.approvedAssessmentStats;
+    if (assessmentStats != null) {
+      setState(() {
+        completedInspections = assessmentStats.rejectedAssessmentsList;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    final assessmentStats = homeController.approvedAssessmentStats;
     return Scaffold(
       appBar: const CustomAppbar(),
       drawer: drawer(),
@@ -29,8 +73,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildStatistics(),
-
+              if(assessmentStats != null) _buildStatistics(assessmentStats),
               SizedBox(height: 24.h),
                             Text(
                 'Completed Inspections',
@@ -80,15 +123,17 @@ class _CompletedScreenState extends State<CompletedScreen> {
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: 5, 
+                itemCount: completedInspections.length, 
                 itemBuilder: (context, index) {
+                  final assessment = completedInspections[index];
                   return GestureDetector(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Completed Inspection ${index + 1} selected')),
                       );
                     },
-                    child: buildInspectionCard(index: index),
+                    
+                    child: buildInspectionCard(assessment: assessment),
                   );
                 },
               ),
@@ -99,7 +144,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
     );
   }
 
-Widget _buildStatistics() {
+Widget _buildStatistics(AssessmentStats assessment) {
   return Card(
     elevation: 8,
     child: Container(
@@ -127,7 +172,7 @@ Widget _buildStatistics() {
                 borderData: FlBorderData(show: false),
                 sectionsSpace: 2,
                 centerSpaceRadius: 20.h,
-                sections: showingSections(),
+                sections: showingSections(assessment),
               ),
             ),
           ),
@@ -136,9 +181,9 @@ Widget _buildStatistics() {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statCard('Completed', '15'),
-              _statCard('In Review', '7'),
-              _statCard('Archived', '5'),
+              _statCard('approved', assessment.completedAssessments.toString()),  
+              _statCard('Pending', (assessment.rejectedAssessments+assessment.pendingAssessments).toString()),
+              _statCard('Total', assessment.totalAssessments.toString()),
             ],
           ),
         ],
@@ -147,14 +192,14 @@ Widget _buildStatistics() {
   );
 }
 
-List<PieChartSectionData> showingSections() {
+List<PieChartSectionData> showingSections(AssessmentStats assessment) {
   return List.generate(3, (index) {
     switch (index) {
       case 0:
         return PieChartSectionData(
           color: AppColors.primary,
-          value: 15,
-          title: 'Completed',
+          value: assessment.completedAssessments.toDouble(),
+          title: 'approved',
           radius: 50,
           titleStyle: TextStyle(
             fontSize: 10.sp,
@@ -165,8 +210,8 @@ List<PieChartSectionData> showingSections() {
       case 1:
         return PieChartSectionData(
           color: Colors.orange,
-          value: 7,
-          title: 'In Review',
+          value: (assessment.pendingAssessments + assessment.rejectedAssessments).toDouble(),
+          title: 'pending',
           radius: 50,
           titleStyle: TextStyle(
             fontSize: 10.sp,
@@ -177,8 +222,8 @@ List<PieChartSectionData> showingSections() {
       case 2:
         return PieChartSectionData(
           color: Colors.red,
-          value: 5,
-          title: 'Rejected',
+          value: assessment.totalAssessments.toDouble(),
+          title: 'Total',
           radius: 50,
           titleStyle: TextStyle(
             fontSize: 10.sp,

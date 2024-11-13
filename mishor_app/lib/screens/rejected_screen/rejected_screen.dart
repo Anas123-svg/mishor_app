@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:mishor_app/controllers/home_screen_controller.dart';
+import 'package:mishor_app/models/assessment_stats.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart ';
 import 'package:mishor_app/widgets/helping_global/inspection_list.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RejectedScreen extends StatefulWidget {
   const RejectedScreen({super.key});
@@ -13,13 +18,53 @@ class RejectedScreen extends StatefulWidget {
 }
 
 class _RejectedScreen extends State<RejectedScreen> {
-  String searchQuery = '';
   String selectedFilter = 'Rejected';
+  final HomeController homeController = Get.find();
+  String? userToken;
+  bool isLoading = true;
+  List<Assessment> RejectedInspections = [];
+  String searchQuery = '';
+  String filterStatus = 'All';
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userToken = prefs.getString('user_token');
+    });
+
+    if (userToken != null) {
+      try {
+        await homeController.loadAssessmentCounts(userToken!);
+        loadAssignedInspections();
+      } catch (error) {
+        print('Error fetching assessment counts: $error');
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  void loadAssignedInspections() {
+    final assessmentStats = homeController.assessmentStats;
+    if (assessmentStats != null) {
+      setState(() {
+        RejectedInspections = assessmentStats.rejectedAssessmentsList;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const  CustomAppbar(),
+      appBar: const CustomAppbar(),
       drawer: drawer(),
       body: SingleChildScrollView(
         child: Padding(
@@ -27,7 +72,7 @@ class _RejectedScreen extends State<RejectedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                            Text(
+              Text(
                 'Rejected Inspections',
                 style: TextStyle(
                   fontSize: 26.sp,
@@ -37,7 +82,7 @@ class _RejectedScreen extends State<RejectedScreen> {
                 ),
               ),
               SizedBox(height: 16.h),
-                            Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
@@ -45,12 +90,16 @@ class _RejectedScreen extends State<RejectedScreen> {
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: 'Search inspections...',
-                        hintStyle: TextStyle(color: AppColors.primary, fontSize: 16.sp, fontWeight: FontWeight.w200),
+                        hintStyle: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w200),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.r),
                           borderSide: BorderSide(color: AppColors.primary),
                         ),
-                        prefixIcon: Icon(Icons.search, color: AppColors.primary),
+                        prefixIcon:
+                            Icon(Icons.search, color: AppColors.primary),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -68,21 +117,25 @@ class _RejectedScreen extends State<RejectedScreen> {
                   ),
                 ],
               ),
-
               SizedBox(height: 20.h),
-
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: 5, 
+                itemCount: RejectedInspections.length,
                 itemBuilder: (context, index) {
+                  final assessment = RejectedInspections[index];
                   return GestureDetector(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Rejected Inspection ${index + 1} selected')),
+                        SnackBar(
+                            content: Text(
+                                'Rejected Inspection ${index + 1} selected')),
                       );
                     },
-                    child: buildInspectionCard(index: index),
+                    child: assessment.status == 'rejected'
+                        ? buildInspectionCard(assessment: assessment)
+                        : SizedBox
+                            .shrink(),
                   );
                 },
               ),

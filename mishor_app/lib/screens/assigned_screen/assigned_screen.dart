@@ -195,7 +195,6 @@ List<Assessment> getFilteredAndSearchedInspections() {
         final assessment = filteredList[index];
         return GestureDetector(
           onTap: () {
-            // Navigate to detail page or perform any action
           },
           child: buildInspectionCard(assessment),
         );

@@ -1,457 +1,292 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:mishor_app/routes/app_routes.dart';
+import 'package:mishor_app/models/assessment_model.dart';
+import 'package:mishor_app/models/template.dart';
+import 'package:mishor_app/services/template_service.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 
 class TemplateScreen extends StatefulWidget {
+  final int templateID;
+  const TemplateScreen(this.templateID);
+
   @override
   _TemplateScreenState createState() => _TemplateScreenState();
 }
 
 class _TemplateScreenState extends State<TemplateScreen> {
-  final _formKey = GlobalKey<FormState>();
+  late Future<Assessment2> _assessmentFuture;
+  final Map<int, dynamic> _fieldValues = {};
+  final Map<String, Map<String, dynamic>> _tableRowValues = {};
 
-  String? activity;
-  String? reference;
-  String? taskDescription;
-  String? assessor;
-  DateTime? date;
-  String? hazardLikelihood;
-  String? hazardSeverity;
-  String? riskLevel;
-  List<String> peopleAtRisk = [];
-  String? controlMeasures;
-  String? selectedRiskLevel;
-  String? acknowledgementName;
-  DateTime? acknowledgementDate;
+  @override
+  void initState() {
+    super.initState();
+    _assessmentFuture = TemplateService().fetchTemplateData(widget.templateID);
+  }
 
-  List<Map<String, dynamic>> tableData = [
-    {
-      "Hazard": "Falling debris",
-      "Likelihood": false,
-      "Severity": false,
-      "Risk Level": false
-    },
-    {
-      "Hazard": "Electrical hazard",
-      "Likelihood": false,
-      "Severity": false,
-      "Risk Level": false
+  Widget _buildFieldInput(Field field) {
+    switch (field.type) {
+      case 'text':
+        return _buildTextField(field);
+      case 'number':
+        return _buildNumberField(field);
+      case 'textarea':
+        return _buildTextArea(field);
+      case 'checkbox':
+        return _buildCheckboxField(field);
+      case 'select':
+        return _buildSelectField(field);
+      case 'radio':
+        return _buildRadioField(field); 
+      default:
+        return SizedBox();
     }
-  ];
+  }
 
-  final List<String> riskLevelOptions = [
-    "Very Low - Safe to proceed with standard controls",
-    "Low - Safe with additional controls",
-    "Medium - Proceed with caution under additional controls",
-    "High - Proceed with caution under further supervised controls",
-    "Very High - Unsafe, DO NOT proceed; further action required",
-  ];
+  Widget _buildTextField(Field field) {
+    return TextField(
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.attributes['placeholder'] ?? '',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      onChanged: (value) => _fieldValues[field.id] = value,
+    );
+  }
+
+  Widget _buildNumberField(Field field) {
+    return TextField(
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.attributes['placeholder'] ?? '',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      keyboardType: TextInputType.number,
+      onChanged: (value) => _fieldValues[field.id] = int.tryParse(value),
+    );
+  }
+
+  Widget _buildTextArea(Field field) {
+    return TextField(
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.attributes['placeholder'] ?? '',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      maxLines: null,
+      onChanged: (value) => _fieldValues[field.id] = value,
+    );
+  }
+
+  Widget _buildCheckboxField(Field field) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(field.label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        ...field.options.map((option) {
+          return CheckboxListTile(
+            title: Text(option),
+            value: _fieldValues[field.id]?[option] ?? false,
+            onChanged: (value) {
+              setState(() {
+                _fieldValues[field.id] = _fieldValues[field.id] ?? {};
+                _fieldValues[field.id][option] = value;
+              });
+            },
+            activeColor: Colors.blueAccent,
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildRadioField(Field field) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(field.label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        ...field.options.map((option) {
+          return RadioListTile<String>(
+            title: Text(option),
+            value: option,
+            groupValue: _fieldValues[field.id],
+            onChanged: (value) {
+              setState(() {
+                _fieldValues[field.id] = value;
+              });
+            },
+            activeColor: Colors.blueAccent,
+          );
+        }).toList(),
+      ],
+    );
+  }
+  Widget _buildSelectField(Field field) {
+    return DropdownButtonFormField(
+      decoration: InputDecoration(
+        labelText: field.label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      value: _fieldValues[field.id],
+      items: field.options
+          .map((option) => DropdownMenuItem(
+                value: option,
+                child: Text(option),
+              ))
+          .toList(),
+      onChanged: (value) => setState(() => _fieldValues[field.id] = value),
+    );
+  }
+
+
+Widget _buildTableEditor(TableData table) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        table.tableName,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      SizedBox(height: 12),
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal, // Makes the table horizontally scrollable
+        child: DataTable(
+          columnSpacing: 12, // Adds spacing between columns
+          headingRowHeight: 56,
+          dataRowHeight: 56,
+          showCheckboxColumn: false, // Hides the default checkbox column
+          columns: [
+            DataColumn(
+              label: Text(
+                'Row',
+                style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+              ),
+            ),
+            ...table.columns.map((col) => DataColumn(
+                  label: Text(
+                    col,
+                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                  ),
+                ))
+          ],
+          rows: table.rows.entries.map((entry) {
+            return DataRow(
+              cells: [
+                DataCell(
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey, width: 1), // Adds a border around each cell
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(entry.key),
+                  ),
+                ),
+                ...entry.value.entries.map((cell) {
+                  return DataCell(
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey, width: 1), // Adds a border around each cell
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: TextFormField(
+                        initialValue: cell.value.toString(),
+                        onChanged: (value) {
+                          setState(() {
+                            _tableRowValues[entry.key] ??= {};
+                            _tableRowValues[entry.key]![cell.key] = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                          border: InputBorder.none, // Removes the default TextFormField border
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    ],
+  );
+}
+
+  void _submitData() async {
+    // Prepare the data to submit
+    final Map<String, dynamic> submissionData = {
+      'fields': _fieldValues,
+      'tables': _tableRowValues,
+    };
+
+    try {
+      await TemplateService().updateTemplateData(widget.templateID, submissionData);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Data submitted successfully')));
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting data: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //  appBar: AppBar(
-      // backgroundColor: AppColors.Col_White,
-      //  title: Text('Assessment', style: TextStyle(fontSize: 20.sp, color: AppColors.primary)),
-      //),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Center(
-                  child: Card(
-                    color: Colors.white,
-                    elevation: 6.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Risk Assessment - Strip Out',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 22.sp,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          SizedBox(height: 12.h),
-                          Text(
-                            '1. Read each step carefully.\n'
-                            '2. Follow the instructions as provided.\n'
-                            '3. Refer to troubleshooting section for issues.\n'
-                            '4. Prepare all required materials.\n'
-                            '5. Contact support if assistance is needed.',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: buildTextField(
-                        label: 'Activity',
-                        onChanged: (value) => activity = value,
-                        required: true,
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: buildTextField(
-                        label: 'Reference',
-                        onChanged: (value) => reference = value,
-                        required: false,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 2.h),
-                buildTextField(
-                  label: 'Task Description',
-                  onChanged: (value) => taskDescription = value,
-                  required: true,
-                  //   isMultiLine: true,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: buildTextField(
-                        label: 'Assessor',
-                        onChanged: (value) => assessor = value,
-                        required: false,
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: buildDateField(
-                          label: 'Date', onChanged: (value) => date = value),
-                    ),
-                  ],
-                ),
-                Divider(),
-                SizedBox(height: 20.h),
-                buildSectionTitle('Data to Fill'),
-                buildDataTable(),
-                SizedBox(height: 20.h),
-                buildRadioGroup(
-                  label: 'Hazard Likelihood',
-                  value: hazardLikelihood,
-                  options: ["L", "M", "H"],
-                  onChanged: (value) =>
-                      setState(() => hazardLikelihood = value),
-                ),
-                buildRadioGroup(
-                  label: 'Hazard Severity',
-                  value: hazardSeverity,
-                  options: ["L", "M", "H"],
-                  onChanged: (value) => setState(() => hazardSeverity = value),
-                ),
-                buildRadioGroup(
-                  label: 'Risk Level',
-                  value: riskLevel,
-                  options: ["L", "M", "H"],
-                  onChanged: (value) => setState(() => riskLevel = value),
-                ),
-                buildCheckboxGroup(
-                  label: 'People at Risk',
-                  options: [
-                    "Workers",
-                    "Adjacent Workers",
-                    "Site Wide Personnel",
-                    "Occupants",
-                    "Visitors",
-                    "Members of Public",
-                  ],
-                  selectedValues: peopleAtRisk,
-                  onChanged: (value, isSelected) {
-                    setState(() {
-                      isSelected
-                          ? peopleAtRisk.add(value)
-                          : peopleAtRisk.remove(value);
-                    });
-                  },
-                ),
-                buildTextField(
-                  label: 'Control Measures',
-                  onChanged: (value) => controlMeasures = value,
-                  required: true,
-                  isMultiLine: true,
-                ),
-                buildDropdownField(
-                  label: 'Risk Level',
-                  value: selectedRiskLevel,
-                  options: riskLevelOptions,
-                  onChanged: (value) =>
-                      setState(() => selectedRiskLevel = value),
-                ),
-                SizedBox(height: 20.h),
-                Center(
-                  child: ElevatedButton(
+      appBar: AppBar(
+        title: Text('Template Details', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppColors.primary,
+      ),
+      body: FutureBuilder<Assessment2>(
+        future: _assessmentFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final template = snapshot.data!.template;
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(template.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  SizedBox(height: 8),
+                  Text(template.description, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                  SizedBox(height: 16),
+                  ...template.fields.map((field) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: _buildFieldInput(field),
+                      )),
+                  ...template.tables.map((table) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: _buildTableEditor(table),
+                      )),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _submitData,
                     style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 48),
                       backgroundColor: AppColors.primary,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                      textStyle: TextStyle(
-                          fontSize: 18.sp, fontWeight: FontWeight.bold),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Form submitted successfully')),
-                             // Get.toNamed(AppRoutes.bottomNavBar);
-                        );
-                            Get.toNamed(AppRoutes.bottomNavBar);
-
-                      }
-                    },
-                    child:
-                        Text('Submit', style: TextStyle(color: Colors.white)),
+                    child: Text('Submit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.Col_White)),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Text(
-        title,
-        style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87),
-      ),
-    );
-  }
-
-  Widget buildDataTable() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowColor: MaterialStateColor.resolveWith(
-            (states) => AppColors.primary.withOpacity(0.2)),
-        columns: const [
-          DataColumn(label: Text('Hazard')),
-          DataColumn(label: Text('Likelihood')),
-          DataColumn(label: Text('Severity')),
-          DataColumn(label: Text('Risk Level')),
-        ],
-        rows: tableData.map((data) {
-          return DataRow(cells: [
-            DataCell(Text(data['Hazard'])),
-            DataCell(
-              Checkbox(
-                value: data['Likelihood'],
-                onChanged: (bool? value) {
-                  setState(() {
-                    data['Likelihood'] = value ?? false;
-                  });
-                },
+                ],
               ),
-            ),
-            DataCell(
-              Checkbox(
-                value: data['Severity'],
-                onChanged: (bool? value) {
-                  setState(() {
-                    data['Severity'] = value ?? false;
-                  });
-                },
-              ),
-            ),
-            DataCell(
-              Checkbox(
-                value: data['Risk Level'],
-                onChanged: (bool? value) {
-                  setState(() {
-                    data['Risk Level'] = value ?? false;
-                  });
-                },
-              ),
-            ),
-          ]);
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget buildTextField({
-    required String label,
-    required ValueChanged<String?> onChanged,
-    bool required = false,
-    bool isMultiLine = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
-        onChanged: onChanged,
-        validator: required
-            ? (value) =>
-                value == null || value.isEmpty ? 'This field is required' : null
-            : null,
-        maxLines: isMultiLine ? 4 : 1,
-      ),
-    );
-  }
-
-  Widget buildDateField({
-    required String label,
-    required ValueChanged<DateTime?> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Text(label),
-          SizedBox(width: 20.w),
-          TextButton(
-            onPressed: () async {
-              DateTime? pickedDate = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2101),
-              );
-              if (pickedDate != null) {
-                setState(() {
-                  date = pickedDate;
-                });
-                onChanged(pickedDate);
-              }
-            },
-            child: Text(
-              date != null
-                  ? '${date!.day}/${date!.month}/${date!.year}'
-                  : 'Pick Date',
-              style: TextStyle(color: AppColors.primary, fontSize: 
-              16.sp, fontWeight: FontWeight.w200),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget buildRadioGroup({
-    required String label,
-    required String? value,
-    required List<String> options,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Column(
-      // Use a Column to contain the Row and Divider
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Use a fixed width for the label or adjust its sizing
-            Container(
-              width: 50.w,
-              child: Text(label,
-                  style:
-                      TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w400)),
-            ),
-            SizedBox(width: 2.w),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: options
-                    .map((option) => Expanded(
-                          child: RadioListTile<String>(
-                            title: Text(option,
-                                style: TextStyle(
-                                    fontSize: 11.sp,
-                                    fontWeight: FontWeight.w200)),
-                            value: option,
-                            groupValue: value,
-                            onChanged: onChanged,
-                            dense: true,
-                          ),
-                        ))
-                    .toList(),
-              ),
-            ),
-          ],
-        ),
-        Divider(), // Add a Divider at the end
-      ],
-    );
-  }
-
-  Widget buildCheckboxGroup({
-    required String label,
-    required List<String> options,
-    required List<String> selectedValues,
-    required void Function(String, bool) onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        ...options.map((option) => CheckboxListTile(
-              title: Text(option),
-              value: selectedValues.contains(option),
-              onChanged: (isChecked) => onChanged(option, isChecked ?? false),
-            )),
-      ],
-    );
-  }
-
-  // Helper method to build dropdown field
-  Widget buildDropdownField({
-    required String label,
-    required String? value,
-    required List<String> options,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: 8.0,
-        horizontal: MediaQuery.of(context).size.width * 0.005,
-      ),
-      child: DropdownButtonFormField<String>(
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
-        value: value,
-        items: options.map((String option) {
-          return DropdownMenuItem<String>(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        isExpanded: true, // Ensures the dropdown takes full width
+            );
+          } else {
+            return Center(child: Text('No data available'));
+          }
+        },
       ),
     );
   }
