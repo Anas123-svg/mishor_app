@@ -25,6 +25,18 @@ class Template {
       tables: (json['tables'] as List).map((table) => TableData.fromJson(table)).toList(),
     );
   }
+
+    Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'Reference': reference,
+      'fields': fields.map((field) => field.toJson()).toList(),
+      'tables': tables.map((table) => table.toJson()).toList(),
+    };
+  }
+
 }
 
 class Field {
@@ -51,12 +63,23 @@ class Field {
       options: List<String>.from(json['options'] ?? []),
     );
   }
+
+    Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'label': label,
+      'type': type,
+      'attributes': attributes,
+      'options': options,
+    };
+  }
+
 }
 
 class TableData {
   final String tableName;
   final List<String> columns;
-  final Map<String, Map<String, dynamic>> rows; // Allow dynamic values in rows
+  final Map<String, Map<String, dynamic>> rows; 
 
   TableData({
     required this.tableName,
@@ -72,6 +95,16 @@ class TableData {
           MapEntry(key, Map<String, dynamic>.from(value))),
     );
   }
+
+    Map<String, dynamic> toJson() {
+    return {
+      'table_name': tableName,
+      'table_data': {
+        'columns': columns,
+        'rows': rows,
+      },
+    };
+  }
+
 }
- 
 

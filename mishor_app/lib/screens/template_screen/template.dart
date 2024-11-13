@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mishor_app/models/assessment_model.dart';
 import 'package:mishor_app/models/template.dart';
+import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/services/template_service.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 
@@ -222,21 +224,38 @@ Widget _buildTableEditor(TableData table) {
   );
 }
 
-  void _submitData() async {
-    // Prepare the data to submit
-    final Map<String, dynamic> submissionData = {
-      'fields': _fieldValues,
-      'tables': _tableRowValues,
-    };
-
-    try {
-      await TemplateService().updateTemplateData(widget.templateID, submissionData);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Data submitted successfully')));
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting data: $e')));
+void _submitData() async {
+  final assessmentData = {
+    "assessment": {
+      "name": "Title",
+      "description": "This is the description of template",
+      "fields": _fieldValues.entries.map((entry) {
+        return {
+          "id": entry.key,
+          "value": entry.value,
+        };
+      }).toList(),
+      "tables": [
+        {
+          "table_name": "Updated Feedback Details",
+          "table_data": {
+            "columns": ["Feedback ID", "Submitted By", "Date"],
+            "rows": _tableRowValues
+          }
+        }
+      ]
     }
+  };
+
+  try {
+    await TemplateService().updateTemplateData(widget.templateID, assessmentData);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Data submitted successfully')));
+    Get.offNamed(AppRoutes.bottomNavBar);
+  } catch (e) {
+    print(e);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting data: $e')));
   }
+}
 
   @override
   Widget build(BuildContext context) {

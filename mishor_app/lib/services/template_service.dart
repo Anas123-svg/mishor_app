@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:mishor_app/models/assessment_model.dart';
 
@@ -35,28 +33,41 @@ class TemplateService {
     }
   }
 
-    Future<void> updateTemplateData(int templateID, Map<String, dynamic> data) async {
-    final url = Uri.parse('$baseUrl/assessments/$templateID');
-    
-    try {
-      print(data);
-      final response = await http.put(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer your_auth_token', 
-        },
-        body: json.encode(data),
-      );
 
-      if (response.statusCode == 200) {
-        print('Template data updated successfully');
-      } else {
-        throw Exception('Failed to update template data: ${response.statusCode} and ${data}');
-      }
-    } catch (e) {
-      throw Exception('Error updating template data: $e');
+
+final Dio dio = Dio(BaseOptions(
+  baseUrl: 'http://127.0.0.1:8000/api/',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+));
+
+Future<void> updateTemplateData(int templateID, Map<String, dynamic> data) async {
+  try {
+    print('Attempting to update template data...');
+    print(data);
+    final response = await dio.put(
+      '/assessments/$templateID', 
+      data: data,
+    );
+
+    if (response.statusCode == 200) {
+      print('Template data updated successfully');
+    } else {
+      throw Exception('Failed to update template data: ${response.statusCode} - ${response.data}');
     }
+  } on DioError catch (e) {
+    if (e.response != null) {
+      print('Error updating template data: ${e.response?.statusCode} - ${e.response?.data}');
+      throw Exception('Failed to update template data: ${e.response?.statusCode} - ${e.response?.data}');
+    } else {
+      print('Error sending request: ${e.message}');
+      throw Exception('Error updating template data: ${e.message}');
+    }
+  } catch (e) {
+    print('Unexpected error: $e');
+    throw Exception('Unexpected error updating template data: $e');
   }
+}
 
 }

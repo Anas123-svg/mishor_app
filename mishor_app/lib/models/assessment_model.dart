@@ -23,4 +23,14 @@ class Assessment2 {
       template: Template.fromJson(json['assessment']),
     );
   }
+    Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'client_id': clientId,
+      'template_id': templateId,
+      'user_id': userId,
+      'template': template.toJson(),
+    };
+  }
+
 }

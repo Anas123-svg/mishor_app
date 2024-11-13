@@ -6,9 +6,9 @@ import 'package:mishor_app/screens/completed_screen/completed_screen.dart';
 import 'package:mishor_app/screens/login_screen/login_screen.dart';
 import 'package:mishor_app/screens/profile_screen/profile_screen.dart';
 import 'package:mishor_app/screens/bottom_navbar/bottom_navbar.dart';
-import 'package:mishor_app/screens/splash_screen/splash_screen.dart';
 import 'package:mishor_app/screens/rejected_screen/rejected_screen.dart';
 import 'package:mishor_app/screens/signup_screen/signup_screen.dart';
+import 'package:mishor_app/screens/splash_screen/splash_screen.dart';
 import 'package:mishor_app/screens/template_screen/template.dart';
 
 class AppPages {
@@ -17,8 +17,8 @@ class AppPages {
     GetPage(name: AppRoutes.home, page: () => HomeScreen()),
     GetPage(name: AppRoutes.login, page: () => LoginScreen()),
     GetPage(name: AppRoutes.signup, page: () => SignUpScreen()),
-    GetPage(name: AppRoutes.splash, page: () => TemplateScreen(11)),
-   // GetPage(name: AppRoutes.template, page: () => TemplateScreen()),
+    GetPage(name: AppRoutes.splash, page: () => SplashScreen()),
+    GetPage(name: AppRoutes.template, page: () => TemplateScreen(16)),
 
     GetPage(name: AppRoutes.bottomNavBar, page: () => CustomBottomNavBar(
       screens: [

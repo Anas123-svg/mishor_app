@@ -59,7 +59,7 @@ class LoginScreen extends StatelessWidget {
                     ? CircularProgressIndicator()
                     : SizedBox(
                         width: double.infinity,
-                        height: 50.h,
+                        height: 50.w/1,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
