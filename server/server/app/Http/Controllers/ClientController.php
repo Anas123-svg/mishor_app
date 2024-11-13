@@ -61,9 +61,12 @@ class ClientController extends Controller
         }
 
         $client = Auth::user();
-        $token = $client->createToken('ClientToken')->plainTextToken;
-
-        return response()->json(['token' => $token, 'client' => $client], 200);
+        if ($client->is_verified) {
+            $token = $client->createToken('ClientToken')->plainTextToken;
+            return response()->json(['message' => 'Logged in successfully', 'token' => $token, 'client' => $client], 200);
+        } else {
+            return response()->json(['message' => 'Waiting for approval'], 403);
+        }
     }
 
     public function logout()
