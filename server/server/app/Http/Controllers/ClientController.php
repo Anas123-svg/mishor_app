@@ -27,7 +27,7 @@ class ClientController extends Controller
         $client = Client::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password,
+            'password' => bcrypt($request->password),
             'profile_image' => $profileImage
         ]);
     
