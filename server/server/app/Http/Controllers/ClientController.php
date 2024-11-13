@@ -28,8 +28,8 @@ class ClientController extends Controller
             'password' => $request->password,
             'profile_image' => $request->profile_image
         ]);
-        $token = $client->createToken('ClientToken')->plainTextToken;
-        return response()->json( ['token'=>$token, 'message' => 'Client registered successfully', 'client' => $client], 201);
+       // $token = $client->createToken('ClientToken')->plainTextToken;
+        return response()->json( ['message' => 'Wait for admin approval'], 201);
     }
     public function showByToken(Request $request)
     {
