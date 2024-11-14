@@ -62,6 +62,7 @@ class SignUpScreen extends StatelessWidget {
                 icon: Icons.lock,
                 obscureText: true,
               ),
+              SizedBox(height: 15.h),
               CustomTextField(
                 controller: _confirmPasswordController,
                 label: 'Confirm Password',

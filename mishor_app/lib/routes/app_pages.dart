@@ -17,8 +17,8 @@ class AppPages {
     GetPage(name: AppRoutes.home, page: () => HomeScreen()),
     GetPage(name: AppRoutes.login, page: () => LoginScreen()),
     GetPage(name: AppRoutes.signup, page: () => SignUpScreen()),
-    GetPage(name: AppRoutes.splash, page: () => SplashScreen()),
-    GetPage(name: AppRoutes.template, page: () => TemplateScreen(16)),
+   // GetPage(name: AppRoutes.splash, page: () => SplashScreen()),
+    GetPage(name: AppRoutes.splash, page: () => TemplateScreen(19)),
 
     GetPage(name: AppRoutes.bottomNavBar, page: () => CustomBottomNavBar(
       screens: [

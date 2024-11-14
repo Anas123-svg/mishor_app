@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mishor_app/models/assessment_model.dart';
@@ -5,6 +8,8 @@ import 'package:mishor_app/models/template.dart';
 import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/services/template_service.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class TemplateScreen extends StatefulWidget {
   final int templateID;
@@ -18,11 +23,54 @@ class _TemplateScreenState extends State<TemplateScreen> {
   late Future<Assessment2> _assessmentFuture;
   final Map<int, dynamic> _fieldValues = {};
   final Map<String, Map<String, dynamic>> _tableRowValues = {};
+  final List<String> _uploadedImageUrls = [];
+  final ImagePicker _picker = ImagePicker();
+
+  final String cloudName = 'dchubllrz';
+  final String uploadPreset = 'nmafnbii';
 
   @override
   void initState() {
     super.initState();
     _assessmentFuture = TemplateService().fetchTemplateData(widget.templateID);
+  }
+
+  Future<void> _pickImageAndUpload() async {
+    final XFile? pickedImage =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      await _uploadImageToCloudinary(File(pickedImage.path));
+    }
+  }
+
+  Future<void> _uploadImageToCloudinary(File imageFile) async {
+    try {
+      // Cloudinary upload URL
+      final uri =
+          Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/upload');
+
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.toBytes();
+        final responseString = String.fromCharCodes(responseData);
+        final jsonMap = jsonDecode(responseString);
+
+        setState(() {
+          final imageUrl = jsonMap['secure_url'];
+          _uploadedImageUrls.add(imageUrl);
+        });
+      } else {
+        print(
+            'Failed to upload image: ${response.statusCode} and ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+    }
   }
 
   Widget _buildFieldInput(Field field) {
@@ -38,7 +86,7 @@ class _TemplateScreenState extends State<TemplateScreen> {
       case 'select':
         return _buildSelectField(field);
       case 'radio':
-        return _buildRadioField(field); 
+        return _buildRadioField(field);
       default:
         return SizedBox();
     }
@@ -89,7 +137,8 @@ class _TemplateScreenState extends State<TemplateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(field.label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(field.label,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         ...field.options.map((option) {
           return CheckboxListTile(
             title: Text(option),
@@ -111,7 +160,8 @@ class _TemplateScreenState extends State<TemplateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(field.label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(field.label,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         ...field.options.map((option) {
           return RadioListTile<String>(
             title: Text(option),
@@ -128,6 +178,7 @@ class _TemplateScreenState extends State<TemplateScreen> {
       ],
     );
   }
+
   Widget _buildSelectField(Field field) {
     return DropdownButtonFormField(
       decoration: InputDecoration(
@@ -147,121 +198,143 @@ class _TemplateScreenState extends State<TemplateScreen> {
     );
   }
 
-
-Widget _buildTableEditor(TableData table) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        table.tableName,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      SizedBox(height: 12),
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal, // Makes the table horizontally scrollable
-        child: DataTable(
-          columnSpacing: 12, // Adds spacing between columns
-          headingRowHeight: 56,
-          dataRowHeight: 56,
-          showCheckboxColumn: false, // Hides the default checkbox column
-          columns: [
-            DataColumn(
-              label: Text(
-                'Row',
-                style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
-              ),
-            ),
-            ...table.columns.map((col) => DataColumn(
-                  label: Text(
-                    col,
-                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
-                  ),
-                ))
-          ],
-          rows: table.rows.entries.map((entry) {
-            return DataRow(
-              cells: [
-                DataCell(
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 1), // Adds a border around each cell
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(entry.key),
-                  ),
+  Widget _buildTableEditor(TableData table) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          table.tableName,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection:
+              Axis.horizontal, // Makes the table horizontally scrollable
+          child: DataTable(
+            columnSpacing: 12, // Adds spacing between columns
+            headingRowHeight: 56,
+            dataRowHeight: 56,
+            showCheckboxColumn: false, // Hides the default checkbox column
+            columns: [
+              DataColumn(
+                label: Text(
+                  'Row',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: AppColors.primary),
                 ),
-                ...entry.value.entries.map((cell) {
-                  return DataCell(
+              ),
+              ...table.columns.map((col) => DataColumn(
+                    label: Text(
+                      col,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary),
+                    ),
+                  ))
+            ],
+            rows: table.rows.entries.map((entry) {
+              return DataRow(
+                cells: [
+                  DataCell(
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey, width: 1), // Adds a border around each cell
+                        border: Border.all(
+                            color: Colors.grey,
+                            width: 1), // Adds a border around each cell
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: TextFormField(
-                        initialValue: cell.value.toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            _tableRowValues[entry.key] ??= {};
-                            _tableRowValues[entry.key]![cell.key] = value;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                          border: InputBorder.none, // Removes the default TextFormField border
+                      child: Text(entry.key),
+                    ),
+                  ),
+                  ...entry.value.entries.map((cell) {
+                    return DataCell(
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Colors.grey,
+                              width: 1), // Adds a border around each cell
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TextFormField(
+                          initialValue: cell.value.toString(),
+                          onChanged: (value) {
+                            setState(() {
+                              _tableRowValues[entry.key] ??= {};
+                              _tableRowValues[entry.key]![cell.key] = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 12),
+                            border: InputBorder
+                                .none, // Removes the default TextFormField border
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ],
-            );
-          }).toList(),
+                    );
+                  }).toList(),
+                ],
+              );
+            }).toList(),
+          ),
         ),
-      ),
-    ],
-  );
-}
-
-void _submitData() async {
-  final assessmentData = {
-    "assessment": {
-      "name": "Title",
-      "description": "This is the description of template",
-      "fields": _fieldValues.entries.map((entry) {
-        return {
-          "id": entry.key,
-          "value": entry.value,
-        };
-      }).toList(),
-      "tables": [
-        {
-          "table_name": "Updated Feedback Details",
-          "table_data": {
-            "columns": ["Feedback ID", "Submitted By", "Date"],
-            "rows": _tableRowValues
-          }
-        }
-      ]
-    }
-  };
-
-  try {
-    await TemplateService().updateTemplateData(widget.templateID, assessmentData);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Data submitted successfully')));
-    Get.offNamed(AppRoutes.bottomNavBar);
-  } catch (e) {
-    print(e);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting data: $e')));
+      ],
+    );
   }
-}
+
+  void _submitData() async {
+    final assessmentData = {
+      "complete_by_user": 1,
+      "assessment": {
+        "name": "Title",
+        "description": "This is the description of template",
+        "fields": _fieldValues.entries.map((entry) {
+          return {
+            "id": entry.key,
+            "value": entry.value,
+          };
+        }).toList(),
+        "tables": [
+          {
+            "table_name": "Updated Feedback Details",
+            "table_data": {
+              "columns": ["Feedback ID", "Submitted By", "Date"],
+              "rows": _tableRowValues
+            }
+          }
+        ],
+        "site_images": _uploadedImageUrls.map((imageUrl) {
+          return {
+            "site_image": imageUrl,
+            "is_flagged": false,
+          };
+        }).toList(),
+      }
+    };
+
+    try {
+      await TemplateService()
+          .updateTemplateData(widget.templateID, assessmentData);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Data submitted successfully')));
+      Get.offNamed(AppRoutes.bottomNavBar);
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error submitting data: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Template Details', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Template Details',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.primary,
       ),
       body: FutureBuilder<Assessment2>(
@@ -277,9 +350,14 @@ void _submitData() async {
               padding: EdgeInsets.all(16),
               child: Column(
                 children: [
-                  Text(template.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  Text(template.name,
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary)),
                   SizedBox(height: 8),
-                  Text(template.description, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                  Text(template.description,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700])),
                   SizedBox(height: 16),
                   ...template.fields.map((field) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -290,14 +368,39 @@ void _submitData() async {
                         child: _buildTableEditor(table),
                       )),
                   SizedBox(height: 16),
+
+                  // Image upload section
+                  Text("Upload Images",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: _uploadedImageUrls
+                        .map((url) =>
+                            Image.network(url, width: 100, height: 100))
+                        .toList(),
+                  ),
+                  SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: _pickImageAndUpload,
+                    child: Text("Pick and Upload Image"),
+                  ),
+
+                  SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _submitData,
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size(double.infinity, 48),
                       backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Text('Submit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.Col_White)),
+                    child: Text('Submit',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.Col_White)),
                   ),
                 ],
               ),

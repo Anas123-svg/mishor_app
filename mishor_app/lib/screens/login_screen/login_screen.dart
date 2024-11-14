@@ -58,8 +58,8 @@ class LoginScreen extends StatelessWidget {
                 return _authController.isLoading.value
                     ? CircularProgressIndicator()
                     : SizedBox(
-                        width: double.infinity,
-                        height: 50.w/1,
+                        width: 120.w,
+                        height: 50.w,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
