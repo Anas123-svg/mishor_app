@@ -16,13 +16,14 @@ const TemplatePage = () => {
   const fetchTemplates = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/templates`,
+        `${process.env.NEXT_PUBLIC_API_URL}/client-templates/by-token/client`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      console.log(response.data);
       setTemplates(response.data);
     } catch (err) {
       console.log(err);
@@ -35,34 +36,10 @@ const TemplatePage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleDelete = (id: number) => async () => {
-    if (!window.confirm("Are you sure you want to delete this template?")) {
-      return;
-    }
-    try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/templates/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success("Template deleted successfully");
-      fetchTemplates();
-    } catch (err) {
-      toast.error("Failed to delete template");
-      console.log(err);
-    }
-  };
-
   return (
     <>
       <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
-        <div className="flex justify-between items-center mb-4">
-          <h5 className="card-title">Templates</h5>
-          <Link
-            href="/templates/add-template"
-            className="bg-primary text-white px-4 py-2.5 font-medium rounded-full"
-          >
-            Add Template
-          </Link>
-        </div>
+        <h5 className="card-title mb-4">Assigned Templates</h5>
         <TextInput
           placeholder="Search Templates"
           value={searchTerm}
@@ -116,30 +93,7 @@ const TemplatePage = () => {
                       >
                         <Dropdown.Item
                           as={Link}
-                          href={`/templates/edit/${item.id}`}
-                          key={index}
-                          className="flex gap-3"
-                        >
-                          <Icon
-                            icon="solar:pen-new-square-broken"
-                            height={18}
-                          />
-                          <span>Edit</span>
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          as="button"
-                          className="flex gap-3"
-                          onClick={handleDelete(item.id)}
-                        >
-                          <Icon
-                            icon="solar:trash-bin-minimalistic-outline"
-                            height={18}
-                          />
-                          <span>Delete</span>
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          as={Link}
-                          href={`/templates/view/${item.id}`}
+                          href={`/assigned-templates/view/${item.id}`}
                           key={index}
                           className="flex gap-3"
                         >

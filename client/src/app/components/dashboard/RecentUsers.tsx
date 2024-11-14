@@ -5,13 +5,13 @@ import SimpleBar from "simplebar-react";
 import { Client } from "@/types";
 import Link from "next/link";
 
-const RecentClients = ({ clients }: { clients: Client[] }) => {
+const RecentUsers = ({ clients }: { clients: Client[] }) => {
   return (
     <div className="rounded-lg shadow-md bg-white dark:bg-darkgray py-6 w-full">
       <div className="flex justify-between items-center px-6">
         <div>
-          <h5 className="card-title">Recent Clients</h5>
-          <p className="card-subtitle">New client activity</p>
+          <h5 className="card-title">Recent Users</h5>
+          <p className="card-subtitle">New users activity</p>
         </div>
         <Link
           href="/clients"
@@ -60,4 +60,4 @@ const RecentClients = ({ clients }: { clients: Client[] }) => {
   );
 };
 
-export default RecentClients;
+export default RecentUsers;
