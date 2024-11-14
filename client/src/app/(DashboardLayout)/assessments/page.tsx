@@ -72,7 +72,7 @@ const Assessments = () => {
             onClick={() => setIsModalOpen(true)}
             className="w-fit"
           >
-            Assign Template
+            Assign Assessment
           </Button>
         </div>
 
@@ -187,11 +187,11 @@ const Assessments = () => {
             className="mb-4"
           >
             <option value="" disabled>
-              Select Client
+              Select User
             </option>
-            <option value="Company A">Company A</option>
-            <option value="Company B">Company B</option>
-            <option value="Company C">Company C</option>
+            <option value="Company A">User A</option>
+            <option value="Company B">User B</option>
+            <option value="Company C">User C</option>
           </Select>
         </Modal.Body>
         <Modal.Footer>

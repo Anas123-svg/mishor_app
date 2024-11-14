@@ -72,9 +72,9 @@ const Clients = () => {
   return (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
-        <h5 className="text-xl font-semibold mb-4">Clients</h5>
+        <h5 className="text-xl font-semibold mb-4">Users</h5>
         <TextInput
-          placeholder="Search Clients"
+          placeholder="Search Users"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="mb-3"

@@ -56,12 +56,12 @@ const TemplatePage = () => {
       <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
         <div className="flex justify-between items-center mb-4">
           <h5 className="card-title">Templates</h5>
-          <Link
+          {/* <Link
             href="/templates/add-template"
             className="bg-primary text-white px-4 py-2.5 font-medium rounded-full"
           >
             Add Template
-          </Link>
+          </Link> */}
         </div>
         <TextInput
           placeholder="Search Templates"
