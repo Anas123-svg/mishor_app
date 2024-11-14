@@ -33,7 +33,11 @@ Route::prefix('admin')->group(function () {
 });
 
 //client routes
+
 Route::middleware('auth:sanctum')->get('/client/show', [ClientController::class, 'showByToken']);
+Route::middleware('auth:sanctum')->get('/client/statistics', [ClientController::class, 'clientStatistics']);
+Route::middleware('auth:sanctum')->get('/client/users', [ClientController::class, 'getAllUsers']);
+
 Route::prefix('client')->group(function () {
     Route::post('/register', [ClientController::class, 'register']);
     Route::post('/login', [ClientController::class, 'login']);
@@ -42,6 +46,8 @@ Route::prefix('client')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [ClientController::class, 'logout']);
+        Route::get('/statistics', [ClientController::class, 'clientStatistics']);
+
         Route::post('/reset-password', [ClientController::class, 'resetPassword']);
      //   Route::get('/show', [ClientController::class, 'showByToken']);
         Route::put('/{id}', [ClientController::class, 'update']);
@@ -52,16 +58,17 @@ Route::prefix('client')->group(function () {
 
 //user routes
 Route::prefix('user')->group(function () {
+    Route::put('/{id}/verify', [UserController::class, 'verify']);
     Route::post('/register', [UserController::class, 'register']);
     Route::post('/login', [UserController::class, 'login']);
-    
+    Route::get('/{id}', [UserController::class, 'show']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [UserController::class, 'logout']);
         Route::get('/assessment-counts', [UserController::class, 'assessmentCountsByUser']);
         Route::get('/completed-assessment-counts', [UserController::class, 'completedAssessmentCountsByUser']);
         Route::get('/', [UserController::class, 'index']);
         Route::get('/show', [UserController::class, 'showByToken']); 
-        Route::get('/{id}', [UserController::class, 'show']);
         Route::put('/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });

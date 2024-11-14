@@ -226,4 +226,51 @@ public function destroy($id)
 }
 
 
+    public function clientStatistics(Request $request)
+    {
+    
+        $client = $request->user();  
+    
+        if (!$client) {
+            Log::warning('Client not found or authentication failed', [
+                'timestamp' => now(),
+            ]);
+            return response()->json(['error' => 'Client not authenticated'], 401);
+        }
+
+    
+        $userCount = $client->users()->count();
+        $templateCount = $client->ClientTemplate()->count();
+        $assessmentCount = $client->assessments()->count();
+        $recentUsers = $client->users()->latest()->take(5)->get();
+    
+        $assessments = $client->assessments()->get(['created_at'])->map(function ($assessment) {
+            return [
+                'created_at' => $assessment->created_at,
+            ];
+        });
+    
+        return response()->json([
+            'total_users' => $userCount,
+            'total_assigned_template' => $templateCount,
+            'assessment_count' => $assessmentCount,
+            'recent_users' => $recentUsers,
+            'created_assessments' => $assessments,
+        ]);
+    }
+    public function getAllUsers(Request $request)
+{
+    $client = $request->user();
+
+    if (!$client) {
+        return response()->json(['error' => 'Client not authenticated'], 401);
+    }
+
+    $users = $client->users()->get();
+
+    return response()->json([
+        'users' => $users
+    ]);
+}
+
 }

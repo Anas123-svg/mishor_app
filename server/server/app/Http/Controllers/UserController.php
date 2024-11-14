@@ -173,9 +173,15 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::findOrFail($id);
-
-        return response()->json([$user, 'assessment_counts' => $this->getAssessmentCounts($user)]);
+    
+        $assessments = $user->assessments()->with(['client', 'template', 'siteImages'])->get();
+    
+        return response()->json([
+            'user' => $user,
+            'assessments' => $assessments
+        ]);
     }
+    
 
     public function update(Request $request, $id)
     {
@@ -247,5 +253,19 @@ class UserController extends Controller
             'daily_approved_counts' => $dailyApprovedCounts,
             'assigned_assessments' => $assignedAssessments
         ]);
+    }
+
+    public function verify($id)
+    {
+        $User = User::find($id);
+    
+        if (!$User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+    
+        $User->is_verified = true;
+        $User->save();
+    
+        return response()->json(['message' => 'User verified successfully', 'User' => $User]);
     }
 }
