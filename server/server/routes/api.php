@@ -112,6 +112,7 @@ Route::prefix('user-templates')->group(function () {
 Route::prefix('assessments')->group(function () {
     Route::get('/', action:[AssessmentController	::class, 'index']);
     Route::post('/', [AssessmentController::class, 'store']); 
+    Route::get('/completed-by-user', [AssessmentController::class, 'getCompletedAssessmentsByUser']);
     Route::get('/{id}', [AssessmentController::class, 'show']); 
     Route::put('/{id}', [AssessmentController::class, 'update']); 
     Route::delete('/{id}', [AssessmentController::class, 'destroy']);

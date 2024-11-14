@@ -12,7 +12,7 @@ class Assessment extends Model
     use HasApiTokens;
 
 
-    protected $fillable = ['client_id', 'template_id', 'user_id', 'assessment', 'status','name', 'location','submited_to_admin','feedback_by_admin','status_by_admin'];
+    protected $fillable = ['client_id', 'template_id', 'user_id', 'assessment', 'status','name', 'location','submited_to_admin','feedback_by_admin','status_by_admin','complete_by_user'];
     protected $casts = [
         'assessment' => 'array',  
     ];
@@ -33,4 +33,10 @@ class Assessment extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function siteImages()
+    {
+        return $this->hasMany(SiteImage::class);
+    }
+
+
 }

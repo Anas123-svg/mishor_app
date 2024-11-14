@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Template;
+use App\Models\SiteImage;
 
 class AssessmentController extends Controller
 {
@@ -15,7 +16,7 @@ class AssessmentController extends Controller
      */
     public function index()
     {
-        $assessments = Assessment::with(['client', 'template', 'user'])->get();
+        $assessments = Assessment::with(['client', 'template', 'user','siteImages'])->get();
         return response()->json($assessments);
     }
 
@@ -129,7 +130,7 @@ class AssessmentController extends Controller
      */
     public function show($id)
     {
-        $assessment = Assessment::with(['client', 'template', 'user'])->findOrFail($id);
+        $assessment = Assessment::with(['client', 'template', 'user','siteImages'])->findOrFail($id);
         return response()->json($assessment);
     }
 
@@ -139,23 +140,97 @@ class AssessmentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
-        $assessment = Assessment::findOrFail($id);
+{
+    Log::info('Site Images:', [
+        'site_images' => $request->input('assessment.site_images'),
+    ]);
+    
 
-        $request->validate([
-            'client_id' => 'sometimes|exists:clients,id',
-            'template_id' => 'sometimes|exists:templates,id',
-            'user_id' => 'sometimes|exists:users,id',
-            'assessment' => 'sometimes',
-            'status' => 'sometimes|in:approved,pending,completed',
-            'submited_to_admin'=>'sometimes|boolean',
-            'feedback_by_admin' => 'sometimes|string',
-            'status_by_admin' => 'sometimes|in:approved,rejected,pending',
-        ]);
 
-        $assessment->update($request->only(['client_id', 'template_id', 'user_id', 'assessment', 'status','submited_to_admin','status_by_admin']));
-        return response()->json($assessment);
+
+    $assessment = Assessment::findOrFail($id);
+
+    $request->validate([
+        'client_id' => 'sometimes|exists:clients,id',
+        'template_id' => 'sometimes|exists:templates,id',
+        'user_id' => 'sometimes|exists:users,id',
+        'assessment' => 'sometimes',
+        'status' => 'sometimes|in:approved,pending,completed',
+        'submited_to_admin' => 'sometimes|boolean',
+        'feedback_by_admin' => 'sometimes|string',
+        'status_by_admin' => 'sometimes|in:approved,rejected,pending',
+        'complete_by_user' => 'sometimes|boolean',
+        'site_images.*.site_image' => 'sometimes|string',
+        'site_images.*.is_flagged' => 'sometimes|boolean',
+
+    ]);
+
+    if ($request->has('assessment')) {
+        $updatedAssessmentData = $request->input('assessment');
+        $existingAssessmentData = $assessment->assessment ?? [];
+
+        // Merge `fields` if present in updated data
+        if (isset($updatedAssessmentData['fields'])) {
+            foreach ($updatedAssessmentData['fields'] as $updatedField) {
+                foreach ($existingAssessmentData['fields'] as &$existingField) {
+                    if (isset($existingField['id']) && isset($updatedField['id']) && $existingField['id'] === $updatedField['id']) {
+                        $existingField = array_merge($existingField, $updatedField);
+                    }
+                }
+            }
+        }
+
+        if (isset($updatedAssessmentData['tables'])) {
+            foreach ($updatedAssessmentData['tables'] as $updatedTable) {
+                foreach ($existingAssessmentData['tables'] as &$existingTable) {
+                    if (
+                        isset($existingTable['table_name']) && isset($updatedTable['table_name']) &&
+                        $existingTable['table_name'] === $updatedTable['table_name']
+                    ) {
+                        if (isset($updatedTable['table_data']['rows'])) {
+                            foreach ($updatedTable['table_data']['rows'] as $rowKey => $updatedRowData) {
+                                if (isset($existingTable['table_data']['rows'][$rowKey])) {
+                                    foreach ($updatedRowData as $columnKey => $columnValue) {
+                                        if ($columnValue !== null) {
+                                            $existingTable['table_data']['rows'][$rowKey][$columnKey] = $columnValue;
+                                        }
+                                    }
+                                } else {
+                                    $existingTable['table_data']['rows'][$rowKey] = $updatedRowData;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $assessment->assessment = $existingAssessmentData;
     }
+
+    $assessment->update($request->only(['client_id', 'template_id', 'user_id', 'status', 'submited_to_admin', 'status_by_admin','complete_by_user','feedback_by_admin']));
+    if ($request->has('assessment.site_images')) {
+        foreach ($request->input('assessment.site_images') as $siteImageData) {
+            if (isset($siteImageData['site_image'])) {
+                SiteImage::updateOrCreate(
+                    [
+                        'assessment_id' => $assessment->id,
+                        'site_image' => $siteImageData['site_image'],
+                    ],
+                    [
+                        'is_flagged' => $siteImageData['is_flagged'] ?? false,
+                    ]
+                );
+            }
+        }
+    }
+    
+    $assessment->save(); // Ensure the updated data is saved
+
+    return response()->json($assessment);
+}
+
+        
 
     /**
      * @param  \App\Models\Assessment  $assessment
@@ -171,7 +246,7 @@ class AssessmentController extends Controller
 
     public function getAssessmentsByClientId($clientId)
     {
-        $assessments = Assessment::where('client_id', $clientId)->with(['client', 'template', 'user'])->get();
+        $assessments = Assessment::where('client_id', $clientId)->with(['client', 'template', 'user','siteImages'])->get();
         return response()->json($assessments);
     }
 
@@ -203,6 +278,13 @@ class AssessmentController extends Controller
         return response()->json(['message' => 'Unauthorized or user role not found'], 403);
     }
 
-
-
+    public function getCompletedAssessmentsByUser()
+    {
+        $assessments = Assessment::where('complete_by_user', true)
+            ->with(['client', 'template', 'user', 'siteImages'])
+            ->get();
+    
+        return response()->json($assessments);
+    }
+    
 }
