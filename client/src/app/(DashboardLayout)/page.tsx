@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import AssessmentOverview from "../components/dashboard/AssessmentOverview";
 import { Icon } from "@iconify/react";
-import RecentClients from "../components/dashboard/RecentClients";
+import RecentUsers from "../components/dashboard/RecentUsers";
 import axios from "axios";
 
 const DashboardPage = () => {
@@ -43,7 +43,7 @@ const DashboardPage = () => {
           </span>
           <div className="flex flex-col gap-1">
             <h5 className="text-lg font-semibold text-dark opacity-80">
-              Total Clients
+              Total Users
             </h5>
             <h1 className="text-3xl font-semibold text-dark">
               {stats.total_clients}
@@ -56,7 +56,7 @@ const DashboardPage = () => {
           </span>
           <div className="flex flex-col gap-1">
             <h5 className="text-lg font-semibold text-dark opacity-80">
-              Total Templates
+              Assigned Templates
             </h5>
             <h1 className="text-3xl font-semibold text-dark">
               {stats.total_templates}
@@ -80,7 +80,7 @@ const DashboardPage = () => {
 
       {/* Recent Clients Section */}
       <div className="col-span-12">
-        <RecentClients clients={stats.recent_clients} />
+        <RecentUsers clients={stats.recent_clients} />
       </div>
     </div>
   );

@@ -35,13 +35,13 @@ const SidebarContent: MenuItem[] = [
         name: "Assigned Templates",
         icon: "fluent:form-multiple-20-regular",
         id: uniqueId(),
-        url: "/templates",
+        url: "/assigned-templates",
       },
       {
         name: "Users",
         icon: "solar:users-group-two-rounded-line-duotone",
         id: uniqueId(),
-        url: "/clients",
+        url: "/users",
       },
       {
         name: "Assessments",
