@@ -62,7 +62,8 @@ class AssessmentController extends Controller
     
         try {
             $template = Template::with(['fields', 'tables'])->findOrFail($request->input('template_id'));
-    
+            $status = $request->input('status', 'pending'); 
+            $statusByAdmin = $request->input('status_by_admin', 'pending');     
             $tables = $template->tables->map(function ($table) {
                 return [
                     'id' => $table->id,
@@ -94,9 +95,9 @@ class AssessmentController extends Controller
                 'template_id' => $request->input('template_id'),
                 'user_id' => $request->input('user_id'),
                 'assessment' => $assessmentData,
-                'status' => $request->input('status'),
+                'status' => $status,//$request->input('status'),
                 'submited_to_admin' => $request->input('submited_to_admin'),
-                'status_by_admin' => $request->input('status_by_admin'),
+                'status_by_admin' =>  $statusByAdmin,//$request->input('status_by_admin'),
                 'feedback_by_admin' => $request->input('feedback_by_admin')
             ]);
     
