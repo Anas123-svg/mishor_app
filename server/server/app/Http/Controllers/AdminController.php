@@ -160,7 +160,7 @@ class AdminController extends Controller
         $totalTemplates = Template::count();
         $totalUsers = User::count();
     
-        $createdAssessments = Assessment::get(['created_at']);
+$createdAssessments = Assessment::where('complete_by_user', true)->get(['created_at']);
         $recentClients = Client::latest()->withCount('users')->take(5)->get();
     
         return response()->json([

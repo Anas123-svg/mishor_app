@@ -308,7 +308,7 @@ class AssessmentController extends Controller
         $client = Auth::user();
         if ($client) {
             $assessments = Assessment::where('client_id', $client->id)
-                ->where('complete_by_user', true)
+               // ->where('complete_by_user', true)
                 ->with(['client', 'template', 'user'])
                 ->get();
     
