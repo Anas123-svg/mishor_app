@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import imageCompression from "browser-image-compression";
 import React from "react";
 
-const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+const CLOUDINARY_UPLOAD_PRESET = "Mishor_App";
 const CLOUDINARY_CLOUD_NAME = "dewqsghdi";
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 

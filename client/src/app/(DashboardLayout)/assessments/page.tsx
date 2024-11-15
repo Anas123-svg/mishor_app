@@ -12,17 +12,64 @@ import {
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import axios from "axios";
+import { Assessment, Template, User } from "@/types";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import useAuthStore from "@/store/authStore";
 
 const Assessments = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [selectedClient, setSelectedClient] = useState("");
+  const [selectedUser, setSelectedUser] = useState("");
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { token } = useAuthStore();
   const fetchAssessments = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/assessments`
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments/completed-by-user`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+      setAssessments(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/client-templates/by-token/client`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTemplates(response.data.map((template: any) => template.template));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setUsers(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -30,36 +77,31 @@ const Assessments = () => {
 
   useEffect(() => {
     fetchAssessments();
+    fetchTemplates();
+    fetchUsers();
+    setLoading(false);
   }, []);
 
-  const [assessments, setAssessments] = useState([
-    {
-      title: "Risk Analysis",
-      description: "Assessment of potential risks",
-      client: "Company A",
-      status: "completed",
-    },
-    {
-      title: "Compliance Check",
-      description: "Regulatory compliance assessment",
-      client: "Company B",
-      status: "pending",
-    },
-    {
-      title: "Security Review",
-      description: "Comprehensive security assessment",
-      client: "Company C",
-      status: "in-progress",
-    },
-  ]);
-
-  const actionOptions = [
-    { icon: "solar:eye-outline", label: "View Assessment" },
-  ];
-
-  const handleAssignTemplate = () => {
-    // Logic for assigning template to a client
-    setIsModalOpen(false);
+  const handleAssignAssessment = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments`,
+        {
+          user_id: selectedUser,
+          client_id: users.find((user) => user.id === Number(selectedUser))
+            ?.client_id,
+          template_id: selectedTemplate,
+        }
+      );
+      toast.success(response.data.message || "Template assigned successfully");
+      setSelectedTemplate("");
+      setSelectedUser("");
+      fetchAssessments();
+      setIsModalOpen(false);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response.data.message || "Something went wrong");
+    }
   };
 
   return (
@@ -90,16 +132,20 @@ const Assessments = () => {
               <Table.HeadCell>Description</Table.HeadCell>
               <Table.HeadCell>Client</Table.HeadCell>
               <Table.HeadCell>Status</Table.HeadCell>
+              <Table.HeadCell>Status By Admin</Table.HeadCell>
               <Table.HeadCell>Actions</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
               {assessments
                 .filter(
                   (assessment) =>
-                    assessment.title
+                    assessment.assessment.name
                       .toLowerCase()
                       .includes(search.toLowerCase()) ||
-                    assessment.client
+                    assessment.client.name
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    assessment.assessment.description
                       .toLowerCase()
                       .includes(search.toLowerCase())
                 )
@@ -109,16 +155,16 @@ const Assessments = () => {
                     className="hover:bg-gray-100 dark:hover:bg-gray-900"
                   >
                     <Table.Cell className="font-medium">
-                      {assessment.title}
+                      {assessment.assessment.name}
                     </Table.Cell>
                     <Table.Cell className="text-gray-500">
-                      {assessment.description}
+                      {assessment.assessment.description}
                     </Table.Cell>
-                    <Table.Cell>{assessment.client}</Table.Cell>
+                    <Table.Cell>{assessment.client.name}</Table.Cell>
                     <Table.Cell className="whitespace-nowrap">
                       <Badge
                         color={
-                          assessment.status === "completed"
+                          assessment.status === "approved"
                             ? "success"
                             : assessment.status === "pending"
                             ? "warning"
@@ -127,6 +173,20 @@ const Assessments = () => {
                       >
                         {assessment.status.charAt(0).toUpperCase() +
                           assessment.status.slice(1)}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell className="whitespace-nowrap">
+                      <Badge
+                        color={
+                          assessment.status_by_admin === "approved"
+                            ? "success"
+                            : assessment.status_by_admin === "pending"
+                            ? "warning"
+                            : "failure"
+                        }
+                      >
+                        {assessment.status_by_admin.charAt(0).toUpperCase() +
+                          assessment.status_by_admin.slice(1)}
                       </Badge>
                     </Table.Cell>
                     <Table.Cell>
@@ -140,12 +200,14 @@ const Assessments = () => {
                           </span>
                         )}
                       >
-                        {actionOptions.map((action, i) => (
-                          <Dropdown.Item key={i} className="flex gap-3">
-                            <Icon icon={action.icon} height={18} />
-                            <span>{action.label}</span>
-                          </Dropdown.Item>
-                        ))}
+                        <Dropdown.Item
+                          as={Link}
+                          href={`/assessments/${assessment.id}`}
+                          className="flex gap-3"
+                        >
+                          <Icon icon="solar:eye-outline" height={18} />
+                          <span>View Assessment</span>
+                        </Dropdown.Item>
                       </Dropdown>
                     </Table.Cell>
                   </Table.Row>
@@ -155,8 +217,13 @@ const Assessments = () => {
           {assessments.length === 0 ||
             (assessments.filter(
               (assessment) =>
-                assessment.title.toLowerCase().includes(search.toLowerCase()) ||
-                assessment.description
+                assessment.assessment.name
+                  .toLowerCase()
+                  .includes(search.toLowerCase()) ||
+                assessment.client.name
+                  .toLowerCase()
+                  .includes(search.toLowerCase()) ||
+                assessment.assessment.description
                   .toLowerCase()
                   .includes(search.toLowerCase())
             ).length === 0 && (
@@ -165,9 +232,8 @@ const Assessments = () => {
         </div>
       </div>
 
-      {/* Assign Template Modal */}
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <Modal.Header>Assign Template</Modal.Header>
+        <Modal.Header>Assign Assessment</Modal.Header>
         <Modal.Body>
           <Select
             value={selectedTemplate}
@@ -177,26 +243,30 @@ const Assessments = () => {
             <option value="" disabled>
               Select Template
             </option>
-            <option value="template1">Template 1</option>
-            <option value="template2">Template 2</option>
-            <option value="template3">Template 3</option>
+            {templates.map((template) => (
+              <option key={template.id} value={template.id}>
+                {template.name}
+              </option>
+            ))}
           </Select>
           <Select
-            value={selectedClient}
-            onChange={(e) => setSelectedClient(e.target.value)}
+            value={selectedUser}
+            onChange={(e) => setSelectedUser(e.target.value)}
             className="mb-4"
           >
             <option value="" disabled>
               Select User
             </option>
-            <option value="Company A">User A</option>
-            <option value="Company B">User B</option>
-            <option value="Company C">User C</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
           </Select>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="primary" onClick={handleAssignTemplate}>
-            Assign Template
+          <Button color="primary" onClick={handleAssignAssessment}>
+            Assign Assessment
           </Button>
           <Button color="secondary" onClick={() => setIsModalOpen(false)}>
             Cancel

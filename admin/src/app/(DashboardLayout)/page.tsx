@@ -4,6 +4,7 @@ import AssessmentOverview from "../components/dashboard/AssessmentOverview";
 import { Icon } from "@iconify/react";
 import RecentClients from "../components/dashboard/RecentClients";
 import axios from "axios";
+import { Spinner } from "flowbite-react";
 
 const DashboardPage = () => {
   const [stats, setStats] = useState({
@@ -12,6 +13,7 @@ const DashboardPage = () => {
     created_assessments: [],
     recent_clients: [],
   });
+  const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
     try {
@@ -21,6 +23,8 @@ const DashboardPage = () => {
       setStats(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -28,11 +32,17 @@ const DashboardPage = () => {
     fetchStats();
   }, []);
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <div className="grid grid-cols-12 gap-6">
       {/* Assessment Overview */}
       <div className="lg:col-span-8 col-span-12">
-        <AssessmentOverview assessments={stats.created_assessments} />
+        {stats.created_assessments && (
+          <AssessmentOverview assessments={stats.created_assessments} />
+        )}
       </div>
 
       {/* Stats Cards Section */}

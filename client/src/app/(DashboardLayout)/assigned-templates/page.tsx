@@ -8,7 +8,6 @@ import axios from "axios";
 import { Template } from "@/types";
 import useAuthStore from "@/store/authStore";
 import Link from "next/link";
-import toast from "react-hot-toast";
 
 const TemplatePage = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -23,8 +22,7 @@ const TemplatePage = () => {
           },
         }
       );
-      console.log(response.data);
-      setTemplates(response.data);
+      setTemplates(response.data.map((template: any) => template.template));
     } catch (err) {
       console.log(err);
     }

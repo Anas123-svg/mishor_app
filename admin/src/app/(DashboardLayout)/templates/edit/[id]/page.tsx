@@ -7,6 +7,7 @@ import {
   Select,
   Checkbox,
   Label,
+  Spinner,
 } from "flowbite-react";
 import toast from "react-hot-toast";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
@@ -41,12 +42,14 @@ const UpdateTemplate: React.FC = () => {
   const [tables, setTables] = useState<Table[]>([]);
   const [isFieldModalOpen, setFieldModalOpen] = useState<boolean>(false);
   const [isTableModalOpen, setTableModalOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [isEditFieldModalOpen, setEditFieldModalOpen] =
     useState<boolean>(false);
   const [isEditTableModalOpen, setEditTableModalOpen] =
     useState<boolean>(false);
 
   const fetchTemplate = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/templates/${id}`,
@@ -78,6 +81,8 @@ const UpdateTemplate: React.FC = () => {
       );
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,7 +108,6 @@ const UpdateTemplate: React.FC = () => {
 
   const [editFieldIndex, setEditFieldIndex] = useState<number | null>(null);
   const [editTableIndex, setEditTableIndex] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async () => {
     if (!title || !description) {
@@ -253,7 +257,11 @@ const UpdateTemplate: React.FC = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
       <h5 className="card-title mb-4">Update Template</h5>
       <TextInput

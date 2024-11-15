@@ -42,6 +42,8 @@ type Field = {
   label: string;
   type: string;
   options: string[];
+  value: string | string[];
+  isFlagged: boolean;
   attributes: {
     placeholder: string;
     required: boolean;
@@ -70,6 +72,7 @@ type Table = {
 type Template = {
   id: number;
   name: string;
+  Reference: string;
   fields: Field[];
   tables: Table[];
   created_by: string;
@@ -78,4 +81,22 @@ type Template = {
   updated_at: string;
 };
 
-export type { Admin, Field, Table, Template, Client };
+type Assessment = {
+  id: number;
+  user_id: number;
+  user: User;
+  assessment: Template;
+  status: string;
+  status_by_admin: string;
+  submitted_to_admin: boolean;
+  client_id: number;
+  client: Client;
+  template_id: number;
+  site_images: string[];
+  feedback_by_admin: string | null;
+  complete_by_user: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type { Admin, Field, Table, Template, Client, Assessment };

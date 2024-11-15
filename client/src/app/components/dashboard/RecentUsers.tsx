@@ -2,10 +2,10 @@
 import React from "react";
 import { Badge, Table } from "flowbite-react";
 import SimpleBar from "simplebar-react";
-import { Client } from "@/types";
+import { User } from "@/types";
 import Link from "next/link";
 
-const RecentUsers = ({ clients }: { clients: Client[] }) => {
+const RecentUsers = ({ clients }: { clients: User[] }) => {
   return (
     <div className="rounded-lg shadow-md bg-white dark:bg-darkgray py-6 w-full">
       <div className="flex justify-between items-center px-6">
@@ -14,7 +14,7 @@ const RecentUsers = ({ clients }: { clients: Client[] }) => {
           <p className="card-subtitle">New users activity</p>
         </div>
         <Link
-          href="/clients"
+          href="/users"
           className="text-primary hover:underline underline-offset-4"
         >
           View All
@@ -24,24 +24,17 @@ const RecentUsers = ({ clients }: { clients: Client[] }) => {
         <div className="overflow-x-auto whitespace-nowrap">
           <Table hoverable>
             <Table.Head>
-              <Table.HeadCell className="p-6">Profile Pic</Table.HeadCell>
               <Table.HeadCell>Name</Table.HeadCell>
               <Table.HeadCell>Email</Table.HeadCell>
+              <Table.HeadCell>Phone</Table.HeadCell>
               <Table.HeadCell>Status</Table.HeadCell>
-              <Table.HeadCell>Team</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y divide-border dark:divide-darkborder">
               {clients.map((client, index) => (
                 <Table.Row key={index}>
-                  <Table.Cell className="ps-6">
-                    <img
-                      src={client.profile_image}
-                      alt="Client Profile"
-                      className="h-[50px] w-[50px] rounded-full"
-                    />
-                  </Table.Cell>
                   <Table.Cell>{client.name}</Table.Cell>
                   <Table.Cell>{client.email}</Table.Cell>
+                  <Table.Cell>{client.phone}</Table.Cell>
                   <Table.Cell>
                     {client.is_verified ? (
                       <Badge color="success">Verified</Badge>
@@ -49,7 +42,6 @@ const RecentUsers = ({ clients }: { clients: Client[] }) => {
                       <Badge color="warning">Not Verified</Badge>
                     )}
                   </Table.Cell>
-                  <Table.Cell>{client.users_count} Users</Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>

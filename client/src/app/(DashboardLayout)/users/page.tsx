@@ -5,39 +5,39 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
-import { Client } from "@/types";
+import { User } from "@/types";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
-const Clients = () => {
+const Users = () => {
   const [search, setSearch] = useState("");
   const { token } = useAuthStore();
-  const [clients, setClients] = useState<Client[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
-  const fetchClients = async () => {
+  const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/client`,
+        `${process.env.NEXT_PUBLIC_API_URL}/user`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setClients(response.data);
+      setUsers(response.data);
     } catch (err) {
       console.log(err);
     }
   };
 
   useEffect(() => {
-    fetchClients();
+    fetchUsers();
   }, []);
 
-  const verifyClient = async (id: number) => {
+  const verifyUser = async (id: number) => {
     try {
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/client/${id}/verify`,
+        `${process.env.NEXT_PUBLIC_API_URL}/user/${id}/verify`,
         {},
         {
           headers: {
@@ -45,26 +45,23 @@ const Clients = () => {
           },
         }
       );
-      toast.success("Client Verified Successfully");
-      fetchClients();
+      toast.success("User Verified Successfully");
+      fetchUsers();
     } catch (err) {
       console.log(err);
-      toast.error("Error verifying client");
+      toast.error("Error verifying user");
     }
   };
 
-  const deleteClient = async (id: number) => {
+  const deleteUser = async (id: number) => {
     try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/clients/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      toast.success("Client deleted successfully");
-      fetchClients();
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("user deleted successfully");
+      fetchUsers();
     } catch (err) {
-      toast.error("Failed to delete client");
+      toast.error("Failed to delete user");
       console.log(err);
     }
   };
@@ -82,44 +79,34 @@ const Clients = () => {
         <div className="overflow-x-auto">
           <Table hoverable>
             <Table.Head>
-              <Table.HeadCell>Picture</Table.HeadCell>
               <Table.HeadCell>Name</Table.HeadCell>
               <Table.HeadCell>Email</Table.HeadCell>
-              <Table.HeadCell>Team</Table.HeadCell>
+              <Table.HeadCell>Phone</Table.HeadCell>
               <Table.HeadCell>Verified</Table.HeadCell>
               <Table.HeadCell>Actions</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
-              {clients
+              {users
                 .filter(
-                  (client) =>
-                    client.name.toLowerCase().includes(search.toLowerCase()) ||
-                    client.email.toLowerCase().includes(search.toLowerCase())
+                  (user) =>
+                    user.name.toLowerCase().includes(search.toLowerCase()) ||
+                    user.email.toLowerCase().includes(search.toLowerCase())
                 )
-                .map((client, index) => (
+                .map((user, index) => (
                   <Table.Row
                     key={index}
                     className="hover:bg-gray-100 dark:hover:bg-gray-900 whitespace-nowrap"
                   >
-                    <Table.Cell className="p-4">
-                      <img
-                        src={client.profile_image}
-                        alt="Client Profile"
-                        width={50}
-                        height={50}
-                        className="rounded-full"
-                      />
-                    </Table.Cell>
-                    <Table.Cell className="font-medium">
-                      {client.name}
+                    <Table.Cell className="font-medium">{user.name}</Table.Cell>
+                    <Table.Cell className="text-gray-500">
+                      {user.email}
                     </Table.Cell>
                     <Table.Cell className="text-gray-500">
-                      {client.email}
+                      {user.phone}
                     </Table.Cell>
-                    <Table.Cell>{client.users_count} Users</Table.Cell>
                     <Table.Cell>
-                      <Badge color={client.is_verified ? "success" : "warning"}>
-                        {client.is_verified ? "Verified" : "Not Verified"}
+                      <Badge color={user.is_verified ? "success" : "warning"}>
+                        {user.is_verified ? "Verified" : "Not Verified"}
                       </Badge>
                     </Table.Cell>
                     <Table.Cell>
@@ -135,7 +122,7 @@ const Clients = () => {
                       >
                         <Dropdown.Item
                           as={Link}
-                          href={`/clients/${client.id}`}
+                          href={`/users/${user.id}`}
                           className="flex gap-3"
                         >
                           <Icon icon="solar:eye-outline" height={18} />
@@ -143,13 +130,13 @@ const Clients = () => {
                         </Dropdown.Item>
                         <Dropdown.Item
                           className="flex gap-3"
-                          onClick={() => verifyClient(client.id)}
+                          onClick={() => verifyUser(user.id)}
                         >
                           <Icon icon="solar:check-circle-outline" height={18} />
-                          <span> Verify</span>
+                          <span>Verify</span>
                         </Dropdown.Item>
                         <Dropdown.Item
-                          onClick={() => deleteClient(client.id)}
+                          onClick={() => deleteUser(user.id)}
                           className="flex gap-3"
                         >
                           <Icon
@@ -164,13 +151,13 @@ const Clients = () => {
                 ))}
             </Table.Body>
           </Table>
-          {clients.length === 0 ||
-            (clients.filter(
-              (client) =>
-                client.name.toLowerCase().includes(search.toLowerCase()) ||
-                client.email.toLowerCase().includes(search.toLowerCase())
+          {users.length === 0 ||
+            (users.filter(
+              (user) =>
+                user.name.toLowerCase().includes(search.toLowerCase()) ||
+                user.email.toLowerCase().includes(search.toLowerCase())
             ).length === 0 && (
-              <p className="text-center mt-5">No clients found</p>
+              <p className="text-center mt-5">No users found</p>
             ))}
         </div>
       </div>
@@ -178,4 +165,4 @@ const Clients = () => {
   );
 };
 
-export default Clients;
+export default Users;
