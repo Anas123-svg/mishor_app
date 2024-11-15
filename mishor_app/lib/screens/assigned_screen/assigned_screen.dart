@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mishor_app/controllers/home_screen_controller.dart';
 import 'package:mishor_app/models/assessment_stats.dart';
 import 'package:mishor_app/routes/app_routes.dart';
+import 'package:mishor_app/screens/template_screen/template.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
@@ -160,7 +161,7 @@ List<Assessment> getFilteredAndSearchedInspections() {
       children: [
         if (assessmentStats != null) ...[
           _buildStatusCard(
-            'Total Assigned',
+            'Assigned',
             (assessmentStats.pendingAssessments + assessmentStats.rejectedAssessments).toString(),
             AppColors.primary,
           ),
@@ -195,6 +196,7 @@ List<Assessment> getFilteredAndSearchedInspections() {
         final assessment = filteredList[index];
         return GestureDetector(
           onTap: () {
+          Get.to(() => TemplateScreen(assessment.id));
           },
           child: buildInspectionCard(assessment),
         );
@@ -203,10 +205,23 @@ List<Assessment> getFilteredAndSearchedInspections() {
   }
 
   Widget _buildStatusCard(String title, String count, Color color) {
+  final screenSize = MediaQuery.of(context).size;
+  final screenOrientation = MediaQuery.of(context).orientation; 
+  final isSmallScreen = screenSize.width < 530;  
+  final isPortrait = screenOrientation == Orientation.portrait;
+
+  double cardWidth = isSmallScreen ? screenSize.width * 0.4 : screenSize.width * 0.3;
+  double cardHeight = isSmallScreen ? (isPortrait ? 120.h : 100.h) : (isPortrait ? 150.h : 130.h);
+  double iconSize = isSmallScreen ? 30.r : 23.r;
+  double titleFontSize = isSmallScreen ? 12.sp : 12.sp;  
+  double valueFontSize = isSmallScreen ? 10.sp : 10.sp;  
+  double paddingValue = isSmallScreen ? 8.w : 2.w;  
+    
     return Container(
+      
       width: 80.w,
-      height: 80.h,
-      padding: EdgeInsets.all(10.w),
+      height: 100.h,
+      padding: EdgeInsets.all(paddingValue),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.r),

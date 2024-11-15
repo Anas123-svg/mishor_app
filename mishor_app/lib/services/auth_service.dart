@@ -31,8 +31,11 @@ Future<User?> login(String email, String password) async {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_id', user.id.toString());
         await prefs.setString('user_email', user.email);
-        await prefs.setString('user_name', user.name.toString());
+        await prefs.setString('user_name', user.name);
+        await prefs.setString('user_phone', user.phone);
         await prefs.setString('user_token', json['token']);
+        await prefs.setString('profile_image', user.profileImage ?? '');
+
 
 
         return user;
@@ -84,8 +87,8 @@ Future<bool> signUp(String email, String password, String confirmPassword,
     print("Request Data: $response");
 
     if (response.statusCode == 201) {
-      // Assuming successful registration
-      return true;
+        
+        return true;
     } else {
       // Log status and message if response is not 201
       print("Sign-up failed. Status code: ${response.statusCode}");

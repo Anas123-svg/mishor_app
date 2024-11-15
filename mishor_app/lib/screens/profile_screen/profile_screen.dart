@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:mishor_app/Routes/app_routes.dart';
+import 'package:mishor_app/controllers/user_controller.dart';
+import 'package:mishor_app/screens/edit_profile/edit_profile.dart';
+import 'package:mishor_app/services/profile_service.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -10,8 +16,119 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreen extends State<ProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final UserController userController = Get.find(); // Get the UserController instance
+  String? userToken;
+  bool isLoading = false;
+    final ProfileService profileService = ProfileService();
+
+  String nameController = '';
+  String emailController = '';
+  String phoneController =  '';
+  String? profileImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> showLogoutDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Logout Confirmation'),
+          content: Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // Close the dialog
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+                logout(context); // Call the logout function
+              },
+              child: Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userToken = prefs.getString('user_token');
+      nameController = prefs.getString('user_name') ?? '';
+      emailController = prefs.getString('user_email') ?? '';
+      phoneController = prefs.getString('user_phone') ?? '';
+      profileImageUrl = prefs.getString('profile_image');
+      
+    });
+  }
+
+
+      Future<void> logout(BuildContext context) async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Center(child: CircularProgressIndicator());
+      },
+    );
+
+    try {
+      // Call the logout API
+      if(userToken!=null) {
+        print(userToken);
+
+      }
+      else
+      {
+        print('userToken is null');
+        return;
+      }
+            
+      bool response;
+              
+      response = await profileService.logout(userToken!);
+
+
+      if (response) {
+        userController.clearUser();
+
+        Navigator.pop(context);
+        Get.offAllNamed(AppRoutes.splash);
+      } else {
+        // Handle logout failure
+        Navigator.pop(context);
+        Get.snackbar(
+          'Logout Failed',
+          'Unable to logout. Please try again.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (error) {
+      Navigator.pop(context);
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred: $error',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    print(nameController);
+    print(emailController);
     return Scaffold(
       appBar: const  CustomAppbar(),
       body: SingleChildScrollView(
@@ -20,7 +137,6 @@ class _ProfileScreen extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile Picture with Edit Option
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
@@ -30,7 +146,8 @@ class _ProfileScreen extends State<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 57.r,
                       backgroundImage: NetworkImage(
-                        'https://randomuser'),
+                        profileImageUrl ?? 'https://static-00.iconduck.com/assets.00/user-icon-2048x2048-ihoxz4vq.png',
+                      ),
                     ),
                   ),
                   Positioned(
@@ -52,7 +169,7 @@ class _ProfileScreen extends State<ProfileScreen> {
               SizedBox(height: 20.h),
               // Name and Email
               Text(
-                'John Doe',
+                nameController,
                 style: TextStyle(
                   fontSize: 26.sp,
                   fontWeight: FontWeight.bold,
@@ -61,7 +178,7 @@ class _ProfileScreen extends State<ProfileScreen> {
               ),
               SizedBox(height: 4.h),
               Text(
-                'john.doe@example.com',
+                emailController,
                 style: TextStyle(
                   fontSize: 16.sp,
                   color: Colors.grey.shade600,
@@ -88,11 +205,11 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.person_outline,
                       label: 'Edit Profile',
                       onTap: () {
-                        // Implement edit profile action
+                        Get.to(() => EditProfile());
                       },
                     ),
                     _buildDivider(),
-                    _buildProfileOption(
+                   _buildProfileOption(
                       icon: Icons.lock_outline,
                       label: 'Change Password',
                       onTap: () {
@@ -112,9 +229,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                     _buildProfileOption(
                       icon: Icons.logout,
                       label: 'Logout',
-                      onTap: () {
-                        // Implement logout action
-                      },
+                      onTap: () => showLogoutDialog(context),
                       isLogout: true,
                     ),
                   ],

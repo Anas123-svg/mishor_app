@@ -64,6 +64,9 @@ Future<void> login(String email, String password) async {
     final prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('id');
     String? userEmail = prefs.getString('email');
+    String? userToken = prefs.getString('token');
+    String? userName = prefs.getString('name');
+    String? userPhone = prefs.getString('phone');
     if (userId != null && userEmail != null) {
       print('Loaded User ID: $userId, Email: $userEmail');
     }

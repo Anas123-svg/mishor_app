@@ -133,28 +133,41 @@ class _TemplateScreenState extends State<TemplateScreen> {
     );
   }
 
-  Widget _buildCheckboxField(Field field) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(field.label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        ...field.options.map((option) {
-          return CheckboxListTile(
-            title: Text(option),
-            value: _fieldValues[field.id]?[option] ?? false,
-            onChanged: (value) {
-              setState(() {
-                _fieldValues[field.id] = _fieldValues[field.id] ?? {};
-                _fieldValues[field.id][option] = value;
-              });
-            },
-            activeColor: Colors.blueAccent,
-          );
-        }).toList(),
-      ],
-    );
-  }
+Widget _buildCheckboxField(Field field) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        field.label,
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+      ...field.options.map((option) {
+        bool isSelected = _fieldValues[field.id]?.contains(option) ?? false;
+        
+        return CheckboxListTile(
+          title: Text(option),
+          value: isSelected,
+          onChanged: (value) {
+            setState(() {
+              _fieldValues[field.id] = _fieldValues[field.id] ?? [];
+
+              if (value == true) {
+                _fieldValues[field.id]!.add(option);
+              } else {
+                _fieldValues[field.id]!.remove(option);
+              }
+
+              if (_fieldValues[field.id]!.isEmpty) {
+                _fieldValues.remove(field.id);
+              }
+            });
+          },
+          activeColor: Colors.blueAccent,
+        );
+      }).toList(),
+    ],
+  );
+}
 
   Widget _buildRadioField(Field field) {
     return Column(

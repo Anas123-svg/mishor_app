@@ -109,12 +109,6 @@ class _RejectedScreen extends State<RejectedScreen> {
                     ),
                   ),
                   SizedBox(width: 16.w),
-                  IconButton(
-                    icon: Icon(Icons.filter_list, color: AppColors.primary),
-                    onPressed: () {
-                      _showFilterOptions(context);
-                    },
-                  ),
                 ],
               ),
               SizedBox(height: 20.h),
@@ -168,46 +162,4 @@ class _RejectedScreen extends State<RejectedScreen> {
     );
   }
 
-  void _showFilterOptions(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Select Filter'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                title: Text('Completed'),
-                onTap: () {
-                  setState(() {
-                    selectedFilter = 'Completed';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: Text('In Review'),
-                onTap: () {
-                  setState(() {
-                    selectedFilter = 'In Review';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: Text('Archived'),
-                onTap: () {
-                  setState(() {
-                    selectedFilter = 'Archived';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mishor_app/models/assessment_stats.dart';
+import 'package:mishor_app/screens/HomeScreen/widgets/inspection_list.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
@@ -25,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? userEmail;
   String? userName;
   String? userToken;
+  String? ProfileImage;
   bool isLoading = true;
 
   List<String> assignedInspections = [];
@@ -47,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
       userEmail = prefs.getString('user_email');
       userName = prefs.getString('user_name');
       userToken = prefs.getString('user_token');
+      ProfileImage = prefs.getString('profile_image');
     });
 
     if (userToken != null) {
@@ -226,11 +229,36 @@ void loadInspectionBarData() {
   Widget _buildWelcomeMessage() {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 30.r,
-          backgroundColor: AppColors.primary.withOpacity(0.8),
-          child: Icon(Icons.person, size: 30.r, color: Colors.white),
-        ),
+                      Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 30.r,
+                    backgroundColor: AppColors.primary,
+                    child: CircleAvatar(
+                      radius: 57.r,
+                      backgroundImage: NetworkImage(
+                        ProfileImage ?? 'https://static-00.iconduck.com/assets.00/user-icon-2048x2048-ihoxz4vq.png',
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Implement change profile picture action
+                      },
+                      child: CircleAvatar(
+                        radius: 15.r,
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.camera_alt, size: 16.w, color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
         SizedBox(width: 10.w),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +267,7 @@ void loadInspectionBarData() {
               'Welcome, $userName',
               style: TextStyle(
                 fontSize: 22.sp,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 color: AppColors.primary,
               ),
             ),
@@ -259,7 +287,7 @@ void loadInspectionBarData() {
       children: [
         Expanded(child: _buildStatCard('Total', assessmentCount.totalAssessments.toString(), Icons.list)),
         SizedBox(width: 5.w),
-        Expanded(child: _buildStatCard('Completed', assessmentCount.completedAssessments.toString(), Icons.check_circle_outline)),
+        Expanded(child: _buildStatCard('Approved', assessmentCount.completedAssessments.toString(), Icons.check_circle_outline)),
         SizedBox(width: 5.w),
         Expanded(child: _buildStatCard('Pending', assessmentCount.pendingAssessments.toString(), Icons.pending_actions)),
         SizedBox(width: 5.w),
@@ -390,17 +418,20 @@ void loadInspectionBarData() {
 
 Widget _buildStatCard(String title, String value, IconData icon) {
   final screenSize = MediaQuery.of(context).size;
+  final screenOrientation = MediaQuery.of(context).orientation; // Check for screen orientation (landscape or portrait)
+  final isSmallScreen = screenSize.width < 530;  
+  final isPortrait = screenOrientation == Orientation.portrait;
 
-  double cardWidth = screenSize.width < 600 ? 80.w : 100.w; 
-  double cardHeight = screenSize.width < 600 ? 100.h : 120.h; 
-  double iconSize = screenSize.width < 600 ? 40.r : 50.r; 
-  double titleFontSize = screenSize.width < 600 ? 10.sp : 12.sp; 
-  double valueFontSize = screenSize.width < 600 ? 16.sp : 18.sp;
-  double paddingValue = screenSize.width < 600 ? 8.w : 12.w;
+  double cardWidth = isSmallScreen ? screenSize.width * 0.4 : screenSize.width * 0.3;
+  double cardHeight = isSmallScreen ? (isPortrait ? 120.h : 100.h) : (isPortrait ? 150.h : 130.h);
+  double iconSize = isSmallScreen ? 30.r : 23.r;
+  double titleFontSize = isSmallScreen ? 12.sp : 12.sp;  // Adjusted font size for title
+  double valueFontSize = isSmallScreen ? 10.sp : 10.sp;   // Adjusted font size for value
+  double paddingValue = isSmallScreen ? 8.w : 2.w;  // Padding that adapts to screen size
 
   return Container(
-    width: cardWidth.w,
-    height: cardHeight.h,
+    width: cardWidth,
+    height: cardHeight,
     padding: EdgeInsets.all(paddingValue),
     decoration: BoxDecoration(
       color: AppColors.primary,
@@ -416,119 +447,33 @@ Widget _buildStatCard(String title, String value, IconData icon) {
     ),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,  // Ensures everything is centered
       children: [
         Icon(icon, size: iconSize, color: Colors.white),
-        SizedBox(height: 6.h),
+        SizedBox(height: 8.h),  // Adding space between icon and text
         Text(
           title,
           style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: titleFontSize,
           ),
+          textAlign: TextAlign.center,  // Ensures title is centered
         ),
+        SizedBox(height: 4.h),  // Space between title and value
         Text(
           value,
           style: TextStyle(
             color: Colors.white,
             fontSize: valueFontSize,
           ),
+          textAlign: TextAlign.center,  // Ensures value is centered
         ),
       ],
     ),
   );
 }
+
 }
 
 
-class InspectionsList extends StatelessWidget {
-  final List<String> inspections;
-  final Function(String) onSignOff;
-  final Function onUploadDocument;
-  final Function(String) onSearchChanged;
-
-  const InspectionsList({
-    Key? key,
-    required this.inspections,
-    required this.onSearchChanged,
-    required this.onSignOff,
-    required this.onUploadDocument,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.h),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search Inspections...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.primary),
-                ),
-                prefixIcon: Icon(Icons.search, color: AppColors.primary),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              onChanged: (value) => onSearchChanged(value),
-            ),
-          ),
-          ListView.separated(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true, 
-            itemCount: inspections.length,
-            separatorBuilder: (context, index) => Divider(color: Colors.black12),
-            itemBuilder: (context, index) {
-              final inspection = inspections[index];
-              final isFlagged = inspection.contains('Rejected');
-
-              return Container(
-                margin: EdgeInsets.symmetric(vertical: 5.h), 
-                child: ListTile(
-                  contentPadding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
-                  tileColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    side: BorderSide(color: AppColors.primary.withOpacity(0.1)),
-                  ),
-                  title: Text(
-                    inspection,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14.sp,
-                      color: Colors.black,
-                    ),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.cancel, 
-                          color: isFlagged ? Colors.red : Colors.grey, 
-                        ),
-                        onPressed: () => onUploadDocument(),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.pending, 
-                          color: !isFlagged ? Colors.green : Colors.grey,
-                        ),
-                        onPressed: () => onSignOff(inspection),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}

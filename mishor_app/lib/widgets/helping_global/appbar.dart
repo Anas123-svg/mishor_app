@@ -26,7 +26,6 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: Icon(Icons.notifications, color: Colors.white),
           onPressed: () {
-            // Notification action
           },
         ),
       ],

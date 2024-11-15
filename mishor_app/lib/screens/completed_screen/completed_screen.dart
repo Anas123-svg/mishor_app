@@ -23,7 +23,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
   bool isLoading = true;
   List<Assessment> completedInspections = [];
   String searchQuery = '';
-  String filterStatus = 'All';
+  //String filterStatus = 'All';
   String selectedFilter = 'Completed';
   @override
   void initState() {
@@ -108,13 +108,6 @@ class _CompletedScreenState extends State<CompletedScreen> {
                       },
                     ),
                   ),
-                  SizedBox(width: 16.w),
-                  IconButton(
-                    icon: Icon(Icons.filter_list, color: AppColors.primary),
-                    onPressed: () {
-                      _showFilterOptions(context);
-                    },
-                  ),
                 ],
               ),
 
@@ -132,7 +125,6 @@ class _CompletedScreenState extends State<CompletedScreen> {
                         SnackBar(content: Text('Completed Inspection ${index + 1} selected')),
                       );
                     },
-                    
                     child: buildInspectionCard(assessment: assessment),
                   );
                 },
@@ -183,7 +175,7 @@ Widget _buildStatistics(AssessmentStats assessment) {
             children: [
               _statCard('approved', assessment.completedAssessments.toString()),  
               _statCard('Pending', (assessment.rejectedAssessments+assessment.pendingAssessments).toString()),
-              _statCard('Total', assessment.totalAssessments.toString()),
+             // _statCard('Total', assessment.totalAssessments.toString()),
             ],
           ),
         ],
@@ -193,7 +185,7 @@ Widget _buildStatistics(AssessmentStats assessment) {
 }
 
 List<PieChartSectionData> showingSections(AssessmentStats assessment) {
-  return List.generate(3, (index) {
+  return List.generate(2, (index) {
     switch (index) {
       case 0:
         return PieChartSectionData(
@@ -219,7 +211,7 @@ List<PieChartSectionData> showingSections(AssessmentStats assessment) {
             color: Colors.white,
           ),
         );
-      case 2:
+     /* case 2:
         return PieChartSectionData(
           color: Colors.red,
           value: assessment.totalAssessments.toDouble(),
@@ -230,7 +222,7 @@ List<PieChartSectionData> showingSections(AssessmentStats assessment) {
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
-        );
+        );*/
       default:
         throw Error();
     }
@@ -255,49 +247,6 @@ List<PieChartSectionData> showingSections(AssessmentStats assessment) {
           ),
         ),
       ],
-    );
-  }
-
-  void _showFilterOptions(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Select Filter'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                title: Text('Completed'),
-                onTap: () {
-                  setState(() {
-                    selectedFilter = 'Completed';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: Text('In Review'),
-                onTap: () {
-                  setState(() {
-                    selectedFilter = 'In Review';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: Text('Archived'),
-                onTap: () {
-                  setState(() {
-                    selectedFilter = 'Archived';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

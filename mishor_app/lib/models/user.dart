@@ -3,9 +3,11 @@ class User {
   final int id;
   final String email;
   final String token;
-  String? name;
-  String? phone;
+  final String name;
+  final String phone;
   String? company;
+  String? profileImage;
+
  // final Client client;
   final int client_id;
   final bool isVerified;
@@ -18,10 +20,11 @@ class User {
     required this.id,
     required this.email,
     required this.token,
-    this.name,
-    this.phone,
+    required this.name,
+    required this.phone,
     this.company,
    // required this.client,
+   this.profileImage,
     required this.client_id,
     required this.isVerified,
     required this.completed_assessments,
@@ -38,8 +41,9 @@ factory User.fromJson(Map<String, dynamic> json) {
     id: user['id'] ?? 0, 
     email: user['email'] ?? '',
     token: json['token'] ?? '', 
-    name: user['name'] as String?, 
-    phone: user['phone'] as String?, 
+    name: user['name'] ?? '', 
+    profileImage: user['profile_image'] ?? '',
+    phone: user['phone'] ??'', 
     client_id: user['client_id'] ?? 0,
     company: user['client']?['name'] as String?,
     isVerified: user['is_verified'] == 1,
@@ -60,6 +64,7 @@ factory User.fromJson(Map<String, dynamic> json) {
       'phone': phone,
       'company': company,
       'token': token,
+      'profile_image': profileImage,
       'is_verified': isVerified ? 1 : 0,
       'completed_assessments': completed_assessments,
       'total_assessments': total_assessments,
