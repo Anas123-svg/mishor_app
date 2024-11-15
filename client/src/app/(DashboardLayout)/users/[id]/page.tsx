@@ -8,6 +8,7 @@ import {
   Select,
   Label,
   Badge,
+  Spinner,
 } from "flowbite-react";
 import { Icon } from "@iconify/react";
 import { useParams } from "next/navigation";
@@ -22,6 +23,7 @@ const UserDetails = () => {
   const [user, setUser] = useState<User>();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [assessment, setAssessment] = useState<Assessment[]>([]);
+  const [loading, setLoading] = useState(true);
   const { token } = useAuthStore();
 
   const fetchUserDetails = async () => {
@@ -56,6 +58,7 @@ const UserDetails = () => {
   useEffect(() => {
     fetchUserDetails();
     fetchTemplates();
+    setLoading(false);
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,7 +86,11 @@ const UserDetails = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <div className="p-2 sm:p-6 space-y-6 bg-gray-100 dark:bg-darkgray rounded-lg shadow-md w-full">
       <Card>
         <h5 className="text-xl font-semibold">User Details</h5>

@@ -10,15 +10,15 @@ import {
   Select,
   Label,
   Spinner,
+  Dropdown,
 } from "flowbite-react";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
+import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { Client, Template } from "@/types";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { set } from "lodash";
 
 const ClientDetails = () => {
   const { id } = useParams();
@@ -32,7 +32,6 @@ const ClientDetails = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/client/${id}`
       );
       setClient(response.data);
-      console.log(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -71,6 +70,19 @@ const ClientDetails = () => {
       setSelectedTemplate("");
       fetchClientDetails();
       setIsModalOpen(false);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response.data.message || "Something went wrong");
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId: number) => {
+    try {
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/client-templates/${templateId}`
+      );
+      toast.success("Template unassigned successfully");
+      fetchClientDetails();
     } catch (error: any) {
       console.error(error);
       toast.error(error.response.data.message || "Something went wrong");
@@ -159,16 +171,35 @@ const ClientDetails = () => {
                     {template.template.name}
                   </Table.Cell>
                   <Table.Cell>
-                    <Button
-                      as={Link}
-                      href={`/templates/view/${template.template_id}`}
-                      size="xs"
-                      color="light"
-                      className="flex items-center gap-2"
+                    <Dropdown
+                      label=""
+                      placement="left"
+                      dismissOnClick={false}
+                      renderTrigger={() => (
+                        <span className="h-9 w-9 flex justify-center items-center rounded-full hover:bg-lightprimary hover:text-primary cursor-pointer">
+                          <HiOutlineDotsVertical size={22} />
+                        </span>
+                      )}
                     >
-                      <Icon icon="solar:eye-outline" />
-                      View
-                    </Button>
+                      <Dropdown.Item
+                        as={Link}
+                        href={`/templates/view/${template.template_id}`}
+                        className="flex gap-3"
+                      >
+                        <Icon icon="solar:eye-outline" height={18} />
+                        <span>View Details</span>
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        className="flex gap-3"
+                        onClick={() => handleDeleteTemplate(template.id)}
+                      >
+                        <Icon
+                          icon="solar:trash-bin-minimalistic-outline"
+                          height={18}
+                        />
+                        <span>Unassign</span>
+                      </Dropdown.Item>
+                    </Dropdown>
                   </Table.Cell>
                 </Table.Row>
               ))}

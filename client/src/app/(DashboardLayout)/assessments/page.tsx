@@ -8,6 +8,7 @@ import {
   TextInput,
   Select,
   Table,
+  Spinner,
 } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
@@ -30,13 +31,14 @@ const Assessments = () => {
   const fetchAssessments = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/assessments/completed-by-user`,
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments/client`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+      console.log(response.data);
       setAssessments(response.data);
     } catch (error) {
       console.error(error);
@@ -104,7 +106,11 @@ const Assessments = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between sm:items-center mb-4">
@@ -164,15 +170,15 @@ const Assessments = () => {
                     <Table.Cell className="whitespace-nowrap">
                       <Badge
                         color={
-                          assessment.status === "approved"
+                          assessment.status === "Approved"
                             ? "success"
-                            : assessment.status === "pending"
+                            : assessment.status === "Pending"
                             ? "warning"
                             : "failure"
                         }
                       >
                         {assessment.status.charAt(0).toUpperCase() +
-                          assessment.status.slice(1)}
+                          assessment.status.slice(1)}{" "}
                       </Badge>
                     </Table.Cell>
                     <Table.Cell className="whitespace-nowrap">
@@ -214,8 +220,9 @@ const Assessments = () => {
                 ))}
             </Table.Body>
           </Table>
-          {assessments.length === 0 ||
-            (assessments.filter(
+          {assessments.length === 0 ? (
+            <p className="text-center mt-5">No assessments found</p>
+          ) : assessments.filter(
               (assessment) =>
                 assessment.assessment.name
                   .toLowerCase()
@@ -226,9 +233,9 @@ const Assessments = () => {
                 assessment.assessment.description
                   .toLowerCase()
                   .includes(search.toLowerCase())
-            ).length === 0 && (
-              <p className="text-center mt-5">No assessments found</p>
-            ))}
+            ).length === 0 ? (
+            <p className="text-center mt-5">No assessments found</p>
+          ) : null}
         </div>
       </div>
 

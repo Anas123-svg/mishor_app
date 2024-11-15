@@ -73,7 +73,7 @@ const AddTemplate: React.FC = () => {
     const data = {
       name: title,
       description,
-      reference,
+      Reference: reference,
       fields: fields.map((f, i) => ({
         id: i,
         label: f.label,

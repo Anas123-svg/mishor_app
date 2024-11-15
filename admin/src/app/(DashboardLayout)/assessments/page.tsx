@@ -150,9 +150,9 @@ const Assessments = () => {
                     <Table.Cell className="whitespace-nowrap">
                       <Badge
                         color={
-                          assessment.status === "approved"
+                          assessment.status === "Approved"
                             ? "success"
-                            : assessment.status === "pending"
+                            : assessment.status === "Pending"
                             ? "warning"
                             : "failure"
                         }

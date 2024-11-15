@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import RecentUsers from "../components/dashboard/RecentUsers";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
+import { Spinner } from "flowbite-react";
 
 const DashboardPage = () => {
   const [stats, setStats] = useState({
@@ -13,6 +14,7 @@ const DashboardPage = () => {
     created_assessments: [],
     recent_users: [],
   });
+  const [loading, setLoading] = useState(true);
 
   const { token } = useAuthStore();
   const fetchStats = async () => {
@@ -29,6 +31,8 @@ const DashboardPage = () => {
       setStats(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,7 +40,11 @@ const DashboardPage = () => {
     fetchStats();
   }, []);
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <div className="grid grid-cols-12 gap-6">
       {/* Assessment Overview */}
       <div className="lg:col-span-8 col-span-12">

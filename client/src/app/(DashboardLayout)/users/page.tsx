@@ -1,6 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Badge, Dropdown, TextInput, Table, TableRow } from "flowbite-react";
+import {
+  Badge,
+  Dropdown,
+  TextInput,
+  Table,
+  TableRow,
+  Spinner,
+} from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import axios from "axios";
@@ -13,20 +20,24 @@ const Users = () => {
   const [search, setSearch] = useState("");
   const { token } = useAuthStore();
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/user`,
+        `${process.env.NEXT_PUBLIC_API_URL}/client/users`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setUsers(response.data);
+      setUsers(response.data.users);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,6 +65,7 @@ const Users = () => {
   };
 
   const deleteUser = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this user?")) return;
     try {
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -66,7 +78,11 @@ const Users = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
         <h5 className="text-xl font-semibold mb-4">Users</h5>
@@ -151,14 +167,15 @@ const Users = () => {
                 ))}
             </Table.Body>
           </Table>
-          {users.length === 0 ||
-            (users.filter(
+          {users.length === 0 ? (
+            <p className="text-center mt-5">No users found</p>
+          ) : users.filter(
               (user) =>
                 user.name.toLowerCase().includes(search.toLowerCase()) ||
                 user.email.toLowerCase().includes(search.toLowerCase())
-            ).length === 0 && (
-              <p className="text-center mt-5">No users found</p>
-            ))}
+            ).length === 0 ? (
+            <p className="text-center mt-5">No users found</p>
+          ) : null}
         </div>
       </div>
     </>

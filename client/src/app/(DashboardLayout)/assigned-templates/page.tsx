@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Badge, Dropdown, TextInput } from "flowbite-react";
+import { Badge, Dropdown, Spinner, TextInput } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import { Table } from "flowbite-react";
@@ -11,6 +11,7 @@ import Link from "next/link";
 
 const TemplatePage = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [loading, setLoading] = useState(true);
   const { token } = useAuthStore();
   const fetchTemplates = async () => {
     try {
@@ -25,6 +26,8 @@ const TemplatePage = () => {
       setTemplates(response.data.map((template: any) => template.template));
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,7 +37,11 @@ const TemplatePage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <>
       <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
         <h5 className="card-title mb-4">Assigned Templates</h5>
@@ -104,8 +111,9 @@ const TemplatePage = () => {
                 ))}
             </Table.Body>
           </Table>
-          {templates.length === 0 ||
-            (templates.filter(
+          {templates.length === 0 ? (
+            <p className="text-center mt-5">No Templates Found</p>
+          ) : templates.filter(
               (template) =>
                 template.name
                   .toLowerCase()
@@ -113,9 +121,9 @@ const TemplatePage = () => {
                 template.description
                   .toLowerCase()
                   .includes(searchTerm.toLowerCase())
-            ).length === 0 && (
-              <p className="text-center mt-5">No Templates Found</p>
-            ))}
+            ).length === 0 ? (
+            <p className="text-center mt-5">No Templates Found</p>
+          ) : null}
         </div>
       </div>
     </>

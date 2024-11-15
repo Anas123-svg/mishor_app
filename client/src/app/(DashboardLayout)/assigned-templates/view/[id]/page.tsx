@@ -44,7 +44,12 @@ const ViewTemplate: React.FC = () => {
     fetchTemplate();
   }, []);
 
-  if (loading) return <Spinner aria-label="Loading template..." />;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+        <Spinner size="xl" />
+      </div>
+    );
   if (!template) return <p>Template not found.</p>;
 
   return (

@@ -25,6 +25,7 @@ type Client = {
   users?: User[];
   client_template: [
     {
+      id: number;
       template_id: number;
       template: {
         name: string;
