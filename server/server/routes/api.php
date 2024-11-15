@@ -57,6 +57,9 @@ Route::prefix('client')->group(function () {
 
 
 //user routes
+Route::middleware("auth:sanctum")->get('/user/assessment-counts', [UserController::class, 'assessmentCountsByUser']);
+Route::middleware("auth:sanctum")->get('/user/completed-assessment-counts', [UserController::class, 'completedAssessmentCountsByUser']);
+
 Route::prefix('user')->group(function () {
     Route::put('/{id}/verify', [UserController::class, 'verify']);
     Route::post('/register', [UserController::class, 'register']);
@@ -65,11 +68,11 @@ Route::prefix('user')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [UserController::class, 'logout']);
-        Route::get('/assessment-counts', [UserController::class, 'assessmentCountsByUser']);
-        Route::get('/completed-assessment-counts', [UserController::class, 'completedAssessmentCountsByUser']);
+       // Route::get('/assessment-counts', [UserController::class, 'assessmentCountsByUser']);
+        //Route::get('/completed-assessment-counts', [UserController::class, 'completedAssessmentCountsByUser']);
         Route::get('/', [UserController::class, 'index']);
         Route::get('/show', [UserController::class, 'showByToken']); 
-        Route::put('/{id}', [UserController::class, 'update']);
+        Route::put('/', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
 });
@@ -116,6 +119,8 @@ Route::prefix('user-templates')->group(function () {
 });
 
 //assessments
+Route::middleware('auth:sanctum')->get('assessments/client', [AssessmentController::class, 'getAssessmentsForAuthenticatedClient']);
+
 Route::prefix('assessments')->group(function () {
     Route::get('/', action:[AssessmentController	::class, 'index']);
     Route::post('/', [AssessmentController::class, 'store']); 
@@ -127,7 +132,7 @@ Route::prefix('assessments')->group(function () {
     Route::get('/user/{userId}', [AssessmentController::class, 'getAssessmentsByUserId']);
 
    Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/client', [AssessmentController::class, 'getAssessmentsForAuthenticatedClient']);
+    //Route::get('/client', [AssessmentController::class, 'getAssessmentsForAuthenticatedClient']);
     Route::get('/user', [AssessmentController::class, 'getAssessmentsForAuthenticatedUser']);
     });
 });

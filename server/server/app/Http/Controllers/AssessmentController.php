@@ -141,96 +141,142 @@ class AssessmentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-{
-    Log::info('Site Images:', [
-        'site_images' => $request->input('assessment.site_images'),
-    ]);
+    {
+        try {
+            Log::info('Received update request:', ['assessment_id' => $id]);
     
-
-
-
-    $assessment = Assessment::findOrFail($id);
-
-    $request->validate([
-        'client_id' => 'sometimes|exists:clients,id',
-        'template_id' => 'sometimes|exists:templates,id',
-        'user_id' => 'sometimes|exists:users,id',
-        'assessment' => 'sometimes',
-        'status' => 'sometimes|in:approved,rejected,pending',
-        'submited_to_admin' => 'sometimes|boolean',
-        'feedback_by_admin' => 'sometimes|string',
-        'status_by_admin' => 'sometimes|in:approved,rejected,pending',
-        'complete_by_user' => 'sometimes|boolean',
-        'site_images.*.site_image' => 'sometimes|string',
-        'site_images.*.is_flagged' => 'sometimes|boolean',
-
-    ]);
-
-    if ($request->has('assessment')) {
-        $updatedAssessmentData = $request->input('assessment');
-        $existingAssessmentData = $assessment->assessment ?? [];
-
-        // Merge `fields` if present in updated data
-        if (isset($updatedAssessmentData['fields'])) {
-            foreach ($updatedAssessmentData['fields'] as $updatedField) {
-                foreach ($existingAssessmentData['fields'] as &$existingField) {
-                    if (isset($existingField['id']) && isset($updatedField['id']) && $existingField['id'] === $updatedField['id']) {
-                        $existingField = array_merge($existingField, $updatedField);
+            // Log the incoming request data for debugging
+            Log::info('Request Data:', $request->all());
+    
+            // Log the assessor and date from the input
+            Log::info('Site Images:', [
+                'assessor' => $request->input('assessment.assessor'),
+                'date' => $request->input('assessment.date'),
+            ]);
+    
+            $assessment = Assessment::findOrFail($id);
+            Log::info('Found assessment:', ['assessment' => $assessment]);
+    
+            $request->validate([
+                'client_id' => 'sometimes|exists:clients,id',
+                'template_id' => 'sometimes|exists:templates,id',
+                'user_id' => 'sometimes|exists:users,id',
+                'assessment' => 'sometimes',
+                'status' => 'sometimes|in:approved,rejected,pending',
+                'submited_to_admin' => 'sometimes|boolean',
+                'feedback_by_admin' => 'sometimes|string',
+                'assessment.reference' => 'sometimes|string',
+                'assessment.assessor' => 'sometimes|string',
+                'assessment.date' => 'sometimes|string',
+                'status_by_admin' => 'sometimes|in:approved,rejected,pending',
+                'complete_by_user' => 'sometimes|boolean',
+                'site_images.*.site_image' => 'sometimes|string',
+                'site_images.*.is_flagged' => 'sometimes|boolean',
+            ]);
+    
+            if ($request->has('assessment')) {
+                $updatedAssessmentData = $request->input('assessment');
+                Log::info('Updated Assessment Data:', $updatedAssessmentData);
+    
+                $existingAssessmentData = $assessment->assessment ?? [];
+                Log::info('Existing Assessment Data:', $existingAssessmentData);
+    
+                // Merge `fields` if present in updated data
+                if (isset($updatedAssessmentData['fields'])) {
+                    Log::info('Merging Fields...');
+                    foreach ($updatedAssessmentData['fields'] as $updatedField) {
+                        foreach ($existingAssessmentData['fields'] as &$existingField) {
+                            if (isset($existingField['id']) && isset($updatedField['id']) && $existingField['id'] === $updatedField['id']) {
+                                $existingField = array_merge($existingField, $updatedField);
+                                Log::info('Merged Field:', ['field' => $existingField]);
+                            }
+                        }
                     }
                 }
-            }
-        }
-
-        if (isset($updatedAssessmentData['tables'])) {
-            foreach ($updatedAssessmentData['tables'] as $updatedTable) {
-                foreach ($existingAssessmentData['tables'] as &$existingTable) {
-                    if (
-                        isset($existingTable['table_name']) && isset($updatedTable['table_name']) &&
-                        $existingTable['table_name'] === $updatedTable['table_name']
-                    ) {
-                        if (isset($updatedTable['table_data']['rows'])) {
-                            foreach ($updatedTable['table_data']['rows'] as $rowKey => $updatedRowData) {
-                                if (isset($existingTable['table_data']['rows'][$rowKey])) {
-                                    foreach ($updatedRowData as $columnKey => $columnValue) {
-                                        if ($columnValue !== null) {
-                                            $existingTable['table_data']['rows'][$rowKey][$columnKey] = $columnValue;
+    
+                if (isset($updatedAssessmentData['tables'])) {
+                    Log::info('Merging Tables...');
+                    foreach ($updatedAssessmentData['tables'] as $updatedTable) {
+                        foreach ($existingAssessmentData['tables'] as &$existingTable) {
+                            if (
+                                isset($existingTable['table_name']) && isset($updatedTable['table_name']) &&
+                                $existingTable['table_name'] === $updatedTable['table_name']
+                            ) {
+                                if (isset($updatedTable['table_data']['rows'])) {
+                                    foreach ($updatedTable['table_data']['rows'] as $rowKey => $updatedRowData) {
+                                        if (isset($existingTable['table_data']['rows'][$rowKey])) {
+                                            foreach ($updatedRowData as $columnKey => $columnValue) {
+                                                if ($columnValue !== null) {
+                                                    $existingTable['table_data']['rows'][$rowKey][$columnKey] = $columnValue;
+                                                    Log::info('Updated Table Row:', ['rowKey' => $rowKey, 'columnKey' => $columnKey, 'newValue' => $columnValue]);
+                                                }
+                                            }
+                                        } else {
+                                            $existingTable['table_data']['rows'][$rowKey] = $updatedRowData;
+                                            Log::info('Added New Row:', ['rowKey' => $rowKey, 'newRowData' => $updatedRowData]);
                                         }
                                     }
-                                } else {
-                                    $existingTable['table_data']['rows'][$rowKey] = $updatedRowData;
                                 }
                             }
                         }
                     }
                 }
+    
+                $existingAssessmentData['reference'] = $updatedAssessmentData['reference'] ?? $existingAssessmentData['reference'] ?? null;
+                $existingAssessmentData['assessor'] = $updatedAssessmentData['assessor'] ?? $existingAssessmentData['assessor'] ?? null;
+                $existingAssessmentData['date'] = $updatedAssessmentData['date'] ?? $existingAssessmentData['date'] ?? null;
+    
+                Log::info('Final Assessment Data:', $existingAssessmentData);
+    
+                $assessment->assessment = $existingAssessmentData;
             }
-        }
-
-        $assessment->assessment = $existingAssessmentData;
-    }
-
-    $assessment->update($request->only(['client_id', 'template_id', 'user_id', 'status', 'submited_to_admin', 'status_by_admin','complete_by_user','feedback_by_admin']));
-    if ($request->has('assessment.site_images')) {
-        foreach ($request->input('assessment.site_images') as $siteImageData) {
-            if (isset($siteImageData['site_image'])) {
-                SiteImage::updateOrCreate(
-                    [
-                        'assessment_id' => $assessment->id,
-                        'site_image' => $siteImageData['site_image'],
-                    ],
-                    [
-                        'is_flagged' => $siteImageData['is_flagged'] ?? false,
-                    ]
-                );
+    
+            Log::info('Updating Assessment:', $request->only([
+                'client_id', 'template_id', 'user_id', 'status', 'submited_to_admin', 'status_by_admin', 'complete_by_user', 'feedback_by_admin'
+            ]));
+    
+            $assessment->update($request->only([
+                'client_id', 'template_id', 'user_id', 'status', 'submited_to_admin', 'status_by_admin', 'complete_by_user', 'feedback_by_admin'
+            ]));
+    
+            if ($request->has('assessment.site_images')) {
+                Log::info('Processing Site Images...');
+                foreach ($request->input('assessment.site_images') as $siteImageData) {
+                    Log::info('Site Image Data:', $siteImageData);
+                    if (isset($siteImageData['site_image'])) {
+                        SiteImage::updateOrCreate(
+                            [
+                                'assessment_id' => $assessment->id,
+                                'site_image' => $siteImageData['site_image'],
+                            ],
+                            [
+                                'is_flagged' => $siteImageData['is_flagged'] ?? false,
+                            ]
+                        );
+                        Log::info('Site Image Updated or Created:', ['assessment_id' => $assessment->id, 'site_image' => $siteImageData['site_image']]);
+                    }
+                }
             }
+    
+            $assessment->save(); // Ensure the updated data is saved
+            Log::info('Assessment saved:', ['assessment_id' => $assessment->id]);
+    
+            return response()->json($assessment);
+    
+        } catch (\Exception $e) {
+            Log::error('Error updating assessment:', [
+                'exception' => $e->getMessage(),
+                'stack' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+    
+            return response()->json([
+                'error' => 'An error occurred while updating the assessment.',
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
     
-    $assessment->save(); // Ensure the updated data is saved
-
-    return response()->json($assessment);
-}
-
         
 
     /**
@@ -260,14 +306,18 @@ class AssessmentController extends Controller
     public function getAssessmentsForAuthenticatedClient()
     {
         $client = Auth::user();
-        if ($client && $client->hasRole('client')) {
-            $assessments = Assessment::where('client_id', $client->id)->with(['client', 'template', 'user'])->get();
+        if ($client) {
+            $assessments = Assessment::where('client_id', $client->id)
+                ->where('complete_by_user', true)
+                ->with(['client', 'template', 'user'])
+                ->get();
+    
             return response()->json($assessments);
         }
-
+    
         return response()->json(['message' => 'Unauthorized or client role not found'], 403);
     }
-
+    
     public function getAssessmentsForAuthenticatedUser()
     {
         $user = Auth::user();

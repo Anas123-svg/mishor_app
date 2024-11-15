@@ -129,7 +129,7 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-
+    
         $userWithAssessmentCounts = User::where('id', $user->id)
             ->withCount([
                 'assessments as completed_assessments' => function ($query) {
@@ -143,27 +143,65 @@ class UserController extends Controller
                 },
                 'assessments as total_assessments'
             ])->first();
-
+    
         $dailyApprovedCounts = $this->getDailyApprovedCounts($user->id);
+    
+        // Fetch assessments with template name directly included as "name"
         $assignedAssessments = Assessment::where('user_id', $user->id)
-        ->whereIn('status', ['rejected', 'pending']) 
-        ->get(['id', 'status', 'created_at', 'updated_at', 'location', 'name']);    
+            ->where('complete_by_user', false) 
+            ->whereIn('status', ['assigned','pending'])  
+            ->with('template:id,name') // Eager load only the template name
+            ->get(['id', 'status', 'created_at', 'updated_at', 'location', 'template_id'])
+            ->map(function ($assessment) {
+                $assessment->name = $assessment->template->name ?? $assessment->name;
+                unset($assessment->template); // Remove the nested template relationship
+                return $assessment;
+            });
+    
         return response()->json([
             'user' => $userWithAssessmentCounts,
             'daily_approved_counts' => $dailyApprovedCounts,
             'assigned_assessments' => $assignedAssessments
         ]);
     }
+        
 
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
-
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ]);
+        // Log the user ID of the authenticated user attempting to log out
+        Log::info('User attempting to log out', ['user_id' => $request->user()->id]);
+    
+        try {
+            // Delete all tokens associated with the user
+            $tokensDeleted = $request->user()->tokens()->delete();
+    
+            // Log the result of the token deletion
+            Log::info('Tokens deleted for user', [
+                'user_id' => $request->user()->id,
+                'tokens_deleted' => $tokensDeleted
+            ]);
+    
+            // Return a successful logout response
+            return response()->json([
+                'message' => 'Logged out successfully',
+            ]);
+        } catch (\Exception $e) {
+            // Log any exceptions or errors that occur during the logout process
+            Log::error('Error during logout', [
+                'user_id' => $request->user()->id,
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+    
+            // Return a failure response in case of error
+            return response()->json([
+                'message' => 'Logout failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+    
 
     public function index()
     {
@@ -183,26 +221,29 @@ class UserController extends Controller
     }
     
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        $user = User::findOrFail($id);
-
+    
+        $authUser = auth()->user();  
+    
         $request->validate([
-            'phone' => 'required|string',
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users,email,' . $id,
+            'phone' => 'sometimes|string',
+            'name' => 'sometimes|string',
+            'email' => 'sometimes|string|email|unique:users,email,' . $authUser->id,
+            'profile_image' => 'nullable|string',
+            'role' => 'sometimes|string',
+            'is_verified' => 'sometimes|boolean',
         ]);
-
-        $user->update($request->only(['phone', 'name', 'email', 'role', 'profile_image', 'is_verified']));
-
+    
+        $authUser->update($request->only(['phone', 'name', 'email', 'role', 'profile_image', 'is_verified']));
+    
         return response()->json([
             'message' => 'User updated successfully',
-            'user' => $user,
-            'assessment_counts' => $this->getAssessmentCounts($user)
+            'user' => $authUser,
+            'assessment_counts' => $this->getAssessmentCounts($authUser)
         ]);
     }
-
-
+        
     public function showByToken(Request $request)
     {
         $user = $request->user();
