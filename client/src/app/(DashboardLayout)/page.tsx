@@ -4,20 +4,28 @@ import AssessmentOverview from "../components/dashboard/AssessmentOverview";
 import { Icon } from "@iconify/react";
 import RecentUsers from "../components/dashboard/RecentUsers";
 import axios from "axios";
+import useAuthStore from "@/store/authStore";
 
 const DashboardPage = () => {
   const [stats, setStats] = useState({
-    total_clients: 0,
-    total_templates: 0,
+    total_users: 0,
+    total_assigned_template: 0,
     created_assessments: [],
-    recent_clients: [],
+    recent_users: [],
   });
 
+  const { token } = useAuthStore();
   const fetchStats = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/statistics`
+        `${process.env.NEXT_PUBLIC_API_URL}/client/statistics`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+      console.log(response.data);
       setStats(response.data);
     } catch (error) {
       console.error(error);
@@ -46,7 +54,7 @@ const DashboardPage = () => {
               Total Users
             </h5>
             <h1 className="text-3xl font-semibold text-dark">
-              {stats.total_clients}
+              {stats.total_users}
             </h1>
           </div>
         </div>
@@ -59,7 +67,7 @@ const DashboardPage = () => {
               Assigned Templates
             </h5>
             <h1 className="text-3xl font-semibold text-dark">
-              {stats.total_templates}
+              {stats.total_assigned_template}
             </h1>
           </div>
         </div>
@@ -80,7 +88,7 @@ const DashboardPage = () => {
 
       {/* Recent Clients Section */}
       <div className="col-span-12">
-        <RecentUsers clients={stats.recent_clients} />
+        <RecentUsers clients={stats.recent_users} />
       </div>
     </div>
   );

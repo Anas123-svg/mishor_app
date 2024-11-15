@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Badge, Dropdown, TextInput } from "flowbite-react";
+import { Badge, Dropdown, Spinner, TextInput } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import { Table } from "flowbite-react";
@@ -12,8 +12,10 @@ import toast from "react-hot-toast";
 
 const TemplatePage = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [loading, setLoading] = useState(false);
   const { token } = useAuthStore();
   const fetchTemplates = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/templates`,
@@ -26,6 +28,8 @@ const TemplatePage = () => {
       setTemplates(response.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +55,11 @@ const TemplatePage = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <>
       <div className="rounded-lg dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
         <div className="flex justify-between items-center mb-4">

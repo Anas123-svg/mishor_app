@@ -9,6 +9,7 @@ import {
   Modal,
   Select,
   Label,
+  Spinner,
 } from "flowbite-react";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -17,11 +18,13 @@ import axios from "axios";
 import { Client, Template } from "@/types";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { set } from "lodash";
 
 const ClientDetails = () => {
   const { id } = useParams();
   const [client, setClient] = useState<Client>();
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchClientDetails = async () => {
     try {
@@ -49,6 +52,7 @@ const ClientDetails = () => {
   useEffect(() => {
     fetchClientDetails();
     fetchTemplates();
+    setLoading(false);
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,7 +77,11 @@ const ClientDetails = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <div className="p-2 sm:p-6 bg-gray-100 dark:bg-darkgray rounded-lg shadow-md w-full">
       <Card className="w-full h-fit">
         <div className="flex flex-col md:flex-row items-center gap-6">
@@ -115,6 +123,11 @@ const ClientDetails = () => {
               </ListGroup.Item>
             ))}
           </ListGroup>
+          {client?.users?.length === 0 && (
+            <p className="text-gray-500 dark:text-gray-400 text-center mt-4">
+              No users found
+            </p>
+          )}
         </Card>
 
         {/* Client Assessments Section */}

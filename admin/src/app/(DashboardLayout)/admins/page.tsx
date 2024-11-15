@@ -8,6 +8,7 @@ import {
   TextInput,
   Select,
   Table,
+  Spinner,
 } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import ProfilePicUploader from "@/app/components/Uploader";
@@ -43,9 +44,10 @@ const Admins = () => {
   });
   const [editingMode, setEditingMode] = useState(false);
   const [admins, setAdmins] = useState<Admin[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchAdmins = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/admin`,
@@ -77,7 +79,6 @@ const Admins = () => {
     ) {
       return toast.error("Please fill all fields!");
     }
-    setLoading(true);
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/register`,
@@ -97,11 +98,10 @@ const Admins = () => {
         role: "admin",
         profile_image: "",
       });
+      fetchAdmins();
     } catch (error: any) {
       console.error("Error adding admin:", error);
       toast.error(error.response.data.email || "Error adding admin!");
-    } finally {
-      fetchAdmins();
     }
   };
 
@@ -115,7 +115,6 @@ const Admins = () => {
     ) {
       return toast.error("Please fill all fields!");
     }
-    setLoading(true);
     try {
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/${editAdmin.id}`,
@@ -141,10 +140,9 @@ const Admins = () => {
         profile_image: "",
       });
       setEditingMode(false);
+      fetchAdmins();
     } catch (error) {
       console.error("Error editing admin:", error);
-    } finally {
-      fetchAdmins();
     }
   };
 
@@ -180,7 +178,11 @@ const Admins = () => {
     setIsModalOpen(true);
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
         <div className="flex justify-between items-center mb-4">

@@ -8,21 +8,52 @@ import {
   TextInput,
   Select,
   Table,
+  Spinner,
 } from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import axios from "axios";
+import { Assessment, Client, Template } from "@/types";
+import Link from "next/link";
+import toast from "react-hot-toast";
 
 const Assessments = () => {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const fetchAssessments = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/assessments`
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments/completed-by-user`
       );
+      setAssessments(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/templates`
+      );
+      setTemplates(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/client`
+      );
+      setClients(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -30,39 +61,36 @@ const Assessments = () => {
 
   useEffect(() => {
     fetchAssessments();
+    fetchTemplates();
+    fetchClients();
+    setLoading(false);
   }, []);
 
-  const [assessments, setAssessments] = useState([
-    {
-      title: "Risk Analysis",
-      description: "Assessment of potential risks",
-      client: "Company A",
-      status: "completed",
-    },
-    {
-      title: "Compliance Check",
-      description: "Regulatory compliance assessment",
-      client: "Company B",
-      status: "pending",
-    },
-    {
-      title: "Security Review",
-      description: "Comprehensive security assessment",
-      client: "Company C",
-      status: "in-progress",
-    },
-  ]);
-
-  const actionOptions = [
-    { icon: "solar:eye-outline", label: "View Assessment" },
-  ];
-
-  const handleAssignTemplate = () => {
-    // Logic for assigning template to a client
-    setIsModalOpen(false);
+  const handleAssignTemplate = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/client-templates`,
+        {
+          client_id: selectedClient,
+          template_id: selectedTemplate,
+        }
+      );
+      toast.success(response.data.message || "Template assigned successfully");
+      setSelectedTemplate("");
+      setSelectedClient("");
+      fetchAssessments();
+      setIsModalOpen(false);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response.data.message || "Something went wrong");
+    }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between sm:items-center mb-4">
@@ -89,17 +117,21 @@ const Assessments = () => {
               <Table.HeadCell>Title</Table.HeadCell>
               <Table.HeadCell>Description</Table.HeadCell>
               <Table.HeadCell>Client</Table.HeadCell>
-              <Table.HeadCell>Status</Table.HeadCell>
+              <Table.HeadCell>Status By Client</Table.HeadCell>
+              <Table.HeadCell>Status By Admin</Table.HeadCell>
               <Table.HeadCell>Actions</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
               {assessments
                 .filter(
                   (assessment) =>
-                    assessment.title
+                    assessment.assessment.name
                       .toLowerCase()
                       .includes(search.toLowerCase()) ||
-                    assessment.client
+                    assessment.client.name
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    assessment.assessment.description
                       .toLowerCase()
                       .includes(search.toLowerCase())
                 )
@@ -109,16 +141,16 @@ const Assessments = () => {
                     className="hover:bg-gray-100 dark:hover:bg-gray-900"
                   >
                     <Table.Cell className="font-medium">
-                      {assessment.title}
+                      {assessment.assessment.name}
                     </Table.Cell>
                     <Table.Cell className="text-gray-500">
-                      {assessment.description}
+                      {assessment.assessment.description}
                     </Table.Cell>
-                    <Table.Cell>{assessment.client}</Table.Cell>
+                    <Table.Cell>{assessment.client.name}</Table.Cell>
                     <Table.Cell className="whitespace-nowrap">
                       <Badge
                         color={
-                          assessment.status === "completed"
+                          assessment.status === "approved"
                             ? "success"
                             : assessment.status === "pending"
                             ? "warning"
@@ -127,6 +159,20 @@ const Assessments = () => {
                       >
                         {assessment.status.charAt(0).toUpperCase() +
                           assessment.status.slice(1)}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell className="whitespace-nowrap">
+                      <Badge
+                        color={
+                          assessment.status_by_admin === "approved"
+                            ? "success"
+                            : assessment.status_by_admin === "pending"
+                            ? "warning"
+                            : "failure"
+                        }
+                      >
+                        {assessment.status_by_admin.charAt(0).toUpperCase() +
+                          assessment.status_by_admin.slice(1)}
                       </Badge>
                     </Table.Cell>
                     <Table.Cell>
@@ -140,12 +186,14 @@ const Assessments = () => {
                           </span>
                         )}
                       >
-                        {actionOptions.map((action, i) => (
-                          <Dropdown.Item key={i} className="flex gap-3">
-                            <Icon icon={action.icon} height={18} />
-                            <span>{action.label}</span>
-                          </Dropdown.Item>
-                        ))}
+                        <Dropdown.Item
+                          as={Link}
+                          href={`/assessments/${assessment.id}`}
+                          className="flex gap-3"
+                        >
+                          <Icon icon="solar:eye-outline" height={18} />
+                          <span>View Assessment</span>
+                        </Dropdown.Item>
                       </Dropdown>
                     </Table.Cell>
                   </Table.Row>
@@ -155,8 +203,13 @@ const Assessments = () => {
           {assessments.length === 0 ||
             (assessments.filter(
               (assessment) =>
-                assessment.title.toLowerCase().includes(search.toLowerCase()) ||
-                assessment.description
+                assessment.assessment.name
+                  .toLowerCase()
+                  .includes(search.toLowerCase()) ||
+                assessment.client.name
+                  .toLowerCase()
+                  .includes(search.toLowerCase()) ||
+                assessment.assessment.description
                   .toLowerCase()
                   .includes(search.toLowerCase())
             ).length === 0 && (
@@ -177,9 +230,11 @@ const Assessments = () => {
             <option value="" disabled>
               Select Template
             </option>
-            <option value="template1">Template 1</option>
-            <option value="template2">Template 2</option>
-            <option value="template3">Template 3</option>
+            {templates.map((template) => (
+              <option key={template.id} value={template.id}>
+                {template.name}
+              </option>
+            ))}
           </Select>
           <Select
             value={selectedClient}
@@ -189,9 +244,11 @@ const Assessments = () => {
             <option value="" disabled>
               Select Client
             </option>
-            <option value="Company A">Company A</option>
-            <option value="Company B">Company B</option>
-            <option value="Company C">Company C</option>
+            {clients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.name}
+              </option>
+            ))}
           </Select>
         </Modal.Body>
         <Modal.Footer>

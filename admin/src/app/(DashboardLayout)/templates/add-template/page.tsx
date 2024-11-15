@@ -31,6 +31,7 @@ interface Table {
 const AddTemplate: React.FC = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [reference, setReference] = useState<string>("");
   const [fields, setFields] = useState<Field[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [isFieldModalOpen, setFieldModalOpen] = useState<boolean>(false);
@@ -61,8 +62,8 @@ const AddTemplate: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async () => {
-    if (!title || !description) {
-      toast.error("Title and description are required");
+    if (!title || !description || !reference) {
+      toast.error("Title, Description and Reference are required");
       return;
     }
     if (fields.length === 0) {
@@ -72,6 +73,7 @@ const AddTemplate: React.FC = () => {
     const data = {
       name: title,
       description,
+      reference,
       fields: fields.map((f, i) => ({
         id: i,
         label: f.label,
@@ -231,6 +233,13 @@ const AddTemplate: React.FC = () => {
         placeholder="Template Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        required
+        className="mb-4"
+      />
+      <TextInput
+        placeholder="Template Reference"
+        value={reference}
+        onChange={(e) => setReference(e.target.value)}
         required
         className="mb-4"
       />

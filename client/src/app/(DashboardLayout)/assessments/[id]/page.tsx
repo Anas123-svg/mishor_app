@@ -1,316 +1,298 @@
 "use client";
-import React from "react";
-import { Card, Table, Button } from "flowbite-react";
-import { Icon } from "@iconify/react";
-import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { Field, Table, Assessment } from "@/types";
+import axios from "axios";
+import useAuthStore from "@/store/authStore";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
+import {
+  Card,
+  Table as FlowTable,
+  Badge,
+  Select,
+  Radio,
+  Checkbox,
+  Spinner,
+  TextInput,
+  Textarea,
+  Label,
+  Button,
+} from "flowbite-react";
+import toast from "react-hot-toast";
 
-// Define types for the structure
-interface Field {
-  id: number;
-  label: string;
-  type: string;
-  value: string | null;
-  attributes?: string[] | { label: string; checked: boolean }[]; // Can be an array of strings or objects with label and checked
-}
+const ViewAssessment: React.FC = () => {
+  const { id } = useParams();
+  const { token } = useAuthStore();
+  const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-interface TableData {
-  id: number;
-  template_id: number;
-  table_name: string;
-  table_data: {
-    columns: string[];
-    rows: {
-      [key: string]: {
-        [key: string]: string | { label: string; checked: boolean };
-      };
-    };
-  };
-}
-
-interface AssessmentDetails {
-  id: number;
-  client_id: number;
-  template_id: number;
-  user_id: number;
-  assessment: {
-    id: number;
-    name: string;
-    description: string;
-    Reference: string | null;
-    Assessor: string | null;
-    Date: string | null;
-    fields: Field[];
-    tables: TableData[];
-  };
-  status: string;
-  client: {
-    id: number;
-    name: string;
-    email: string;
-    profile_image: string;
-  };
-  template: {
-    id: number;
-    name: string;
-    description: string;
-  };
-  user: {
-    id: number;
-    client_id: number;
-    name: string;
-    email: string;
-  };
-}
-
-const AssessmentDetails: React.FC = () => {
-  const assessment: AssessmentDetails = {
-    id: 2,
-    client_id: 3,
-    template_id: 14,
-    user_id: 4,
-    assessment: {
-      id: 14,
-      name: "Sample Template Updated",
-      description:
-        "This is a test template with updated named rows and multiple field types.",
-      Reference: "fdsfsddfsfd",
-      Assessor: "sfdfd",
-      Date: "sfdfsd",
-      fields: [
+  const fetchTemplate = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments/${id}`,
         {
-          id: 35,
-          label: "Field2",
-          type: "text",
-          value: "updated text",
-        },
-        {
-          id: 36,
-          label: "Field4",
-          type: "radio",
-          attributes: ["Option1", "Option2", "Option3"],
-          value: "Option2",
-        },
-        {
-          id: 37,
-          label: "Field5",
-          type: "dropdown",
-          attributes: ["Choice1", "Choice2", "Choice3"],
-          value: "Choice1",
-        },
-        {
-          id: 38,
-          label: "ChecklistField",
-          type: "checklist",
-          attributes: [
-            { label: "Item1", checked: true },
-            { label: "Item2", checked: false },
-            { label: "Item3", checked: false },
-          ],
-          value: null,
-        },
-      ],
-      tables: [
-        {
-          id: 14,
-          template_id: 14,
-          table_name: "Meeting Schedule Updated",
-          table_data: {
-            columns: ["Session", "Date", "Time", "Topic"],
-            rows: {
-              "Session 1": {
-                Session: "Session 1",
-                Date: "updated date",
-                Time: "updated time",
-                Topic: "updated topic",
-              },
-              "Session 2": {
-                Session: "Session 2",
-                Date: "updated date",
-                Time: "updated time",
-                Topic: "updated topic",
-              },
-              "Session 3": {
-                Session: "Session 3",
-                Date: "updated date",
-                Time: "updated time",
-                Topic: "updated topic",
-              },
-            },
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
+        }
+      );
+      setAssessment(response.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplate();
+  }, []);
+
+  const approveAssessment = async () => {
+    setLoading(true);
+    try {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments/${id}`,
+        {
+          status: "approved",
         },
         {
-          id: 15,
-          template_id: 14,
-          table_name: "Feedback Details Updated",
-          table_data: {
-            columns: ["Feedback ID", "Submitted By", "Date"],
-            rows: {
-              "Feedback 1": {
-                "Feedback ID": "updated",
-                "Submitted By": "updated",
-                Date: "updated",
-              },
-              "Feedback 2": {
-                "Feedback ID": "approved updated",
-                "Submitted By": "approved updated",
-                Date: "approved updated",
-              },
-            },
-          },
-        },
-      ],
-    },
-    status: "rejected",
-    client: {
-      id: 3,
-      name: "Anas",
-      email: "anas@gmail.com",
-      profile_image: "fafas",
-    },
-    template: {
-      id: 14,
-      name: "Sample Template",
-      description:
-        "This is a test template with named rows and multiple field types.",
-    },
-    user: {
-      id: 4,
-      client_id: 3,
-      name: "John Doe",
-      email: "johdzfasddsfdndoe@example.com",
-    },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Assessment approved successfully.");
+      fetchTemplate();
+    } catch (err) {
+      toast.error("Failed to approve assessment.");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const rejectAssessment = async () => {
+    setLoading(true);
+    try {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/assessments/${id}`,
+        {
+          status: "rejected",
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Assessment rejected successfully.");
+      fetchTemplate();
+    } catch (err) {
+      toast.error("Failed to reject assessment.");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+        <Spinner aria-label="Loading assessment..." size="xl" />
+      </div>
+    );
+
+  if (!assessment) return <p>Assessment not found.</p>;
 
   return (
-    <div className="p-8 bg-gray-100 dark:bg-darkgray rounded-xl space-y-8">
-      {/* Client Information */}
-      <Card className="p-6 shadow-sm bg-white rounded-xl">
-        <h5 className="text-2xl font-semibold mb-4">Client Information</h5>
-        <div className="flex items-center gap-6">
-          <Image
-            src={`/images/profile/${assessment.client.profile_image}.jpg`}
-            alt={`${assessment.client.name}'s Profile`}
-            width={60}
-            height={60}
-            className="rounded-full border-2 border-gray-300"
-          />
-          <div>
-            <h6 className="font-medium text-xl text-gray-800">
-              {assessment.client.name}
-            </h6>
-            <p className="text-md text-gray-500">{assessment.client.email}</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Assessment Template Details */}
-      <Card className="p-6 shadow-sm bg-white rounded-xl">
-        <h5 className="text-2xl font-semibold mb-4">Assessment Details</h5>
-        <p>
-          <strong>Title:</strong> {assessment.assessment.name}
-        </p>
-        <p>
-          <strong>Description:</strong> {assessment.assessment.description}
-        </p>
-        <p>
-          <strong>Reference:</strong> {assessment.assessment.Reference}
-        </p>
-        <p>
-          <strong>Assessor:</strong> {assessment.assessment.Assessor}
-        </p>
-        <p>
-          <strong>Date:</strong> {assessment.assessment.Date}
-        </p>
-      </Card>
-
-      {/* Fields Information */}
-      <Card className="p-6 shadow-sm bg-white rounded-xl">
-        <h5 className="text-2xl font-semibold mb-4">Fields</h5>
-        <Table hoverable>
-          <Table.Head>
-            <Table.HeadCell>Label</Table.HeadCell>
-            <Table.HeadCell>Value</Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            {assessment.assessment.fields.map((field) => (
-              <Table.Row key={field.id}>
-                <Table.Cell>{field.label}</Table.Cell>
-                <Table.Cell>
-                  {field.type === "checklist" ? (
-                    <ul className="list-disc ml-6">
-                      {Array.isArray(field.attributes) &&
-                        field.attributes.map((item, index) =>
-                          typeof item === "string" ? (
-                            <li key={index} className="text-gray-700">
-                              {item}
-                            </li>
-                          ) : (
-                            <li
-                              key={index}
-                              className={`${
-                                item.checked
-                                  ? "text-green-500"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {item.label}{" "}
-                              {item.checked && (
-                                <Icon icon="solar:checkmark-circle-line" />
-                              )}
-                            </li>
-                          )
-                        )}
-                    </ul>
-                  ) : (
-                    field.value || (
-                      <span className="text-gray-500">No Value</span>
-                    )
-                  )}
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
-      </Card>
-
-      {/* Tables Information */}
-      {assessment.assessment.tables.map((table) => (
-        <Card key={table.id} className="p-6 shadow-sm bg-white rounded-xl">
-          <h5 className="text-2xl font-semibold mb-4">{table.table_name}</h5>
-          <Table hoverable>
-            <Table.Head>
-              {table.table_data.columns.map((column, idx) => (
-                <Table.HeadCell key={idx}>{column}</Table.HeadCell>
-              ))}
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {Object.keys(table.table_data.rows).map((rowKey) => (
-                <Table.Row key={rowKey}>
-                  {table.table_data.columns.map((column, idx) => (
-                    <Table.Cell key={idx}>
-                      {typeof table.table_data.rows[rowKey][column] === "string"
-                        ? table.table_data.rows[rowKey][column]
-                        : "Updated Value"}
-                    </Table.Cell>
-                  ))}
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        </Card>
-      ))}
-
-      {/* Buttons for Approval/Rejection */}
-      <div className="flex gap-4 justify-center mt-6">
-        <Button color="success" size="lg" className="w-1/3">
-          Approve
-        </Button>
-        <Button color="failure" size="lg" className="w-1/3">
+    <div className="space-y-6">
+      <Badge
+        className="text-lg"
+        color={
+          assessment.status === "approved"
+            ? "success"
+            : assessment.status === "pending"
+            ? "warning"
+            : "failure"
+        }
+      >
+        {assessment.status.charAt(0).toUpperCase() + assessment.status.slice(1)}
+      </Badge>
+      <Card className="flex gap-5">
+        <Button
+          onClick={rejectAssessment}
+          disabled={loading}
+          color="failure"
+          className="w-full"
+        >
           Reject
         </Button>
-      </div>
+        <Button
+          onClick={approveAssessment}
+          disabled={loading}
+          color="success"
+          className="w-full"
+        >
+          Approve
+        </Button>
+      </Card>
+      <Card>
+        <h1 className="text-2xl font-semibold">{assessment.assessment.name}</h1>
+        <p className="text-gray-600">{assessment.assessment.description}</p>
+        <p className="text-sm text-gray-500">Created by: Admin</p>
+        <p className="text-sm text-gray-500">
+          Client Name: {assessment.client.name}
+        </p>
+        <p className="text-sm text-gray-500">
+          User Name: {assessment.user.name}
+        </p>
+        <p className="text-sm text-gray-500">Created by: Admin</p>
+
+        <p className="text-sm text-gray-500">
+          Created on: {new Date(assessment.created_at).toLocaleDateString()}
+        </p>
+      </Card>
+
+      <Card>
+        {assessment.assessment.fields.map((field: Field, index) => (
+          <div key={index}>
+            <div className="flex items-center gap-5">
+              <p className="text-lg font-semibold">
+                {" "}
+                {field.label}
+                {field.attributes.required && (
+                  <span className="text-primary ml-1">*</span>
+                )}
+              </p>{" "}
+              {field.isFlagged && (
+                <Badge color="failure">Flagged by Admin</Badge>
+              )}
+            </div>
+            {(field.type === "text" || field.type === "number") && (
+              <TextInput
+                className="w-full mt-2"
+                type={field.type}
+                value={field.value}
+                disabled
+              />
+            )}
+            {field.type === "textarea" && (
+              <Textarea
+                rows={5}
+                className="w-full mt-2"
+                value={field.value}
+                disabled
+              />
+            )}
+            {field.type === "select" && (
+              <Select className="w-full mt-2" disabled value={field.value}>
+                {field.options.map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Select>
+            )}
+            {field.type === "radio" && (
+              <div className="mt-2 flex flex-col gap-2">
+                {field.options.map((option, index) => (
+                  <label key={index} className="space-x-1">
+                    <Radio
+                      name={field.label}
+                      value={option}
+                      disabled
+                      checked={field.value === option}
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+            {field.type === "checkbox" && (
+              <div className="mt-2 flex flex-col gap-2">
+                {field.options.map((option, index) => (
+                  <label key={index} className="space-x-1">
+                    <Checkbox
+                      value={option}
+                      disabled
+                      checked={field.value.includes(option)}
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </Card>
+
+      {assessment.assessment.tables &&
+        assessment.assessment.tables.length > 0 && (
+          <Card>
+            {assessment.assessment.tables.map((table: Table, index) => (
+              <div key={index} className="overflow-x-auto overflow-y-hidden">
+                <p className="text-lg font-semibold">{table.table_name}</p>
+                <FlowTable hoverable className="border mt-2">
+                  <FlowTable.Head>
+                    <FlowTable.HeadCell className="w-[300px] border-x"></FlowTable.HeadCell>
+                    {table.table_data.columns.map((column, index) => (
+                      <FlowTable.HeadCell key={index} className="border-x">
+                        {column}
+                      </FlowTable.HeadCell>
+                    ))}
+                  </FlowTable.Head>
+                  <FlowTable.Body className="divide-y divide-border dark:divide-darkborder">
+                    {Object.entries(table.table_data.rows).map(([key, row]) => (
+                      <FlowTable.Row key={key}>
+                        <FlowTable.Cell className="w-[300px] border-x font-semibold">
+                          {key}
+                        </FlowTable.Cell>
+                        {Object.values(row).map((value, index) => (
+                          <FlowTable.Cell key={index} className="border-x">
+                            {value}
+                          </FlowTable.Cell>
+                        ))}
+                      </FlowTable.Row>
+                    ))}
+                  </FlowTable.Body>
+                </FlowTable>
+              </div>
+            ))}
+          </Card>
+        )}
+      {assessment.site_images && assessment.site_images.length > 0 && (
+        <Card>
+          <p className="text-lg font-semibold mb-4">Site Images</p>
+          <ResponsiveMasonry
+            columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}
+          >
+            <Masonry gutter="20px">
+              {assessment.site_images.map((image, index) => (
+                <Zoom key={index}>
+                  <img
+                    src={image}
+                    alt={`Site Image ${index + 1}`}
+                    className="w-full h-auto rounded-lg"
+                  />
+                </Zoom>
+              ))}
+            </Masonry>
+          </ResponsiveMasonry>
+        </Card>
+      )}
+      {assessment.feedback_by_admin && (
+        <Card>
+          <p className="text-lg font-semibold">Admin Feedback</p>
+          <Textarea
+            rows={10}
+            className="w-full"
+            placeholder="Write your feedback here..."
+            value={assessment.feedback_by_admin || ""}
+            disabled
+          />
+        </Card>
+      )}
     </div>
   );
 };
 
-export default AssessmentDetails;
+export default ViewAssessment;

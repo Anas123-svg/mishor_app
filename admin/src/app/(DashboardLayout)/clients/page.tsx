@@ -1,6 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Badge, Dropdown, TextInput, Table, TableRow } from "flowbite-react";
+import {
+  Badge,
+  Dropdown,
+  TextInput,
+  Table,
+  TableRow,
+  Spinner,
+} from "flowbite-react";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { Icon } from "@iconify/react";
 import axios from "axios";
@@ -13,8 +20,10 @@ const Clients = () => {
   const [search, setSearch] = useState("");
   const { token } = useAuthStore();
   const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchClients = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/client`,
@@ -27,6 +36,8 @@ const Clients = () => {
       setClients(response.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,6 +65,7 @@ const Clients = () => {
   };
 
   const deleteClient = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this client?")) return;
     try {
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/clients/${id}`,
@@ -69,7 +81,11 @@ const Clients = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex justify-center items-center w-full h-[80vh] text-primary">
+      <Spinner size="xl" />
+    </div>
+  ) : (
     <>
       <div className="rounded-lg shadow-md bg-white dark:bg-darkgray p-6 w-full">
         <h5 className="text-xl font-semibold mb-4">Clients</h5>
