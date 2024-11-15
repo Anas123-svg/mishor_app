@@ -18,11 +18,22 @@ class ClientTemplateController extends Controller
             'template_id' => 'required|exists:templates,id',
             'status' => 'nullable|in:pending,approved,rejected',
         ]);
-
-        $clientTemplate = ClientTemplate::create($request->only(['client_id', 'template_id','status']));
+    
+        $existingClientTemplate = ClientTemplate::where('client_id', $request->client_id)
+                                                ->where('template_id', $request->template_id)
+                                                ->first();
+    
+        if ($existingClientTemplate) {
+            return response()->json([
+                'message' => 'This template is already assigned to the client.'
+            ], 409); 
+        }
+    
+        $clientTemplate = ClientTemplate::create($request->only(['client_id', 'template_id', 'status']));
+    
         return response()->json($clientTemplate, 201);
     }
-
+    
     public function show($id)
     {
         $clientTemplate = ClientTemplate::with(['client', 'template:id,name,description'])->findOrFail($id);
