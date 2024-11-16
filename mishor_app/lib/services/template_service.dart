@@ -1,16 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:mishor_app/models/assessment_model.dart';
+import 'package:mishor_app/utilities/api.dart';
 
 
 class TemplateService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://127.0.0.1:8000/api/'));
-  final String baseUrl ='http://127.0.0.1:8000/api';
+  final Dio _dio = Dio(BaseOptions(baseUrl: Api.baseUrl));
+  final String baseUrl =Api.baseUrl;
   
   get http => null;
   Future<Assessment2> fetchTemplateData(int id) async {
     print(id);
     try {
-      final response = await _dio.get('assessments/$id');
+      final response = await _dio.get('/assessments/$id');
 
       if (response.statusCode == 200) {
         final jsonData = response.data;
@@ -36,7 +37,7 @@ class TemplateService {
 
 
 final Dio dio = Dio(BaseOptions(
-  baseUrl: 'http://127.0.0.1:8000/api/',
+  baseUrl: Api.baseUrl,
   headers: {
     'Content-Type': 'application/json',
   },

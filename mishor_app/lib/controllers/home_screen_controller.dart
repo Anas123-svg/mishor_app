@@ -28,4 +28,17 @@ class HomeController {
     }
   }
 
+
+    AssessmentStats? _rejectedAssessmentStats;
+
+  AssessmentStats? get rejectedAssessmentStats => _rejectedAssessmentStats;
+  Future<void> loadRejectedAssessmentCounts(String token) async {
+    try {
+      _rejectedAssessmentStats = await _homeService.fetchRejectedAssessment(token);
+      print("Assessment counts fetched successfully: ${_rejectedAssessmentStats!.completedAssessments}");
+    } catch (e) {
+      print("Error fetching assessment counts: $e");
+    }
+  }
+
 }

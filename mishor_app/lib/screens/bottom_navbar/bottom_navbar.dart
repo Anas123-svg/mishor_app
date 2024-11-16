@@ -32,14 +32,15 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
     return Scaffold(
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.primary,
-              AppColors.primary,
-            ], 
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.primary
+         // gradient: LinearGradient(
+            //colors: [
+             // AppColors.primary,
+             // AppColors.primary,
+            //], 
+            //begin: Alignment.topLeft,
+           // end: Alignment.bottomRight,
+         // ),
         ),
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,

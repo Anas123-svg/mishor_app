@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:mishor_app/controllers/home_screen_controller.dart';
 import 'package:mishor_app/models/assessment_stats.dart';
+import 'package:mishor_app/screens/template_screen/view_template.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart ';
@@ -18,17 +19,15 @@ class RejectedScreen extends StatefulWidget {
 }
 
 class _RejectedScreen extends State<RejectedScreen> {
-  String selectedFilter = 'Rejected';
   final HomeController homeController = Get.find();
   String? userToken;
   bool isLoading = true;
   List<Assessment> RejectedInspections = [];
   String searchQuery = '';
-  String filterStatus = 'All';
-
+  //String filterStatus = 'All';
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     loadUserData();
   }
 
@@ -40,7 +39,7 @@ class _RejectedScreen extends State<RejectedScreen> {
 
     if (userToken != null) {
       try {
-        await homeController.loadAssessmentCounts(userToken!);
+        await homeController.loadRejectedAssessmentCounts(userToken!);
         loadAssignedInspections();
       } catch (error) {
         print('Error fetching assessment counts: $error');
@@ -53,16 +52,17 @@ class _RejectedScreen extends State<RejectedScreen> {
   }
 
   void loadAssignedInspections() {
-    final assessmentStats = homeController.assessmentStats;
+    final assessmentStats = homeController.rejectedAssessmentStats;
     if (assessmentStats != null) {
       setState(() {
         RejectedInspections = assessmentStats.rejectedAssessmentsList;
       });
     }
   }
-
   @override
+  
   Widget build(BuildContext context) {
+    final assessmentStats = homeController.rejectedAssessmentStats;
     return Scaffold(
       appBar: const CustomAppbar(),
       drawer: drawer(),
@@ -72,16 +72,6 @@ class _RejectedScreen extends State<RejectedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Rejected Inspections',
-                style: TextStyle(
-                  fontSize: 26.sp,
-                  fontWeight: FontWeight.w300,
-                  color: AppColors.primary,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -89,17 +79,23 @@ class _RejectedScreen extends State<RejectedScreen> {
                     flex: 3,
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search inspections...',
+                        hintText: 'Search Inspections...',
                         hintStyle: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 16.sp,
+                            color: Colors.black,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w200),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.r),
+                          borderRadius: BorderRadius.circular(12.r),
                           borderSide: BorderSide(color: AppColors.primary),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: Colors.red),
                         ),
                         prefixIcon:
                             Icon(Icons.search, color: AppColors.primary),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -120,16 +116,9 @@ class _RejectedScreen extends State<RejectedScreen> {
                   final assessment = RejectedInspections[index];
                   return GestureDetector(
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                'Rejected Inspection ${index + 1} selected')),
-                      );
+                      Get.to(() => ViewTemplate(assessment.id));
                     },
-                    child: assessment.status == 'rejected'
-                        ? buildInspectionCard(assessment: assessment)
-                        : SizedBox
-                            .shrink(),
+                    child: buildInspectionCard(assessment: assessment),
                   );
                 },
               ),
@@ -161,5 +150,4 @@ class _RejectedScreen extends State<RejectedScreen> {
       ],
     );
   }
-
 }

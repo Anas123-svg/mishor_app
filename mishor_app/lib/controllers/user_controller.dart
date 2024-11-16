@@ -22,10 +22,9 @@ class UserController extends GetxController {
     prefs.setInt('user_pending_assessments', userData.pending_assessments);
   }
   Future<void> updateProfile(User updatedUser) async {
-    // Update the user data
+
     user(updatedUser);
 
-    // Update SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('user_name', updatedUser.name);
     prefs.setString('user_email', updatedUser.email);

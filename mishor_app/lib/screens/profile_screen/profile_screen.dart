@@ -3,7 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mishor_app/Routes/app_routes.dart';
 import 'package:mishor_app/controllers/user_controller.dart';
+import 'package:mishor_app/screens/change_password/change_password.dart';
 import 'package:mishor_app/screens/edit_profile/edit_profile.dart';
+import 'package:mishor_app/screens/support_screen/support_screen.dart';
 import 'package:mishor_app/services/profile_service.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
@@ -213,7 +215,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.lock_outline,
                       label: 'Change Password',
                       onTap: () {
-                        // Implement change password action
+                        Get.to(() => ChangePasswordScreen());
                       },
                     ),
 
@@ -222,7 +224,7 @@ class _ProfileScreen extends State<ProfileScreen> {
                       icon: Icons.help_outline,
                       label: 'Help & Support',
                       onTap: () {
-                        // Implement help & support action
+                            Get.to(() => SupportScreen());
                       },
                     ),
                     _buildDivider(),

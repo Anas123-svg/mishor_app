@@ -3,12 +3,14 @@ class AssessmentStats {
   final int rejectedAssessments;
   final int pendingAssessments;
   final int totalAssessments;
+  final int assignedAssessments;
   final Map<String, int> dailyApprovedCounts;
   final List<Assessment> rejectedAssessmentsList;
 
   AssessmentStats({
     required this.completedAssessments,
     required this.rejectedAssessments,
+    required this.assignedAssessments,
     required this.pendingAssessments,
     required this.totalAssessments,
     required this.dailyApprovedCounts,
@@ -19,6 +21,7 @@ class AssessmentStats {
     return AssessmentStats(
       completedAssessments: json['user']['completed_assessments'] ?? 0,
       rejectedAssessments: json['user']['rejected_assessments'] ?? 0,
+      assignedAssessments: json['user']['assigned_assessments_count'] ?? 0,
       pendingAssessments: json['user']['pending_assessments'] ?? 0,
       totalAssessments: json['user']['total_assessments'] ?? 0,
       dailyApprovedCounts: Map<String, int>.from(json['daily_approved_counts'] ?? {}),

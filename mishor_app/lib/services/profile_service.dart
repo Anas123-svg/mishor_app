@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:mishor_app/utilities/api.dart';
 
 class ProfileService {
-  final String apiUrl = 'http://127.0.0.1:8000/api';
+  final String apiUrl =Api.baseUrl;
   final String cloudName = 'dchubllrz';
   final String uploadPreset = 'nmafnbii';
 

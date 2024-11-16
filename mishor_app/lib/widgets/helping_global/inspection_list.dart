@@ -10,7 +10,6 @@ class buildInspectionCard extends StatelessWidget {
   });
   final Assessment assessment;
 
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -37,18 +36,22 @@ class buildInspectionCard extends StatelessWidget {
             child: CircleAvatar(
               radius: 25.r,
               backgroundColor: Colors.transparent,
-              child: Text(
+              child: Icon(
+                Icons.assignment_add, // Correct way to reference the 'assessment' icon
+                color: Colors.white, // Optional: Adjust icon color if needed
+                size: 30.0, // Optional: Adjust the size of the icon if needed
+              ),
+/*Text(
                 assessment.id.toString(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   fontSize: 20.sp,
                 ),
-              ),
+              ),*/
             ),
           ),
           SizedBox(width: 16.w),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +92,6 @@ class buildInspectionCard extends StatelessWidget {
               ],
             ),
           ),
-
           Icon(
             Icons.arrow_forward_ios_rounded,
             color: Colors.grey.shade500,

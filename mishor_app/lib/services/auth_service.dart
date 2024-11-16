@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:mishor_app/models/user.dart';
 import 'package:mishor_app/models/client.dart';
+import 'package:mishor_app/utilities/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 class AuthService {
-  static const String _baseUrl = 'http://127.0.0.1:8000/api';
+  static const String _baseUrl = Api.baseUrl;
   final Dio dio = Dio();
 
 Future<User?> login(String email, String password) async {
@@ -19,14 +21,13 @@ Future<User?> login(String email, String password) async {
       ),
     );
 
+    // Handle successful login
     if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
       final json = response.data;
       print("Decoded JSON response: $json");
 
       if (json['user'] != null) {
         User user = User.fromJson(json);
-        
-      //  User user = User.fromJson(userData);
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_id', user.id.toString());
@@ -36,32 +37,51 @@ Future<User?> login(String email, String password) async {
         await prefs.setString('user_token', json['token']);
         await prefs.setString('profile_image', user.profileImage ?? '');
 
-
-
         return user;
       } else {
         throw Exception('User data not found in the response');
       }
+    }
+
+    // Handle specific error responses from Laravel
+    else if (response.statusCode == 401) {
+      Get.snackbar("Login Failed", "Invalid email or password");
+    } else if (response.statusCode == 403) {
+      Get.snackbar(
+        "Login Failed",
+        "Your account has not been verified. Please check your email for the verification link.",
+      );
+    } else if (response.statusCode == 500) {
+      Get.snackbar("Login Failed", "Something went wrong. Please try again later");
     } else {
       throw Exception('Failed to log in: Unexpected response format');
     }
   } on DioError catch (e) {
+    // Handle Dio errors
     if (e.response != null) {
       final responseData = e.response?.data;
+
+      // HTML response error handling
       if (responseData is String &&
           e.response?.headers.value('content-type')?.contains('text/html') == true) {
         throw Exception(
             'Failed to log in: Server returned HTML response. Status code: ${e.response?.statusCode}');
-      } else if (responseData is Map<String, dynamic>) {
+      }
+
+      // JSON response error handling
+      else if (responseData is Map<String, dynamic>) {
         final errorMessage = responseData['message'] ?? 'Unknown error';
-        throw Exception('Failed to log in: $errorMessage');
+        Get.snackbar("Login Failed", errorMessage);
       } else {
         throw Exception('Failed to log in: Status code ${e.response?.statusCode}');
       }
     } else {
-      throw Exception('Failed to log in: ${e.message}');
+      // Dio connection issues or other unexpected errors
+      Get.snackbar("Login Failed", "Failed to connect: ${e.message}");
     }
   }
+
+  return null; // Return null if login fails
 }
 
 

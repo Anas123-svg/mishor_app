@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mishor_app/controllers/home_screen_controller.dart';
 import 'package:mishor_app/models/assessment_stats.dart';
+import 'package:mishor_app/screens/template_screen/view_template.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -26,8 +27,8 @@ class _CompletedScreenState extends State<CompletedScreen> {
   //String filterStatus = 'All';
   String selectedFilter = 'Completed';
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     loadUserData();
   }
 
@@ -60,7 +61,6 @@ class _CompletedScreenState extends State<CompletedScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final assessmentStats = homeController.approvedAssessmentStats;
@@ -73,19 +73,9 @@ class _CompletedScreenState extends State<CompletedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if(assessmentStats != null) _buildStatistics(assessmentStats),
-              SizedBox(height: 24.h),
-                            Text(
-                'Completed Inspections',
-                style: TextStyle(
-                  fontSize: 26.sp,
-                  fontWeight: FontWeight.w300,
-                  color: AppColors.primary,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              SizedBox(height: 24.h),
+              if (assessmentStats != null) _buildStatistics(assessmentStats),
 
+              SizedBox(height: 24.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -93,13 +83,23 @@ class _CompletedScreenState extends State<CompletedScreen> {
                     flex: 3,
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search inspections...',
-                        hintStyle: TextStyle(color: AppColors.primary, fontSize: 16.sp, fontWeight: FontWeight.w200),
+                        hintText: 'Search Inspections...',
+                        hintStyle: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w200),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.r),
+                          borderRadius: BorderRadius.circular(12.r),
                           borderSide: BorderSide(color: AppColors.primary),
                         ),
-                        prefixIcon: Icon(Icons.search, color: AppColors.primary),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        prefixIcon:
+                            Icon(Icons.search, color: AppColors.primary),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -110,20 +110,16 @@ class _CompletedScreenState extends State<CompletedScreen> {
                   ),
                 ],
               ),
-
               SizedBox(height: 20.h),
-
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: completedInspections.length, 
+                itemCount: completedInspections.length,
                 itemBuilder: (context, index) {
                   final assessment = completedInspections[index];
                   return GestureDetector(
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Completed Inspection ${index + 1} selected')),
-                      );
+                      Get.to(() => ViewTemplate(assessment.id));
                     },
                     child: buildInspectionCard(assessment: assessment),
                   );
@@ -136,82 +132,86 @@ class _CompletedScreenState extends State<CompletedScreen> {
     );
   }
 
-Widget _buildStatistics(AssessmentStats assessment) {
-  return Card(
-    elevation: 8,
-    child: Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15.r),
-        color: Colors.white,
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Statistics',
-            style: TextStyle(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-          SizedBox(height: 24.h),
-
-          SizedBox(
-            height: 100.h,
-            child: PieChart(
-              PieChartData(
-                borderData: FlBorderData(show: false),
-                sectionsSpace: 2,
-                centerSpaceRadius: 20.h,
-                sections: showingSections(assessment),
+  Widget _buildStatistics(AssessmentStats assessment) {
+    return Card(
+      elevation: 8,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15.r),
+          color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Statistics',
+              style: TextStyle(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
               ),
             ),
-          ),
-
-          SizedBox(height: 24.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _statCard('approved', assessment.completedAssessments.toString()),  
-              _statCard('Pending', (assessment.rejectedAssessments+assessment.pendingAssessments).toString()),
-             // _statCard('Total', assessment.totalAssessments.toString()),
-            ],
-          ),
-        ],
+            SizedBox(height: 24.h),
+            SizedBox(
+              height: 100.h,
+              child: PieChart(
+                PieChartData(
+                  borderData: FlBorderData(show: false),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 20.h,
+                  sections: showingSections(assessment),
+                ),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _statCard(
+                    'approved', assessment.completedAssessments.toString()),
+                _statCard(
+                    'Pending',
+                    (assessment.pendingAssessments)
+                        .toString()),
+                // _statCard('Total', assessment.totalAssessments.toString()),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-List<PieChartSectionData> showingSections(AssessmentStats assessment) {
-  return List.generate(2, (index) {
-    switch (index) {
-      case 0:
-        return PieChartSectionData(
-          color: AppColors.primary,
-          value: assessment.completedAssessments.toDouble(),
-          title: 'approved',
-          radius: 50,
-          titleStyle: TextStyle(
-            fontSize: 10.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        );
-      case 1:
-        return PieChartSectionData(
-          color: Colors.orange,
-          value: (assessment.pendingAssessments + assessment.rejectedAssessments).toDouble(),
-          title: 'pending',
-          radius: 50,
-          titleStyle: TextStyle(
-            fontSize: 10.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        );
-     /* case 2:
+  List<PieChartSectionData> showingSections(AssessmentStats assessment) {
+    return List.generate(2, (index) {
+      switch (index) {
+        case 0:
+          return PieChartSectionData(
+            color: AppColors.primary,
+            value: assessment.completedAssessments.toDouble(),
+            title: 'approved',
+            radius: 50,
+            titleStyle: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          );
+        case 1:
+          return PieChartSectionData(
+            color: Colors.orange,
+            value:
+                (assessment.pendingAssessments + assessment.rejectedAssessments)
+                    .toDouble(),
+            title: 'pending',
+            radius: 50,
+            titleStyle: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          );
+        /* case 2:
         return PieChartSectionData(
           color: Colors.red,
           value: assessment.totalAssessments.toDouble(),
@@ -223,11 +223,12 @@ List<PieChartSectionData> showingSections(AssessmentStats assessment) {
             color: Colors.white,
           ),
         );*/
-      default:
-        throw Error();
-    }
-  });
-}
+        default:
+          throw Error();
+      }
+    });
+  }
+
   Widget _statCard(String title, String value) {
     return Column(
       children: [

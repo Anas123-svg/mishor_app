@@ -25,6 +25,9 @@ class _TemplateScreenState extends State<TemplateScreen> {
   final Map<String, Map<String, dynamic>> _tableRowValues = {};
   final List<String> _uploadedImageUrls = [];
   final ImagePicker _picker = ImagePicker();
+  TextEditingController _assessorController = TextEditingController();
+  TextEditingController _dateController = TextEditingController();
+  bool isAllFilled = true;
 
   final String cloudName = 'dchubllrz';
   final String uploadPreset = 'nmafnbii';
@@ -33,6 +36,15 @@ class _TemplateScreenState extends State<TemplateScreen> {
   void initState() {
     super.initState();
     _assessmentFuture = TemplateService().fetchTemplateData(widget.templateID);
+    _assessorController = TextEditingController();
+    _dateController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _assessorController.dispose();
+    _dateController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickImageAndUpload() async {
@@ -92,89 +104,193 @@ class _TemplateScreenState extends State<TemplateScreen> {
     }
   }
 
-  Widget _buildTextField(Field field) {
-    return TextField(
-      decoration: InputDecoration(
-        labelText: field.label,
-        hintText: field.attributes['placeholder'] ?? '',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      onChanged: (value) => _fieldValues[field.id] = value,
-    );
+
+
+
+
+
+Widget _buildTextField(Field field) {
+  if (!_fieldValues.containsKey(field.id)) {
+    _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
   }
 
-  Widget _buildNumberField(Field field) {
-    return TextField(
-      decoration: InputDecoration(
-        labelText: field.label,
-        hintText: field.attributes['placeholder'] ?? '',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+  return TextField(
+    decoration: InputDecoration(
+      labelText: field.label,
+      hintText: field.attributes['placeholder'] ?? '',
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      keyboardType: TextInputType.number,
-      onChanged: (value) => _fieldValues[field.id] = int.tryParse(value),
-    );
-  }
-
-  Widget _buildTextArea(Field field) {
-    return TextField(
-      decoration: InputDecoration(
-        labelText: field.label,
-        hintText: field.attributes['placeholder'] ?? '',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      maxLines: null,
-      onChanged: (value) => _fieldValues[field.id] = value,
-    );
-  }
-
-Widget _buildCheckboxField(Field field) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        field.label,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
-      ...field.options.map((option) {
-        bool isSelected = _fieldValues[field.id]?.contains(option) ?? false;
-        
-        return CheckboxListTile(
-          title: Text(option),
-          value: isSelected,
-          onChanged: (value) {
-            setState(() {
-              _fieldValues[field.id] = _fieldValues[field.id] ?? [];
-
-              if (value == true) {
-                _fieldValues[field.id]!.add(option);
-              } else {
-                _fieldValues[field.id]!.remove(option);
-              }
-
-              if (_fieldValues[field.id]!.isEmpty) {
-                _fieldValues.remove(field.id);
-              }
-            });
-          },
-          activeColor: Colors.blueAccent,
-        );
-      }).toList(),
-    ],
+      suffixIcon: field.attributes['required'] == true
+          ? Icon(Icons.star, color: Colors.red)
+          : null,
+    ),
+    onChanged: (value) {
+      setState(() {
+        _fieldValues[field.id] = value.isNotEmpty ? value : null;
+        isAllFilled = _fieldValues.values.every((val) => val != null);
+      });
+    },
   );
 }
 
-  Widget _buildRadioField(Field field) {
+Widget _buildNumberField(Field field) {
+  if (!_fieldValues.containsKey(field.id)) {
+    print(field.id);
+    _fieldValues[field.id] =
+        field.attributes['required'] == true ? null : false;
+  }
+
+  return TextField(
+    decoration: InputDecoration(
+      labelText: field.label,
+      hintText: field.attributes['placeholder'] ?? '',
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      suffixIcon: field.attributes['required'] == true
+          ? Icon(Icons.star, color: Colors.red)
+          : null,
+    ),
+    keyboardType: TextInputType.number,
+    onChanged: (value) {
+      int? parsedValue = int.tryParse(value);
+      print (value);  
+      setState(() {
+        _fieldValues[field.id] = parsedValue ??
+            (field.attributes['required'] == true ? null : false);
+      });
+
+      print('Updated _fieldValues: $_fieldValues');
+    },
+  );
+}
+
+// Helper method to validate all fields
+bool _validateAllFields() {
+  bool isValid = true;
+
+  _fieldValues.forEach((key, value) {
+    if (value == null || (value is String && value.trim().isEmpty)) {
+      isValid = false;
+    }
+  });
+
+  return isValid;
+}
+
+
+Widget _buildTextArea(Field field) {
+  if (!_fieldValues.containsKey(field.id)) {
+    _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
+  }
+
+  return TextField(
+    decoration: InputDecoration(
+      labelText: field.label,
+      hintText: field.attributes['placeholder'] ?? '',
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      suffixIcon: field.attributes['required'] == true
+          ? Icon(Icons.star, color: Colors.red)
+          : null,
+    ),
+    maxLines: null,
+    onChanged: (value) {
+      setState(() {
+        if (field.attributes['required'] == true && value.isEmpty) {
+          _fieldValues[field.id] = null;
+        } else {
+          _fieldValues[field.id] = int.tryParse(value) ?? value;
+        }
+      });
+    },
+  );
+}
+
+
+  Widget _buildCheckboxField(Field field) {
+              if (!_fieldValues.containsKey(field.id)) {
+    _fieldValues[field.id] =
+        field.attributes['required'] == true ? null : false;
+  }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(field.label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            Text(
+              field.label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (field.attributes['required'] == true)
+              Icon(Icons.star, color: Colors.red), 
+          ],
+        ),
+        ...field.options.map((option) {
+          bool isSelected = _fieldValues[field.id]?.contains(option) ?? false;
+
+          return CheckboxListTile(
+            title: Text(option),
+            value: isSelected,
+            onChanged: (value) {
+              setState(() {
+                _fieldValues[field.id] = _fieldValues[field.id] ?? [];
+
+                if (value == true) {
+                  _fieldValues[field.id]!.add(option);
+                } else {
+                  _fieldValues[field.id]!.remove(option);
+                }
+
+                if (_fieldValues[field.id]!.isEmpty) {
+                  _fieldValues.remove(field.id);
+                          _fieldValues[field.id] = value ??
+            (field.attributes['required'] == true ? null : false);
+
+                }
+              });
+            },
+            activeColor: Colors.blueAccent,
+          );
+        }).toList(),
+        if (field.attributes['required'] == true)
+          Builder(
+            builder: (context) {
+              bool isValid = _fieldValues[field.id]?.isNotEmpty ?? false;
+              if (!isValid) {
+                return Text(
+                  'This field is required.',
+                  style: TextStyle(color: Colors.red),
+                );
+              }
+              return SizedBox.shrink(); 
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRadioField(Field field) {
+                  if (!_fieldValues.containsKey(field.id)) {
+    _fieldValues[field.id] =
+        field.attributes['required'] == true ? null : false;
+  }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              field.label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (field.attributes['required'] == true)
+              Icon(Icons.star, color: Colors.red), 
+          ],
+        ),
         ...field.options.map((option) {
           return RadioListTile<String>(
             title: Text(option),
@@ -183,31 +299,86 @@ Widget _buildCheckboxField(Field field) {
             onChanged: (value) {
               setState(() {
                 _fieldValues[field.id] = value;
+                                          _fieldValues[field.id] = value ??
+            (field.attributes['required'] == true ? null : false);
+
               });
             },
             activeColor: Colors.blueAccent,
           );
         }).toList(),
+        if (field.attributes['required'] == true)
+          Builder(
+            builder: (context) {
+              bool isValid = _fieldValues[field.id] != null;
+              if (!isValid) {
+                return Text(
+                  'This field is required.',
+                  style: TextStyle(color: Colors.red),
+                );
+              }
+              return SizedBox.shrink(); 
+            },
+          ),
       ],
     );
   }
 
   Widget _buildSelectField(Field field) {
-    return DropdownButtonFormField(
-      decoration: InputDecoration(
-        labelText: field.label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+                      if (!_fieldValues.containsKey(field.id)) {
+    _fieldValues[field.id] =
+        field.attributes['required'] == true ? null : false;
+  }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              field.label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (field.attributes['required'] == true)
+              Icon(Icons.star, color: Colors.red), 
+          ],
         ),
-      ),
-      value: _fieldValues[field.id],
-      items: field.options
-          .map((option) => DropdownMenuItem(
-                value: option,
-                child: Text(option),
-              ))
-          .toList(),
-      onChanged: (value) => setState(() => _fieldValues[field.id] = value),
+        DropdownButtonFormField(
+          decoration: InputDecoration(
+            labelText: field.label,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          value: _fieldValues[field.id],
+          items: field.options
+              .map((option) => DropdownMenuItem(
+                    value: option,
+                    child: Text(option),
+                  ))
+              .toList(),
+          onChanged: (value) => setState(() {
+            _fieldValues[field.id] = value;
+                                                      _fieldValues[field.id] = value ??
+            (field.attributes['required'] == true ? null : false);
+
+          }),
+        ),
+        // Optional: Add validation message if required
+        if (field.attributes['required'] == true)
+          Builder(
+            builder: (context) {
+              bool isValid = _fieldValues[field.id] != null;
+              if (!isValid) {
+                return Text(
+                  'This field is required.',
+                  style: TextStyle(color: Colors.red),
+                );
+              }
+              return SizedBox.shrink(); // Empty widget when valid
+            },
+          ),
+      ],
     );
   }
 
@@ -221,13 +392,12 @@ Widget _buildCheckboxField(Field field) {
         ),
         SizedBox(height: 12),
         SingleChildScrollView(
-          scrollDirection:
-              Axis.horizontal, // Makes the table horizontally scrollable
+          scrollDirection: Axis.horizontal,
           child: DataTable(
-            columnSpacing: 12, // Adds spacing between columns
+            columnSpacing: 12,
             headingRowHeight: 56,
             dataRowHeight: 56,
-            showCheckboxColumn: false, // Hides the default checkbox column
+            showCheckboxColumn: false,
             columns: [
               DataColumn(
                 label: Text(
@@ -249,43 +419,22 @@ Widget _buildCheckboxField(Field field) {
               return DataRow(
                 cells: [
                   DataCell(
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: Colors.grey,
-                            width: 1), // Adds a border around each cell
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(entry.key),
-                    ),
+                    Text(entry.key),
                   ),
                   ...entry.value.entries.map((cell) {
                     return DataCell(
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.grey,
-                              width: 1), // Adds a border around each cell
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: TextFormField(
-                          initialValue: cell.value.toString(),
-                          onChanged: (value) {
-                            setState(() {
-                              _tableRowValues[entry.key] ??= {};
-                              _tableRowValues[entry.key]![cell.key] = value;
-                            });
-                          },
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 12),
-                            border: InputBorder
-                                .none, // Removes the default TextFormField border
-                          ),
+                      TextFormField(
+                        initialValue: cell.value.toString(),
+                        onChanged: (value) {
+                          setState(() {
+                            _tableRowValues[entry.key] ??= {};
+                            _tableRowValues[entry.key]![cell.key] = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 12),
+                          border: InputBorder.none,
                         ),
                       ),
                     );
@@ -293,6 +442,13 @@ Widget _buildCheckboxField(Field field) {
                 ],
               );
             }).toList(),
+            border: TableBorder(
+              horizontalInside: BorderSide(
+                  color: Colors.grey, width: 0.5), // Line between rows
+              verticalInside: BorderSide(
+                  color: Colors.grey, width: 0.5), // Line between columns
+              bottom: BorderSide(color: Colors.grey, width: 0.5),
+            ),
           ),
         ),
       ],
@@ -300,12 +456,33 @@ Widget _buildCheckboxField(Field field) {
   }
 
   void _submitData() async {
+
+      if (!_validateAllFields()) {
+    setState(() {
+      isAllFilled = false;
+    });
+    Get.snackbar(
+      "Incomplete Form",
+      "Please fill all required fields.",
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+    return;
+  }
+
+    
     final assessmentData = {
       "complete_by_user": 1,
+      "status": "pending",
       "assessment": {
-        "name": "Title",
+        //"name": "Title",
+        if (_assessorController.text.isNotEmpty)
+          "assessor": _assessorController.text,
+        if (_dateController.text.isNotEmpty) "date": _dateController.text,
         "description": "This is the description of template",
         "fields": _fieldValues.entries.map((entry) {
+          print(entry.value);
+          print(entry.key);
           return {
             "id": entry.key,
             "value": entry.value,
@@ -372,6 +549,46 @@ Widget _buildCheckboxField(Field field) {
                   Text(template.description,
                       style: TextStyle(fontSize: 16, color: Colors.grey[700])),
                   SizedBox(height: 16),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Reference',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    controller: TextEditingController(
+                      text: template.reference,
+                    ),
+                    readOnly: true,
+                  ),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: _assessorController,
+                    decoration: InputDecoration(
+                      labelText: "Assessor",
+                      hintText: "Enter Assessor Name",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: _dateController,
+                    decoration: InputDecoration(
+                      labelText: "Date",
+                      hintText: "Enter Date",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "Assessment Details",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 16),
                   ...template.fields.map((field) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: _buildFieldInput(field),
@@ -381,8 +598,6 @@ Widget _buildCheckboxField(Field field) {
                         child: _buildTableEditor(table),
                       )),
                   SizedBox(height: 16),
-
-                  // Image upload section
                   Text("Upload Images",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -399,7 +614,6 @@ Widget _buildCheckboxField(Field field) {
                     onPressed: _pickImageAndUpload,
                     child: Text("Pick and Upload Image"),
                   ),
-
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _submitData,

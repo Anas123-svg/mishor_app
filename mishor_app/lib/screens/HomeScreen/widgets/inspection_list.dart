@@ -28,31 +28,40 @@ class InspectionsList extends StatelessWidget {
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search Inspections...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
+                hintStyle: TextStyle(color: Colors.black, fontSize: 12.sp, fontWeight: FontWeight.w200),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(color: AppColors.primary),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(
+                      color: Colors
+                          .red),
                 ),
                 prefixIcon: Icon(Icons.search, color: AppColors.primary),
                 filled: true,
                 fillColor: Colors.white,
               ),
+              cursorColor: Colors.red,
               onChanged: (value) => onSearchChanged(value),
             ),
           ),
           ListView.separated(
             physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true, 
+            shrinkWrap: true,
             itemCount: inspections.length,
-            separatorBuilder: (context, index) => Divider(color: Colors.black12),
+            separatorBuilder: (context, index) =>
+                Divider(color: Colors.black12),
             itemBuilder: (context, index) {
               final inspection = inspections[index];
               final isFlagged = inspection.contains('Assigned');
 
               return Container(
-                margin: EdgeInsets.symmetric(vertical: 5.h), 
+                margin: EdgeInsets.symmetric(vertical: 5.h),
                 child: ListTile(
-                  contentPadding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
                   tileColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -71,14 +80,14 @@ class InspectionsList extends StatelessWidget {
                     children: [
                       IconButton(
                         icon: Icon(
-                          Icons.assignment, 
-                          color: isFlagged ? Colors.red : Colors.grey, 
+                          Icons.assignment,
+                          color: isFlagged ? Colors.red : Colors.grey,
                         ),
                         onPressed: () => onUploadDocument(),
                       ),
                       IconButton(
                         icon: Icon(
-                          Icons.pending, 
+                          Icons.pending,
                           color: !isFlagged ? Colors.green : Colors.grey,
                         ),
                         onPressed: () => onSignOff(inspection),
