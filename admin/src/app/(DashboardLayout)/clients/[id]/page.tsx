@@ -58,6 +58,9 @@ const ClientDetails = () => {
   const [selectedTemplate, setSelectedTemplate] = useState("");
 
   const handleAssignTemplate = async () => {
+    if (!selectedTemplate) {
+      return toast.error("Please select a template");
+    }
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/client-templates`,

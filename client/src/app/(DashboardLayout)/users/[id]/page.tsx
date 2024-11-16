@@ -65,6 +65,9 @@ const UserDetails = () => {
   const [selectedTemplate, setSelectedTemplate] = useState("");
 
   const handleAssignAssessment = async () => {
+    if (!selectedTemplate) {
+      return toast.error("Please select a template");
+    }
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/assessments`,

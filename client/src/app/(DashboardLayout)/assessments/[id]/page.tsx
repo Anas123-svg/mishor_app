@@ -38,6 +38,7 @@ const ViewAssessment: React.FC = () => {
           },
         }
       );
+      console.log(response.data);
       setAssessment(response.data);
     } catch (err) {
       console.log(err);
@@ -163,9 +164,9 @@ const ViewAssessment: React.FC = () => {
                   <span className="text-primary ml-1">*</span>
                 )}
               </p>{" "}
-              {field.isFlagged && (
+              {field.isFlagged ? (
                 <Badge color="failure">Flagged by Admin</Badge>
-              )}
+              ) : null}
             </div>
             {(field.type === "text" || field.type === "number") && (
               <TextInput
