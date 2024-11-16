@@ -27,7 +27,6 @@ const DashboardPage = () => {
           },
         }
       );
-      console.log(response.data);
       setStats(response.data);
     } catch (error) {
       console.error(error);

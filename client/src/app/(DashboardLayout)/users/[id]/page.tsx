@@ -48,7 +48,6 @@ const UserDetails = () => {
           },
         }
       );
-      console.log(response.data);
       setTemplates(response.data.map((template: any) => template.template));
     } catch (error) {
       console.error(error);

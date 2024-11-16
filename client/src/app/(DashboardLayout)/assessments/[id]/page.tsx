@@ -38,7 +38,6 @@ const ViewAssessment: React.FC = () => {
           },
         }
       );
-      console.log(response.data);
       setAssessment(response.data);
     } catch (err) {
       console.log(err);

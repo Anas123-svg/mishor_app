@@ -38,7 +38,6 @@ const Assessments = () => {
           },
         }
       );
-      console.log(response.data);
       setAssessments(response.data);
     } catch (error) {
       console.error(error);
