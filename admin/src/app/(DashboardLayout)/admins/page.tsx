@@ -292,14 +292,15 @@ const Admins = () => {
             </Table.Body>
           </Table>
 
-          {admins.length === 0 ||
-            (admins.filter(
+          {admins.length === 0 ? (
+            <p className="text-center mt-5">No Admins Found</p>
+          ) : admins.filter(
               (admin) =>
                 admin.name.toLowerCase().includes(search.toLowerCase()) ||
                 admin.email.toLowerCase().includes(search.toLowerCase())
-            ).length === 0 && (
-              <p className="text-center mt-5">No Admins Found</p>
-            ))}
+            ).length === 0 ? (
+            <p className="text-center mt-5">No Admins Found</p>
+          ) : null}
         </div>
       </div>
 

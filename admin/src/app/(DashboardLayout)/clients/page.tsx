@@ -180,14 +180,15 @@ const Clients = () => {
                 ))}
             </Table.Body>
           </Table>
-          {clients.length === 0 ||
-            (clients.filter(
+          {clients.length === 0 ? (
+            <p className="text-center mt-5">No clients found</p>
+          ) : clients.filter(
               (client) =>
                 client.name.toLowerCase().includes(search.toLowerCase()) ||
                 client.email.toLowerCase().includes(search.toLowerCase())
-            ).length === 0 && (
-              <p className="text-center mt-5">No clients found</p>
-            ))}
+            ).length === 0 ? (
+            <p className="text-center mt-5">No clients found</p>
+          ) : null}
         </div>
       </div>
     </>

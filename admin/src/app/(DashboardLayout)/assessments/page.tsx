@@ -200,8 +200,9 @@ const Assessments = () => {
                 ))}
             </Table.Body>
           </Table>
-          {assessments.length === 0 ||
-            (assessments.filter(
+          {assessments.length === 0 ? (
+            <p className="text-center mt-5">No assessments found</p>
+          ) : assessments.filter(
               (assessment) =>
                 assessment.assessment.name
                   .toLowerCase()
@@ -212,9 +213,9 @@ const Assessments = () => {
                 assessment.assessment.description
                   .toLowerCase()
                   .includes(search.toLowerCase())
-            ).length === 0 && (
-              <p className="text-center mt-5">No assessments found</p>
-            ))}
+            ).length === 0 ? (
+            <p className="text-center mt-5">No assessments found</p>
+          ) : null}
         </div>
       </div>
 

@@ -160,8 +160,9 @@ const TemplatePage = () => {
                 ))}
             </Table.Body>
           </Table>
-          {templates.length === 0 ||
-            (templates.filter(
+          {templates.length === 0 ? (
+            <p className="text-center mt-5">No Templates Found</p>
+          ) : templates.filter(
               (template) =>
                 template.name
                   .toLowerCase()
@@ -169,9 +170,9 @@ const TemplatePage = () => {
                 template.description
                   .toLowerCase()
                   .includes(searchTerm.toLowerCase())
-            ).length === 0 && (
-              <p className="text-center mt-5">No Templates Found</p>
-            ))}
+            ).length === 0 ? (
+            <p className="text-center mt-5">No Templates Found</p>
+          ) : null}
         </div>
       </div>
     </>
