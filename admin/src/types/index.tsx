@@ -93,7 +93,11 @@ type Assessment = {
   client_id: number;
   client: Client;
   template_id: number;
-  site_images: string[];
+  site_images: [
+    {
+      site_image: string;
+    }
+  ];
   feedback_by_admin: string | null;
   complete_by_user: boolean;
   created_at: string;

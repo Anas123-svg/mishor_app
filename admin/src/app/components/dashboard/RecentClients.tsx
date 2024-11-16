@@ -54,6 +54,9 @@ const RecentClients = ({ clients }: { clients: Client[] }) => {
               ))}
             </Table.Body>
           </Table>
+          {clients.length === 0 && (
+            <p className="text-center mt-5">No clients found</p>
+          )}
         </div>
       </SimpleBar>
     </div>

@@ -38,6 +38,7 @@ const ViewAssessment: React.FC = () => {
           },
         }
       );
+      console.log(response.data);
       setAssessment(response.data);
     } catch (err) {
       console.log(err);
@@ -269,7 +270,7 @@ const ViewAssessment: React.FC = () => {
               {assessment.site_images.map((image, index) => (
                 <Zoom key={index}>
                   <img
-                    src={image}
+                    src={image.site_image}
                     alt={`Site Image ${index + 1}`}
                     className="w-full h-auto rounded-lg"
                   />
