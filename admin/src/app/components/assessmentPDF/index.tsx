@@ -230,7 +230,7 @@ const AssessmentPDF = ({ assessment }: { assessment: Assessment }) => (
           <Text style={styles.sectionHeader}>Site Images</Text>
           <View style={styles.imageGrid}>
             {assessment.site_images.map((image, idx) => (
-              <Image key={idx} src={image} style={styles.image} />
+              <Image key={idx} src={image.site_image} style={styles.image} />
             ))}
           </View>
         </View>
