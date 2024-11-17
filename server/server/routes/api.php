@@ -9,6 +9,17 @@ use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\ClientTemplateController;
 use App\Http\Controllers\UserTemplateController;
 use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\ContactUsController;
+use App\Http\Controllers\PasswordController;
+
+//password reset
+
+Route::post('/forgot-password', [PasswordController::class, 'sendResetCode']);
+Route::post('/reset-password', [PasswordController::class, 'resetPassword']);
+
+// contact us
+Route::post('/contact-us', [ContactUsController::class, 'submitContactUs']);
+
 //admin routes
 
 Route::prefix('admin')->group(function () {
@@ -59,6 +70,8 @@ Route::prefix('client')->group(function () {
 //user routes
 Route::middleware("auth:sanctum")->get('/user/assessment-counts', [UserController::class, 'assessmentCountsByUser']);
 Route::middleware("auth:sanctum")->get('/user/completed-assessment-counts', [UserController::class, 'completedAssessmentCountsByUser']);
+Route::middleware("auth:sanctum")->get('/user/rejected-assessment-counts', [UserController::class, 'RejectedAssessmentCountsByUser']);
+Route::middleware("auth:sanctum")->post('/user/reset-password', [UserController::class, 'resetPassword']);
 
 Route::prefix('user')->group(function () {
     Route::put('/{id}/verify', [UserController::class, 'verify']);
