@@ -61,11 +61,6 @@ const Header = () => {
             <div className="flex gap-4 items-center">
               <div>
                 <h2>{user?.name}</h2>
-                {user?.role && (
-                  <p className="text-sm">
-                    {user?.role[0].toUpperCase() + user?.role.slice(1)}
-                  </p>
-                )}
               </div>
               <span className="h-10 w-10 hover:text-primary hover:bg-lightprimary rounded-full flex justify-center items-center cursor-pointer group-hover/menu:bg-lightprimary group-hover/menu:text-primary">
                 <img

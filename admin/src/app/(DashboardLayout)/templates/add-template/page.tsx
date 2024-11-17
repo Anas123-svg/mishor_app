@@ -104,6 +104,7 @@ const AddTemplate: React.FC = () => {
       toast.success(response.data.message || "Template created successfully!");
       setTitle("");
       setDescription("");
+      setReference("");
       setFields([]);
       setTables([]);
       setNewField({
