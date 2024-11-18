@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     width: "25%",
+    textAlign: "center",
   },
   tableRow: {
     flexDirection: "row",
@@ -96,6 +97,8 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 10,
     color: "#333",
+    width: "25%",
+    textAlign: "center",
   },
   rowTitle: {
     fontSize: 10,
@@ -133,7 +136,7 @@ const AssessmentPDF = ({ assessment }: { assessment: Assessment }) => (
     <Page style={styles.page}>
       {/* Logo and Assessment Title */}
       <View style={styles.logoContainer}>
-        <Image src={logo.src} style={styles.logo} />
+        <Image src={assessment.client.profile_image} style={styles.logo} />
       </View>
       <Text style={styles.header}>{assessment.assessment.name}</Text>
       <Text style={styles.subHeader}>{assessment.assessment.description}</Text>
@@ -170,7 +173,9 @@ const AssessmentPDF = ({ assessment }: { assessment: Assessment }) => (
                 style={[styles.fieldContainer, styles.flaggedFieldContainer]}
               >
                 <Text style={styles.fieldLabel}>{field.label}: </Text>
-                {field.value || "N/A"}
+                {Array.isArray(field.value)
+                  ? field.value.join(", ")
+                  : field.value || "N/A"}
               </Text>
             ))}
         </View>
@@ -182,7 +187,9 @@ const AssessmentPDF = ({ assessment }: { assessment: Assessment }) => (
         {assessment.assessment.fields.map((field, idx) => (
           <Text key={idx} style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>{field.label}: </Text>
-            {field.value || "N/A"}
+            {Array.isArray(field.value)
+              ? field.value.join(", ")
+              : field.value || "N/A"}
           </Text>
         ))}
       </View>
