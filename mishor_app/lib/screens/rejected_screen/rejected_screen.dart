@@ -7,7 +7,7 @@ import 'package:mishor_app/models/assessment_stats.dart';
 import 'package:mishor_app/screens/template_screen/view_template.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/drawer.dart';
-import 'package:mishor_app/widgets/helping_global/appbar.dart ';
+import 'package:mishor_app/widgets/helping_global/appbar.dart';
 import 'package:mishor_app/widgets/helping_global/inspection_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
