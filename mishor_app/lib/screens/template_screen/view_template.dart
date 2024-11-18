@@ -18,6 +18,8 @@ class _ViewTemplateScreenState extends State<ViewTemplate> {
   late Future<Assessment2> _assessmentFuture;
   final Map<int, dynamic> _fieldValues = {};
   final Map<String, Map<String, dynamic>> _tableRowValues = {};
+  String tableName = '';
+  List<String> Columns = [];
   final List<String> _uploadedImageUrls = [];
   TextEditingController _assessorController = TextEditingController();
   TextEditingController _dateController = TextEditingController();
@@ -29,7 +31,6 @@ class _ViewTemplateScreenState extends State<ViewTemplate> {
   @override
   void initState() {
     super.initState();
-    // Fetch template data on initialization
     _assessmentFuture = TemplateService().fetchTemplateData(widget.templateID);
   }
 
@@ -128,7 +129,6 @@ Widget _buildTextArea(Field field) {
 
 
 Widget _buildCheckboxField(Field field) {
-  // Ensure the value is populated correctly from the field's attributes or default value
   if (!_fieldValues.containsKey(field.id)) {
     // Check if field.value is a string or a list, and handle accordingly
     dynamic value = field.value;
@@ -267,79 +267,132 @@ Widget _buildRadioField(Field field) {
   );
 }
 
-  Widget _buildTableEditor(TableData table) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+Widget _buildTableEditor(TableData table) {
+  tableName = table.tableName;
+  Columns = table.columns;
+  print("yayy");
+  print(table.columns);
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Table Title
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
           table.tableName,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
         ),
-        SizedBox(height: 12),
-        SingleChildScrollView(
+      ),
+      const SizedBox(height: 12),
+      
+      // Table Container with rounded corners
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade200,
+              blurRadius: 10,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 12,
-            headingRowHeight: 56,
-            dataRowHeight: 56,
-            showCheckboxColumn: false,
-            columns: [
-              DataColumn(
-                label: Text(
-                  'Row',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: AppColors.primary),
+          child: SingleChildScrollView(
+            child: DataTable(
+              columnSpacing: 16,
+              headingRowHeight: 60,
+              dataRowHeight: 60,
+              showCheckboxColumn: false,
+              columns: [
+                const DataColumn(
+                  label: Text(
+                    'Row',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
-              ),
-              ...table.columns.map((col) => DataColumn(
+                ...table.columns.map(
+                  (col) => DataColumn(
                     label: Text(
                       col,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary),
-                    ),
-                  ))
-            ],
-            rows: table.rows.entries.map((entry) {
-              return DataRow(
-                cells: [
-                  DataCell(
-                    Text(entry.key),
-                  ),
-                  ...entry.value.entries.map((cell) {
-                    return DataCell(
-                      TextFormField(
-                        initialValue: cell.value.toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            _tableRowValues[entry.key] ??= {};
-                            _tableRowValues[entry.key]![cell.key] = value;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 12),
-                          border: InputBorder.none,
-                        ),
-                        readOnly: true,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppColors.primary,
                       ),
-                    );
-                  }).toList(),
-                ],
-              );
-            }).toList(),
-            border: TableBorder(
-              horizontalInside: BorderSide(
-                  color: Colors.grey, width: 0.5), // Line between rows
-              verticalInside: BorderSide(
-                  color: Colors.grey, width: 0.5), // Line between columns
-              bottom: BorderSide(color: Colors.grey, width: 0.5),
+                    ),
+                  ),
+                ),
+              ],
+              rows: table.rows.entries.map((entry) {
+                return DataRow(
+                  cells: [
+                    DataCell(
+                      Text(
+                        entry.key,
+                        style: const TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ),
+                    ...entry.value.entries.map((cell) {
+                      return DataCell(
+                        SizedBox(
+                          width: 120,
+                          child: TextFormField(
+                            initialValue: cell.value,
+                            onChanged: (newValue) {
+                              setState(() {
+                                if (table.rows[entry.key] == null) {
+                                  table.rows[entry.key] = {};
+                                }
+                                table.rows[entry.key]![cell.key] = newValue;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 12,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                  width: 0.8,
+                                ),
+                              ),
+                            ),
+                            style: const TextStyle(fontSize: 14),
+                            readOnly: true,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                );
+              }).toList(),
+              border: TableBorder.symmetric(
+                inside: BorderSide(color: Colors.grey.shade300, width: 0.8),
+              ),
             ),
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
 
 // Function to handle site_images

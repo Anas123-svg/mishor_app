@@ -24,6 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: SizedBox.expand(
           child: Column(
@@ -31,16 +32,8 @@ class _SplashScreenState extends State<SplashScreen> {
             children: <Widget>[
               Image.asset(
                 AppImages.logo,  
-                width: 176.w,         
-                height: 176.h,      
-              ),
-              SizedBox(height:40.h),
-              Text(
-                "Safety Culture",
-                style: AppTexts.fontw600s30.copyWith(
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                  fontFamily: "Inter",
-                ),
+                width: 200.w,         
+                height: 200.h,      
               ),
               SizedBox(height: 6.h),
             ],

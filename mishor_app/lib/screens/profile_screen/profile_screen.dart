@@ -9,7 +9,9 @@ import 'package:mishor_app/screens/support_screen/support_screen.dart';
 import 'package:mishor_app/services/profile_service.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
+import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -19,14 +21,15 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreen extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final UserController userController = Get.find(); // Get the UserController instance
+  final UserController userController =
+      Get.find(); // Get the UserController instance
   String? userToken;
   bool isLoading = false;
-    final ProfileService profileService = ProfileService();
+  final ProfileService profileService = ProfileService();
 
   String nameController = '';
   String emailController = '';
-  String phoneController =  '';
+  String phoneController = '';
   String? profileImageUrl;
 
   @override
@@ -68,55 +71,28 @@ class _ProfileScreen extends State<ProfileScreen> {
       emailController = prefs.getString('user_email') ?? '';
       phoneController = prefs.getString('user_phone') ?? '';
       profileImageUrl = prefs.getString('profile_image');
-      
     });
   }
 
+Future<void> logout(BuildContext context) async {
+  // Show loading indicator
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Center(child: CircularProgressIndicator());
+    },
+  );
 
-      Future<void> logout(BuildContext context) async {
-    // Show loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Center(child: CircularProgressIndicator());
-      },
-    );
-
-    try {
-      // Call the logout API
-      if(userToken!=null) {
-        print(userToken);
-
-      }
-      else
-      {
-        print('userToken is null');
-        return;
-      }
-            
-      bool response;
-              
-      response = await profileService.logout(userToken!);
-
-
-      if (response) {
-        userController.clearUser();
-
-        Navigator.pop(context);
-        Get.offAllNamed(AppRoutes.splash);
-      } else {
-        // Handle logout failure
-        Navigator.pop(context);
-        Get.snackbar(
-          'Logout Failed',
-          'Unable to logout. Please try again.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (error) {
-      Navigator.pop(context);
+  try {
+    bool response;
+    response = await profileService.logout(userToken!);
+    if (response) {
+       Get.offAllNamed(AppRoutes.login);
+    }
+  } catch (error) {
+    if (mounted) {
+      Navigator.pop(context); 
       Get.snackbar(
         'Error',
         'An unexpected error occurred: $error',
@@ -125,6 +101,7 @@ class _ProfileScreen extends State<ProfileScreen> {
       );
     }
   }
+}
 
 
   @override
@@ -132,7 +109,8 @@ class _ProfileScreen extends State<ProfileScreen> {
     print(nameController);
     print(emailController);
     return Scaffold(
-      appBar: const  CustomAppbar(),
+      appBar: CustomAppbar(token: userToken),
+      drawer: drawer (),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
@@ -148,7 +126,9 @@ class _ProfileScreen extends State<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 57.r,
                       backgroundImage: NetworkImage(
-                        profileImageUrl ?? 'https://static-00.iconduck.com/assets.00/user-icon-2048x2048-ihoxz4vq.png',
+                        profileImageUrl?.startsWith('http') == true
+                            ? profileImageUrl! // Use the '!' to assert that it is not null after checking
+                            : 'https://res.cloudinary.com/dchubllrz/image/upload/v1731813839/a9p8dyu9dyvj4ukjqo2a.png',
                       ),
                     ),
                   ),
@@ -162,7 +142,8 @@ class _ProfileScreen extends State<ProfileScreen> {
                       child: CircleAvatar(
                         radius: 15.r,
                         backgroundColor: Colors.white,
-                        child: Icon(Icons.camera_alt, size: 16.w, color: AppColors.primary),
+                        child: Icon(Icons.camera_alt,
+                            size: 16.w, color: AppColors.primary),
                       ),
                     ),
                   ),
@@ -191,7 +172,7 @@ class _ProfileScreen extends State<ProfileScreen> {
               // Profile Options Container
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color.fromARGB(0, 253, 253, 253),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
@@ -210,24 +191,24 @@ class _ProfileScreen extends State<ProfileScreen> {
                         Get.to(() => EditProfile());
                       },
                     ),
+                    SizedBox(height: 6.h), 
                     _buildDivider(),
-                   _buildProfileOption(
+                    _buildProfileOption(
                       icon: Icons.lock_outline,
                       label: 'Change Password',
                       onTap: () {
                         Get.to(() => ChangePasswordScreen());
                       },
                     ),
-
-                    _buildDivider(),
+                    SizedBox(height: 6.h), 
                     _buildProfileOption(
                       icon: Icons.help_outline,
                       label: 'Help & Support',
                       onTap: () {
-                            Get.to(() => SupportScreen());
+                        Get.to(() => SupportScreen());
                       },
                     ),
-                    _buildDivider(),
+                    SizedBox(height: 6.h), 
                     _buildProfileOption(
                       icon: Icons.logout,
                       label: 'Logout',
@@ -244,48 +225,53 @@ class _ProfileScreen extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool isLogout = false,
-  }) {
-    return GestureDetector(
+Widget _buildProfileOption({
+  required IconData icon,
+  required String label,
+  required VoidCallback onTap,
+  bool isLogout = false,
+}) {
+  return Card(
+    elevation: 6,
+    shadowColor: Colors.grey.shade300,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12.r),
+    ),
+    color: isLogout ? AppColors.primary : Colors.white,
+    child: InkWell(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(16.r),
-          // Add subtle hover effect
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade200,
-              blurRadius: 4.r,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
+      borderRadius: BorderRadius.circular(12.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
         child: Row(
           children: [
-            Icon(icon, color: isLogout ? Color(0xFFD42427) : Colors.black87, size: 28.w),
+            Icon(
+              icon,
+              color: isLogout ? Colors.white : AppColors.primary,
+              size: 28.w,
+            ),
             SizedBox(width: 16.w),
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
                   fontSize: 18.sp,
-                  color: isLogout ? Color(0xFFD42427) : Colors.black87,
-                  fontWeight: FontWeight.w500,
+                  color: isLogout ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 18.w, color: Colors.grey.shade400),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 18.w,
+              color: isLogout ? Colors.white70 : Colors.grey.shade400,
+            ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDivider() {
     return Divider(

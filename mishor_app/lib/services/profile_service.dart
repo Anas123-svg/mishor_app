@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:mishor_app/models/user.dart';
 import 'package:mishor_app/utilities/api.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileService {
   final String apiUrl =Api.baseUrl;
@@ -74,9 +76,23 @@ class ProfileService {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        print(responseData);
         print("user Updated");
+        if (responseData['user'] != null) {
+        User user = User.fromJson(responseData);
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_id', user.id.toString());
+        await prefs.setString('user_email', user.email);
+        await prefs.setString('user_name', user.name);
+        await prefs.setString('user_phone', user.phone);
+        await prefs.setString('user_token', userToken);
+        await prefs.setString('profile_image', user.profileImage ?? '');
+
+        return true;
+        }
         print(response);
-        return responseData['success'] ?? true; // Return true if update was successful
+        return responseData['success'] ?? true;
       } else {
         print('Failed to update profile: ${response.statusCode}');
         return false;

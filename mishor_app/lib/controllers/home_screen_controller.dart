@@ -1,41 +1,45 @@
+import 'package:get/get.dart';
 import 'package:mishor_app/models/assessment_stats.dart';
 import 'package:mishor_app/services/home_screen_service.dart';
 
 class HomeController {
   final HomeService _homeService = HomeService();
-  AssessmentStats? _assessmentStats;
-
-  AssessmentStats? get assessmentStats => _assessmentStats;
+  final Rxn<AssessmentStats> _assessmentStats = Rxn<AssessmentStats>();
+  AssessmentStats? get assessmentStats => _assessmentStats.value;
 
   Future<void> loadAssessmentCounts(String token) async {
     try {
-      _assessmentStats = await _homeService.fetchAssessmentCounts(token);
-      print("Assessment counts fetched successfully: ${_assessmentStats!.completedAssessments}");
+      final stats = await _homeService.fetchAssessmentCounts(token);
+      _assessmentStats.value = stats; 
+      print("Assessment counts fetched successfully: ${stats.completedAssessments}");
     } catch (e) {
       print("Error fetching assessment counts: $e");
     }
   }
 
-  AssessmentStats? _approvedAssessmentStats;
+  final Rxn<AssessmentStats> _approvedAssessmentStats = Rxn<AssessmentStats>();
+    AssessmentStats? get approvedAssessmentStats => _approvedAssessmentStats.value;
 
-  AssessmentStats? get approvedAssessmentStats => _approvedAssessmentStats;
   Future<void> loadApprovedAssessmentCounts(String token) async {
     try {
-      _approvedAssessmentStats = await _homeService.fetchApprovedAssessment(token);
-      print("Assessment counts fetched successfully: ${_approvedAssessmentStats!.completedAssessments}");
+      final approvedStats = await _homeService.fetchApprovedAssessment(token);
+      _approvedAssessmentStats.value = approvedStats;
+      print("Approved assessment counts fetched successfully: ${approvedStats.completedAssessments}");
     } catch (e) {
-      print("Error fetching assessment counts: $e");
+      print("Error fetching approved assessment counts: $e");
     }
   }
 
 
-    AssessmentStats? _rejectedAssessmentStats;
 
-  AssessmentStats? get rejectedAssessmentStats => _rejectedAssessmentStats;
+       final Rxn<AssessmentStats> _rejectedAssessmentStats = Rxn<AssessmentStats>();
+    AssessmentStats? get rejectedAssessmentStats => _rejectedAssessmentStats.value;
+
   Future<void> loadRejectedAssessmentCounts(String token) async {
     try {
-      _rejectedAssessmentStats = await _homeService.fetchRejectedAssessment(token);
-      print("Assessment counts fetched successfully: ${_rejectedAssessmentStats!.completedAssessments}");
+      final rejectedStats = await _homeService.fetchRejectedAssessment(token);
+      _rejectedAssessmentStats.value= rejectedStats;
+      print("Assessment counts fetched successfully: ${_rejectedAssessmentStats.value!.completedAssessments}");
     } catch (e) {
       print("Error fetching assessment counts: $e");
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mishor_app/controllers/auth_controller.dart';
+import 'package:mishor_app/screens/forgot_password/fargot_password.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/utilities/app_images.dart';
 import 'package:mishor_app/routes/app_routes.dart';
@@ -29,19 +30,27 @@ class LoginScreen extends StatelessWidget {
               ),
               SizedBox(height: 40.h),
               CustomTextField(
-                controller: _emailController,label: 'Email',icon: Icons.email,
+                controller: _emailController,
+                label: 'Email',
+                icon: Icons.email,
               ),
               SizedBox(height: 20.h),
-
               CustomTextField(
-                controller: _passwordController,label: 'Password',icon: Icons.lock,obscureText: true,
+                controller: _passwordController,
+                label: 'Password',
+                icon: Icons.lock,
+                obscureText: true,
               ),
               SizedBox(height: 10.h),
-
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
+                    Get.dialog(
+                      ForgotPasswordPopup(), // Show the ForgotPasswordPopup
+                      barrierDismissible:
+                          false, // Prevents the user from closing the dialog by tapping outside
+                    );
                   },
                   child: Text(
                     'Forgot Password?',
@@ -53,7 +62,6 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20.h),
-
               Obx(() {
                 return _authController.isLoading.value
                     ? CircularProgressIndicator()
@@ -85,7 +93,6 @@ class LoginScreen extends StatelessWidget {
                       );
               }),
               SizedBox(height: 20.h),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

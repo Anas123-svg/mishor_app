@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mishor_app/services/contact_service.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 
 class SupportScreen extends StatefulWidget {
@@ -44,10 +45,9 @@ class _SupportScreen extends State<SupportScreen> {
               _buildContactCard(
                 icon: Icons.email,
                 title: 'Email Us',
-                description: 'support@example.com',
+                description: 'support@mishor.com',
                 color: AppColors.primary,
                 onPressed: () {
-                  // Add email handling logic here
                 },
               ),
               SizedBox(height: 16),
@@ -57,7 +57,6 @@ class _SupportScreen extends State<SupportScreen> {
                 description: '+123 456 7890',
                 color: Colors.green,
                 onPressed: () {
-                  // Add WhatsApp handling logic here
                 },
               ),
               SizedBox(height: 24),
@@ -80,7 +79,7 @@ class _SupportScreen extends State<SupportScreen> {
                       hintText: 'Enter your name',
                       icon: Icons.person,
                       validator: (value) =>
-                          value!.isEmpty ? 'Please enter your name' : null,
+                          value?.isEmpty ?? true ? 'Please enter your name' : null,
                     ),
                     SizedBox(height: 16),
                     _buildTextField(
@@ -90,7 +89,7 @@ class _SupportScreen extends State<SupportScreen> {
                       icon: Icons.phone,
                       keyboardType: TextInputType.phone,
                       validator: (value) {
-                        if (value!.isEmpty) {
+                        if (value == null || value.isEmpty) {
                           return 'Please enter your phone number';
                         } else if (!RegExp(r'^\d{10,15}$').hasMatch(value)) {
                           return 'Please enter a valid phone number';
@@ -106,7 +105,7 @@ class _SupportScreen extends State<SupportScreen> {
                       icon: Icons.email,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value!.isEmpty) {
+                        if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         } else if (!RegExp(
                                 r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
@@ -124,7 +123,7 @@ class _SupportScreen extends State<SupportScreen> {
                       icon: Icons.message,
                       maxLines: 5,
                       validator: (value) =>
-                          value!.isEmpty ? 'Please enter a message' : null,
+                          value?.isEmpty ?? true ? 'Please enter a message' : null,
                     ),
                     SizedBox(height: 24),
                     ElevatedButton(
@@ -135,7 +134,7 @@ class _SupportScreen extends State<SupportScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        padding: EdgeInsets.symmetric(vertical: 16.h,horizontal: 14.w),
+                        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -206,7 +205,6 @@ class _SupportScreen extends State<SupportScreen> {
         prefixIcon: Icon(icon),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.primary),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
@@ -219,18 +217,51 @@ class _SupportScreen extends State<SupportScreen> {
     );
   }
 
-  void _submitForm() {
-    final String name = _nameController.text;
-    final String phone = _phoneController.text;
-    final String email = _emailController.text;
-    final String message = _messageController.text;
+void _submitForm() async {
+  final String name = _nameController.text;
+  final String phone = _phoneController.text;
+  final String email = _emailController.text;
+  final String message = _messageController.text;
 
+  // Show a loading dialog while the request is being processed
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => Center(child: CircularProgressIndicator()),
+  );
+
+  try {
+    await ContactService.sendContactDetails(
+      name: name,
+      phone: phone,
+      email: email,
+      message: message,
+    );
+    Navigator.pop(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text('Contact Submitted'),
         content: Text(
-          'Thank you, $name! We will contact you shortly.',
+          'Thank you, $name! Your message has been sent successfully. We will contact you shortly.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  } catch (e) {
+  
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Submission Failed'),
+        content: Text(
+          'An error occurred while sending your message. Please try again later.',
         ),
         actions: [
           TextButton(
@@ -241,4 +272,5 @@ class _SupportScreen extends State<SupportScreen> {
       ),
     );
   }
+}
 }

@@ -21,12 +21,15 @@ class buildWelcomeMessage extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             CircleAvatar(
-              radius: 60.r,  // Adjusted to make it bigger and centered
+              radius: 60.r, // Adjusted to make it bigger and centered
               backgroundColor: AppColors.primary,
               child: CircleAvatar(
-                radius: 55.r, 
+                radius: 55.r,
                 backgroundImage: NetworkImage(
-                  ProfileImage ?? 'https://static-00.iconduck.com/assets.00/user-icon-2048x2048-ihoxz4vq.png',
+                  ProfileImage?.startsWith('http') == true
+                      ? ProfileImage!
+                      : 'https://res.cloudinary.com/dchubllrz/image/upload/v1731813839/a9p8dyu9dyvj4ukjqo2a.png',
+                
                 ),
               ),
             ),
@@ -36,21 +39,21 @@ class buildWelcomeMessage extends StatelessWidget {
               child: GestureDetector(
                 onTap: () {},
                 child: CircleAvatar(
-                  radius: 20.r,  // Camera icon size
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.camera_alt, size: 18.r, color: AppColors.primary),
+                  radius: 20.r, // Camera icon size
+                  backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                  child: Icon(Icons.camera_alt,
+                      size: 18.r, color: AppColors.primary),
                 ),
               ),
             ),
           ],
         ),
 
-        // Welcome and intro text
-        SizedBox(height: 15.h),  // Add some space between profile and text
+        SizedBox(height: 15.h), 
         Text(
           'Welcome, ${userName}',
           style: TextStyle(
-            fontSize: 22.sp,  // Responsive font size
+            fontSize: 22.sp, // Responsive font size
             fontWeight: FontWeight.w600,
             color: AppColors.Col_White,
           ),
@@ -63,7 +66,7 @@ class buildWelcomeMessage extends StatelessWidget {
               Text(
                 'Safety is our top priority.',
                 style: TextStyle(
-                  fontSize: 10.sp,  // Responsive font size
+                  fontSize: 10.sp, // Responsive font size
                   color: Colors.white.withOpacity(0.8),
                 ),
                 textAlign: TextAlign.center,

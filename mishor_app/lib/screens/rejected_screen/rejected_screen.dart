@@ -24,31 +24,60 @@ class _RejectedScreen extends State<RejectedScreen> {
   bool isLoading = true;
   List<Assessment> RejectedInspections = [];
   String searchQuery = '';
+  String? username;
   //String filterStatus = 'All';
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     loadUserData();
   }
 
-  Future<void> loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userToken = prefs.getString('user_token');
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadUserData();  // Reload data every time the screen is shown
+  }
 
-    if (userToken != null) {
-      try {
-        await homeController.loadRejectedAssessmentCounts(userToken!);
+  Future<void> loadUserData() async {
+  final prefs = await SharedPreferences.getInstance();
+  if (!mounted) return; 
+
+  setState(() {
+    userToken = prefs.getString('user_token');
+    username = prefs.getString('user_name');
+  });
+
+  if (userToken != null) {
+    try {
+      await homeController.loadRejectedAssessmentCounts(userToken!);
+      if (homeController.rejectedAssessmentStats != null) {
+        print("fetchting rejected assessment stats");
         loadAssignedInspections();
-      } catch (error) {
-        print('Error fetching assessment counts: $error');
-      } finally {
+      } else {
+        print('Error: approvedAssessmentStats is null.');
+      }
+    } catch (error) {
+      print('Error fetching assessment counts: $error');
+    } finally {
+      if (mounted) {
         setState(() {
           isLoading = false;
         });
       }
     }
+  } else {
+    print('Error: userToken is null.');
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+}
+
+
+  void reloadAssignedScreen() {
+    loadUserData(); 
   }
 
   void loadAssignedInspections() {
@@ -59,71 +88,49 @@ class _RejectedScreen extends State<RejectedScreen> {
       });
     }
   }
-  @override
   
+  @override
   Widget build(BuildContext context) {
-    final assessmentStats = homeController.rejectedAssessmentStats;
     return Scaffold(
-      appBar: const CustomAppbar(),
-      drawer: drawer(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search Inspections...',
-                        hintStyle: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w200),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: AppColors.primary),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        prefixIcon:
-                            Icon(Icons.search, color: AppColors.primary),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          searchQuery = value;
-                        });
-                      },
+     appBar: CustomAppbar(token: userToken),
+      drawer: drawer(user_name: username),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 20.h),
+
+            // Dynamic ListView for Rejected Inspections
+            Expanded(
+              child: Obx(() {
+                final rejectedInspections =
+                    homeController.rejectedAssessmentStats?.rejectedAssessmentsList ?? [];
+
+                if (rejectedInspections.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No rejected inspections found.',
+                      style: TextStyle(fontSize: 16),
                     ),
-                  ),
-                  SizedBox(width: 16.w),
-                ],
-              ),
-              SizedBox(height: 20.h),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: RejectedInspections.length,
-                itemBuilder: (context, index) {
-                  final assessment = RejectedInspections[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Get.to(() => ViewTemplate(assessment.id));
-                    },
-                    child: buildInspectionCard(assessment: assessment),
                   );
-                },
-              ),
-            ],
-          ),
+                }
+
+                return ListView.builder(
+                  itemCount: rejectedInspections.length,
+                  itemBuilder: (context, index) {
+                    final assessment = rejectedInspections[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Get.to(() => ViewTemplate(assessment.id));
+                      },
+                      child: buildInspectionCard(assessment: assessment),
+                    );
+                  },
+                );
+              }),
+            ),
+          ],
         ),
       ),
     );

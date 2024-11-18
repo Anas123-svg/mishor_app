@@ -15,6 +15,7 @@ class TemplateService {
 
       if (response.statusCode == 200) {
         final jsonData = response.data;
+        print(jsonData);
         return Assessment2.fromJson(jsonData);
       } else {
         print((response.data));
@@ -54,6 +55,7 @@ Future<void> updateTemplateData(int templateID, Map<String, dynamic> data) async
 
     if (response.statusCode == 200) {
       print('Template data updated successfully');
+      print(data);
     } else {
       throw Exception('Failed to update template data: ${response.statusCode} - ${response.data}');
     }

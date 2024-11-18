@@ -26,31 +26,59 @@ class _CompletedScreenState extends State<CompletedScreen> {
   String searchQuery = '';
   //String filterStatus = 'All';
   String selectedFilter = 'Completed';
+    String? username;
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     loadUserData();
+  });
   }
 
-  Future<void> loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userToken = prefs.getString('user_token');
-    });
 
-    if (userToken != null) {
-      try {
-        await homeController.loadApprovedAssessmentCounts(userToken!);
+
+Future<void> loadUserData() async {
+  final prefs = await SharedPreferences.getInstance();
+  if (!mounted) return; 
+
+  setState(() {
+    userToken = prefs.getString('user_token');
+    username = prefs.getString('user_name');
+  });
+
+  if (userToken != null) {
+    try {
+      await homeController.loadApprovedAssessmentCounts(userToken!);
+      if (homeController.approvedAssessmentStats != null) {
+        print("fetchting approved assessment stats");
         loadAssignedInspections();
-      } catch (error) {
-        print('Error fetching assessment counts: $error');
-      } finally {
+      } else {
+        print('Error: approvedAssessmentStats is null.');
+      }
+    } catch (error) {
+      print('Error fetching assessment counts: $error');
+    } finally {
+      if (mounted) {
         setState(() {
           isLoading = false;
         });
       }
     }
+  } else {
+    print('Error: userToken is null.');
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
+}
+
+  void reloadAssignedScreen() {
+    loadUserData(); 
+  }
+
 
   void loadAssignedInspections() {
     final assessmentStats = homeController.approvedAssessmentStats;
@@ -63,19 +91,25 @@ class _CompletedScreenState extends State<CompletedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final assessmentStats = homeController.approvedAssessmentStats;
     return Scaffold(
-      appBar: const CustomAppbar(),
-      drawer: drawer(),
+      appBar: CustomAppbar(token: userToken),
+      drawer: drawer(user_name: username),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (assessmentStats != null) _buildStatistics(assessmentStats),
-
+              // Show statistics if data is available
+              Obx(() {
+                final assessmentStats = homeController.approvedAssessmentStats;
+                return assessmentStats != null
+                    ? _buildStatistics(assessmentStats)
+                    : const SizedBox.shrink();
+              }),
               SizedBox(height: 24.h),
+
+              // Search bar (functional but no filtering logic for now)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -85,9 +119,10 @@ class _CompletedScreenState extends State<CompletedScreen> {
                       decoration: InputDecoration(
                         hintText: 'Search Inspections...',
                         hintStyle: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w200),
+                          color: Colors.black,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w200,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
                           borderSide: BorderSide(color: AppColors.primary),
@@ -102,36 +137,39 @@ class _CompletedScreenState extends State<CompletedScreen> {
                         fillColor: Colors.white,
                       ),
                       onChanged: (value) {
-                        setState(() {
-                          searchQuery = value;
-                        });
+                        // You can later implement a filtering mechanism here if needed.
                       },
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 20.h),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: completedInspections.length,
-                itemBuilder: (context, index) {
-                  final assessment = completedInspections[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Get.to(() => ViewTemplate(assessment.id));
-                    },
-                    child: buildInspectionCard(assessment: assessment),
-                  );
-                },
-              ),
+
+              // Dynamic ListView showing completed inspections
+              Obx(() {
+                final completedInspections =
+                    homeController.approvedAssessmentStats?.rejectedAssessmentsList ?? [];
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: completedInspections.length,
+                  itemBuilder: (context, index) {
+                    final assessment = completedInspections[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Get.to(() => ViewTemplate(assessment.id));
+                      },
+                      child: buildInspectionCard(assessment: assessment),
+                    );
+                  },
+                );
+              }),
             ],
           ),
         ),
       ),
     );
   }
-
   Widget _buildStatistics(AssessmentStats assessment) {
     return Card(
       elevation: 8,

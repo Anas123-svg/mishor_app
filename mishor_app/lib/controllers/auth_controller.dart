@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mishor_app/models/user.dart';
 import 'package:mishor_app/services/auth_service.dart';
@@ -33,7 +34,8 @@ Future<void> login(String email, String password) async {
     try {
       bool isRegistered = await _authService.signUp(email, password,confirmPassword, phone, name, Client);
       if (isRegistered) {
-        Get.toNamed(AppRoutes.bottomNavBar);
+        Get.snackbar("Sign Up Successful", "You have to wait for admin's approval.", backgroundColor: Colors.green);
+        Get.offAllNamed(AppRoutes.login);
       }
     } catch (e) {
       Get.snackbar("Sign Up Failed", e.toString());

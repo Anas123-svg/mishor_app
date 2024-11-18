@@ -58,59 +58,73 @@ class _EditProfileState extends State<EditProfile> {
     }
   }
 
-  Future<void> submitProfileUpdate() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() {
-        isLoading = true;
-      });
-      final updatedUserData = User(
-        id: 1,
-        email: emailController.text,
-        token: userToken!,
-        name: nameController.text,
-        phone: phoneController.text,
-        profileImage: profileImageUrl, // Update the profile image URL if needed
-        client_id: 1, // Replace with actual client ID
-        isVerified: true, // Update accordingly
-        completed_assessments: 0,
-        total_assessments: 0,
-        rejected_assessments: 0,
-        pending_assessments: 0,
+Future<void> submitProfileUpdate() async {
+  if (_formKey.currentState?.validate() ?? false) {
+    setState(() {
+      isLoading = true;
+    });
+    final updatedUserData = User(
+      id: 1,
+      email: emailController.text,
+      token: userToken!,
+      name: nameController.text,
+      phone: phoneController.text,
+      profileImage: profileImageUrl, // Update the profile image URL if needed
+      client_id: 1, // Replace with actual client ID
+      isVerified: true, // Update accordingly
+      completed_assessments: 0,
+      total_assessments: 0,
+      rejected_assessments: 0,
+      pending_assessments: 0,
+    );
+
+    try {
+      final isSuccess = await profileService.updateUserProfile(
+        userToken: userToken!,
+        updatedData: {
+          'name': nameController.text,
+          'email': emailController.text,
+          'phone': phoneController.text,
+        },
+        profileImage: profileImage,
       );
 
-      try {
-        final isSuccess = await profileService.updateUserProfile(
-          userToken: userToken!,
-          updatedData: {
-            'name': nameController.text,
-            'email': emailController.text,
-            'phone': phoneController.text,
-          },
-          profileImage: profileImage,
-        );
+      if (isSuccess) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_name', nameController.text);
+        await prefs.setString('user_email', emailController.text);
+        await prefs.setString('user_phone', phoneController.text);
+        
+        print(await prefs.getString('user_name'));
+        print('Saved user_name: ${nameController.text}');
+        print('Saved user_email: ${emailController.text}');
+        print('Saved user_phone: ${phoneController.text}');
 
-        if (isSuccess) {
-          userController.updateProfile(
-              updatedUserData); // Update the profile in the controller
-
-          Get.snackbar(
-              'Profile Updated', 'Your profile has been updated successfully!',
-              backgroundColor: Colors.green, colorText: Colors.white);
-        } else {
-          Get.snackbar('Error', 'Failed to update profile.',
-              backgroundColor: Colors.red, colorText: Colors.white);
+        
+        if (profileImageUrl != null && profileImageUrl!.isNotEmpty) {
+          await prefs.setString('profile_image', profileImageUrl!);
         }
-      } catch (error) {
-        print('Error updating profile: $error');
-        Get.snackbar('Error', 'Something went wrong. Please try again later.',
+
+        userController.updateProfile(updatedUserData);
+
+        Get.snackbar(
+            'Profile Updated', 'Your profile has been updated successfully!',
+            backgroundColor: Colors.green, colorText: Colors.white);
+      } else {
+        Get.snackbar('Error', 'Failed to update profile.',
             backgroundColor: Colors.red, colorText: Colors.white);
-      } finally {
-        setState(() {
-          isLoading = false;
-        });
       }
+    } catch (error) {
+      print('Error updating profile: $error');
+      Get.snackbar('Error', 'Something went wrong. Please try again later.',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

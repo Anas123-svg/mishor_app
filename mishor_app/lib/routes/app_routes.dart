@@ -7,5 +7,7 @@ class AppRoutes {
   static const login = '/login';
   static const template = '/template';
   static const signup = '/signup';
+  static const resetPassword = '/reset-password';
+  static const profile = '/profile';
 
 }
