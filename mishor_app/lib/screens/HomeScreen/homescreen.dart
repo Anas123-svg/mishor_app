@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:mishor_app/models/assessment_stats.dart';
 import 'package:mishor_app/screens/HomeScreen/widgets/bar_chart.dart';
 import 'package:mishor_app/screens/HomeScreen/widgets/inspection_list.dart';
 import 'package:mishor_app/screens/HomeScreen/widgets/instructions.dart';
@@ -142,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(0, 255, 255, 255),
       appBar: CustomAppbar(token: userToken),
-      drawer: drawer(user_name: userName),
+      drawer: drawer(user_name: userName, userToken: userToken),
       body: Obx(() {
         final assessmentStats = homeController.assessmentStats;
         return isLoading

@@ -22,7 +22,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreen extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final UserController userController =
-      Get.find(); // Get the UserController instance
+      Get.find(); 
   String? userToken;
   bool isLoading = false;
   final ProfileService profileService = ProfileService();
@@ -47,13 +47,13 @@ class _ProfileScreen extends State<ProfileScreen> {
           content: Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context), // Close the dialog
+              onPressed: () => Navigator.pop(context), 
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
-                logout(context); // Call the logout function
+                Navigator.pop(context); 
+                logout(context); 
               },
               child: Text('Logout'),
             ),
@@ -75,7 +75,6 @@ class _ProfileScreen extends State<ProfileScreen> {
   }
 
 Future<void> logout(BuildContext context) async {
-  // Show loading indicator
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -110,7 +109,7 @@ Future<void> logout(BuildContext context) async {
     print(emailController);
     return Scaffold(
       appBar: CustomAppbar(token: userToken),
-      drawer: drawer (),
+      drawer: drawer (userToken: userToken),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),

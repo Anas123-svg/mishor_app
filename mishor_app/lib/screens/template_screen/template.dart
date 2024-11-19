@@ -212,7 +212,6 @@ Widget _buildTextArea(Field field) {
 
 
 Widget _buildCheckboxField(Field field) {
-  // Ensure _fieldValues for the current field is initialized as a list of strings
   if (!_fieldValues.containsKey(field.id)) {
     _fieldValues[field.id] = field.attributes['required'] == true ? [] : [];
   }
@@ -238,18 +237,14 @@ Widget _buildCheckboxField(Field field) {
           value: isSelected,
           onChanged: (value) {
             setState(() {
-              // Initialize the list if it's null
               _fieldValues[field.id] = _fieldValues[field.id] ?? [];
 
               if (value == true) {
-                // Add option to the list when selected
                 _fieldValues[field.id]!.add(option);
               } else {
-                // Remove option from the list when deselected
                 _fieldValues[field.id]!.remove(option);
               }
 
-              // Remove the field entry if it's empty (optional behavior)
               if (_fieldValues[field.id]!.isEmpty) {
                 _fieldValues.remove(field.id);
               }
@@ -528,8 +523,10 @@ Widget _buildSelectField(Field field) {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Template Details',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Center(
+          child: Text('Assessment',
+              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.Col_White)),
+        ),
         backgroundColor: AppColors.primary,
       ),
       body: FutureBuilder<Assessment2>(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:mishor_app/controllers/auth_controller.dart';
 import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/services/forgot_password.dart';
 import 'package:mishor_app/utilities/app_colors.dart';

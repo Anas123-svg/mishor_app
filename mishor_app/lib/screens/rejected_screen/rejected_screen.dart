@@ -93,7 +93,7 @@ class _RejectedScreen extends State<RejectedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
      appBar: CustomAppbar(token: userToken),
-      drawer: drawer(user_name: username),
+      drawer: drawer(user_name: username, userToken: userToken,),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
         child: Column(

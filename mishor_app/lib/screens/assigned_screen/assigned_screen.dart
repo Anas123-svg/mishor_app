@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mishor_app/controllers/home_screen_controller.dart';
 import 'package:mishor_app/models/assessment_stats.dart';
-import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/screens/HomeScreen/widgets/stat_card.dart';
 import 'package:mishor_app/screens/template_screen/template.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
@@ -11,7 +10,6 @@ import 'package:mishor_app/widgets/helping_global/drawer.dart';
 import 'package:mishor_app/widgets/helping_global/appbar.dart';
 import 'package:mishor_app/widgets/helping_global/inspection_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
 
 class AssignedScreen extends StatefulWidget {
   const AssignedScreen({super.key});
@@ -96,7 +94,7 @@ class _AssignedScreenState extends State<AssignedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppbar(token: userToken),
-      drawer: drawer(user_name: username),  
+      drawer: drawer(user_name: username, userToken: userToken),  
       body: Obx(() {
         if (isLoading) {
           return Center(child: CircularProgressIndicator());

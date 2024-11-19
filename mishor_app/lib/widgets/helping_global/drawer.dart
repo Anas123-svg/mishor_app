@@ -1,19 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:mishor_app/routes/app_pages.dart';
 import 'package:mishor_app/routes/app_routes.dart';
 import 'package:mishor_app/screens/change_password/change_password.dart';
 import 'package:mishor_app/screens/edit_profile/edit_profile.dart';
 import 'package:mishor_app/screens/support_screen/support_screen.dart';
 import 'package:mishor_app/utilities/app_colors.dart';
 import 'package:mishor_app/utilities/app_images.dart';
+import 'package:mishor_app/services/profile_service.dart';
 
 class drawer extends StatelessWidget {
+  final ProfileService profileService = ProfileService();
+
   final String? user_name;
   final String? userProfileImage;
+  final String? userToken;
+    Future<void> showLogoutDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Logout Confirmation'),
+          content: Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), 
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); 
+                logout(context); 
+              },
+              child: Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-  drawer({super.key, this.user_name, this.userProfileImage});
+  Future<void> logout(BuildContext context) async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Center(child: CircularProgressIndicator());
+    },
+  );
+
+  try {
+    bool response;
+    response = await profileService.logout(userToken!);
+    if (response) {
+       Get.offAllNamed(AppRoutes.login);
+    }
+  } catch (error) {
+          Navigator.pop(context); 
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred: $error',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+
+  }
+}
+
+  drawer({super.key, this.user_name, this.userProfileImage, this.userToken});
 
   @override
   Widget build(BuildContext context) {
@@ -71,9 +126,8 @@ class drawer extends StatelessWidget {
                     _buildDrawerItem(
                       icon: Icons.logout,
                       text: 'Logout',
-                      onTap: () {
-                        Get.offAllNamed(AppRoutes.login);
-                      },
+                      onTap: () => showLogoutDialog(context)
+
                     ),
                   ],
                 ),
@@ -85,7 +139,6 @@ class drawer extends StatelessWidget {
     );
   }
 
-  // Reusable drawer list item widget with rounded borders and elevated effect
   Widget _buildDrawerItem(
       {required IconData icon,
       required String text,

@@ -1,5 +1,4 @@
 import 'package:mishor_app/models/template.dart';
-import 'package:mishor_app/models/template.dart';
 
 class Assessment2 {
   final int id;

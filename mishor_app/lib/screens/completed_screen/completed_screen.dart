@@ -93,7 +93,7 @@ Future<void> loadUserData() async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppbar(token: userToken),
-      drawer: drawer(user_name: username),
+      drawer: drawer(user_name: username, userToken: userToken),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),

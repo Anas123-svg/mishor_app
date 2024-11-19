@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 class Template {
   final int id;
@@ -56,7 +55,7 @@ class Field {
   final int id;
   final String label;
   final String type;
-  dynamic value; // Can be a String or List<String>
+  dynamic value; 
   final Map<String, dynamic> attributes;
   final List<String> options;
 
@@ -69,10 +68,9 @@ class Field {
     required this.options,
   });
 
-  // Factory constructor to create Field from JSON
   factory Field.fromJson(Map<String, dynamic> json) {
     return Field(
-      id: json['id'] ?? 0,  // Ensure id is an integer, default to 0 if missing
+      id: json['id'] ?? 0,  
       label: json['label'],
       type: json['type'],
       value: _parseValue(json['value']),
@@ -81,22 +79,21 @@ class Field {
     );
   }
 
-  // Helper function to handle both String and List<String> types for value
   static dynamic _parseValue(dynamic value) {
     if (value == null) {
       return null;
     } else if (value is int) {
-      return value.toString();  // Convert int to String
+      return value.toString();  
     } else if (value is String) {
-      return value;  // Return as is if it's already a String
+      return value; 
     } else if (value is List) {
       if (value is List<String>) {
         return value;
       } else {
-        return List<String>.from(value.map((e) => e.toString())); // Convert to a list of Strings
+        return List<String>.from(value.map((e) => e.toString()));
       }
     }
-    return null;  // Return null if the value is neither String, int, nor List
+    return null; 
   }
 
   Map<String, dynamic> toJson() {
@@ -110,16 +107,15 @@ class Field {
     };
   }
 
-  // Serialize the value to a proper JSON format (String or List<String>)
   static dynamic _serializeValue(dynamic value) {
     if (value == null) {
       return null;
     } else if (value is String) {
-      return value;  // If it's a String, return it as is
+      return value;  
     } else if (value is int) {
-      return value.toString();  // Convert int to String for JSON serialization
+      return value.toString();  
     } else if (value is List) {
-      return List<String>.from(value.map((e) => e.toString()));  // Convert list to List<String> if necessary
+      return List<String>.from(value.map((e) => e.toString()));  
     }
     return null;
   }
