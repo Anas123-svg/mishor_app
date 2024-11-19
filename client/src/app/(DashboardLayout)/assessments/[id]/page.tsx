@@ -215,7 +215,10 @@ const ViewAssessment: React.FC = () => {
                     <Checkbox
                       value={option}
                       disabled
-                      checked={field.value.includes(option)}
+                      checked={
+                        Array.isArray(field.value) &&
+                        (field.value as string[]).includes(option)
+                      }
                     />
                     <span>{option}</span>
                   </label>
