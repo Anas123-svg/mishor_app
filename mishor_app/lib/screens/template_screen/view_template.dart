@@ -17,7 +17,6 @@ class ViewTemplate extends StatefulWidget {
 class _ViewTemplateScreenState extends State<ViewTemplate> {
   late Future<Assessment2> _assessmentFuture;
   final Map<int, dynamic> _fieldValues = {};
-  final Map<String, Map<String, dynamic>> _tableRowValues = {};
   String tableName = '';
   List<String> Columns = [];
   final List<String> _uploadedImageUrls = [];
@@ -510,7 +509,7 @@ Widget build(BuildContext context) {
           // Populate images URLs (from assessment, not template)
           if (assessment.siteImages != null) {
             _uploadedImageUrls.clear();
-            for (var image in assessment.siteImages!) {
+            for (var image in assessment.siteImages) {
               _uploadedImageUrls.add(image.siteImage);
             }
           }

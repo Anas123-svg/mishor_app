@@ -20,7 +20,7 @@ class _SupportScreen extends State<SupportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Contact Us',
+          'Help & Support',
           style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

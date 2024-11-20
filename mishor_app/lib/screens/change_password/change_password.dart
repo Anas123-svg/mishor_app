@@ -39,7 +39,7 @@ class _ChangePasswordScreen extends State<ChangePasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Contact Us',
+          'Change Password',
           style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

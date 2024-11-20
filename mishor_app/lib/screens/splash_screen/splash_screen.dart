@@ -49,7 +49,6 @@ class _SplashScreenState extends State<SplashScreen> {
       );
 
       if (response.statusCode == 200) {
-
         return true; 
       } else {
         print('Token is invalid');

@@ -10,9 +10,6 @@ import 'package:mishor_app/screens/bottom_navbar/bottom_navbar.dart';
 import 'package:mishor_app/screens/rejected_screen/rejected_screen.dart';
 import 'package:mishor_app/screens/signup_screen/signup_screen.dart';
 import 'package:mishor_app/screens/splash_screen/splash_screen.dart';
-import 'package:mishor_app/screens/support_screen/support_screen.dart';
-import 'package:mishor_app/screens/template_screen/template.dart';
-import 'package:mishor_app/screens/template_screen/view_template.dart';
 
 class AppPages {
   static final appRoutes =[
