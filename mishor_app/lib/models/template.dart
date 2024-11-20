@@ -1,4 +1,5 @@
 
+import 'dart:convert';
 class Template {
   final int id;
   final String name;
@@ -123,11 +124,13 @@ class Field {
 
 
 class TableData {
+  final int tableId;
   final String tableName;
   final List<String> columns;
   final Map<String, Map<String, dynamic>> rows; 
 
   TableData({
+    required this.tableId,
     required this.tableName,
     required this.columns,
     required this.rows,
@@ -135,6 +138,7 @@ class TableData {
 
   factory TableData.fromJson(Map<String, dynamic> json) {
     return TableData(
+      tableId: json['id'] ?? 0,
       tableName: json['table_name'] ?? '',
       columns: List<String>.from(json['table_data']['columns'] ?? []),
       rows: (json['table_data']['rows'] as Map<String, dynamic>).map((key, value) =>
@@ -144,6 +148,7 @@ class TableData {
 
     Map<String, dynamic> toJson() {
     return {
+      'id': tableId,
       'table_name': tableName,
       'table_data': {
         'columns': columns,
@@ -151,6 +156,7 @@ class TableData {
       },
     };
   }
+
 
 }
 

@@ -22,7 +22,6 @@ class TemplateScreen extends StatefulWidget {
 class _TemplateScreenState extends State<TemplateScreen> {
   late Future<Assessment2> _assessmentFuture;
   final Map<int, dynamic> _fieldValues = {};
-  final Map<String, Map<String, dynamic>> _tableRowValues = {};
   List<String> Columns = [];
   final List<String> _uploadedImageUrls = [];
   final ImagePicker _picker = ImagePicker();
@@ -212,6 +211,7 @@ Widget _buildTextArea(Field field) {
 
 
 Widget _buildCheckboxField(Field field) {
+  // Ensure _fieldValues for the current field is initialized as a list of strings
   if (!_fieldValues.containsKey(field.id)) {
     _fieldValues[field.id] = field.attributes['required'] == true ? [] : [];
   }
@@ -237,14 +237,18 @@ Widget _buildCheckboxField(Field field) {
           value: isSelected,
           onChanged: (value) {
             setState(() {
+              // Initialize the list if it's null
               _fieldValues[field.id] = _fieldValues[field.id] ?? [];
 
               if (value == true) {
+                // Add option to the list when selected
                 _fieldValues[field.id]!.add(option);
               } else {
+                // Remove option from the list when deselected
                 _fieldValues[field.id]!.remove(option);
               }
 
+              // Remove the field entry if it's empty (optional behavior)
               if (_fieldValues[field.id]!.isEmpty) {
                 _fieldValues.remove(field.id);
               }
@@ -375,84 +379,83 @@ Widget _buildSelectField(Field field) {
     ],
   );
 }
+List <TableData> tables=[];
 
-  Widget _buildTableEditor(TableData table) {
-    tableName = table.tableName;
-    Columns = table.columns;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          table.tableName,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection:
-              Axis.horizontal, 
-          child: DataTable(
-            columnSpacing: 45, 
-            headingRowHeight: 56,
-            dataRowHeight: 56,
-            showCheckboxColumn: false, 
-            columns: [
-              DataColumn(
-                label: Text(
-                  'Row',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: AppColors.primary),
-                ),
+Widget _buildTableEditor(TableData table) {
+  // Find the table in the list, or add it if it's a new table
+  final tableIndex = tables.indexWhere((t) => t.tableId == table.tableId);
+  if (tableIndex == -1) {
+    tables.add(table);  // If table doesn't exist, add it
+  } else {
+    tables[tableIndex] = table;  // If table exists, update it
+  }
+
+  tableName = table.tableName;
+  Columns = table.columns;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        table.tableName,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      SizedBox(height: 12),
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          columnSpacing: 45,
+          headingRowHeight: 56,
+          dataRowHeight: 56,
+          showCheckboxColumn: false,
+          columns: [
+            DataColumn(
+              label: Text(
+                'Row',
+                style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
-              ...table.columns.map((col) => DataColumn(
-                    label: Text(
-                      col,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary),
-                    ),
-                  ))
-            ],
-            rows: table.rows.entries.map((entry) {
-              return DataRow(
-                cells: [
-                  DataCell(
-                    Text(entry.key),
-                  ),
-                  ...entry.value.entries.map((cell) {
-                    return DataCell(
-                      TextFormField(
-                        initialValue: cell.value.toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            _tableRowValues[entry.key] ??= {};
-                            _tableRowValues[entry.key]![cell.key] = value;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 12),
-                          border:
-                              InputBorder.none,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ],
-              );
-            }).toList(),
-            border: TableBorder(
-              horizontalInside: BorderSide(
-                  color: Colors.grey, width: 0.5), // Line between rows
-              verticalInside: BorderSide(
-                  color: Colors.grey, width: 0.5), // Line between columns
-              bottom: BorderSide(
-                  color: Colors.grey, width: 0.5), 
             ),
+            ...table.columns.map((col) => DataColumn(
+                  label: Text(
+                    col,
+                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                  ),
+                ))
+          ],
+          rows: table.rows.entries.map((entry) {
+            return DataRow(
+              cells: [
+                DataCell(Text(entry.key)),
+                ...entry.value.entries.map((cell) {
+                  return DataCell(
+                    TextFormField(
+                      initialValue: cell.value.toString(),
+                      onChanged: (value) {
+                        setState(() {
+                          table.rows[entry.key]?[cell.key] = value; // Update table row
+                          tables[tableIndex] = table;  // Update table in tables list
+                        });
+                      },
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            );
+          }).toList(),
+          border: TableBorder(
+            horizontalInside: BorderSide(color: Colors.grey, width: 0.5),
+            verticalInside: BorderSide(color: Colors.grey, width: 0.5),
+            bottom: BorderSide(color: Colors.grey, width: 0.5),
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
 
   void _submitData() async {
@@ -469,6 +472,7 @@ Widget _buildSelectField(Field field) {
     );
     return;
   }
+  print("tables data   ${tables}");
 
     
     final assessmentData = {
@@ -488,15 +492,16 @@ Widget _buildSelectField(Field field) {
             "value": entry.value,
           };
         }).toList(),
-        "tables": [
-          {
-            "table_name": tableName,
-            "table_data": {
-              "columns": Columns,
-              "rows": _tableRowValues
-            }
-          }
-        ],
+      "tables": tables.map((table) => table.toJson()).toList(), // Send tables as JSON
+        //[
+          //{
+           // "table_name": tableName,
+         //   "table_data": {
+              //"columns": Columns,
+              //"rows": _tableRowValues
+            //}
+          //}
+        //],
         "site_images": _uploadedImageUrls.map((imageUrl) {
           return {
             "site_image": imageUrl,
@@ -523,10 +528,8 @@ Widget _buildSelectField(Field field) {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text('Assessment',
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.Col_White)),
-        ),
+        title: Text('Template Details',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.primary,
       ),
       body: FutureBuilder<Assessment2>(

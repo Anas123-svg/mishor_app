@@ -15,7 +15,7 @@ class TemplateService {
 
       if (response.statusCode == 200) {
         final jsonData = response.data;
-        print(jsonData);
+       // print(jsonData);
         return Assessment2.fromJson(jsonData);
       } else {
         print((response.data));
