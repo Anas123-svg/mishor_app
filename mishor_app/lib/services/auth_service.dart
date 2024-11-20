@@ -21,7 +21,6 @@ Future<User?> login(String email, String password) async {
       ),
     );
 
-    // Handle successful login
     if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
       final json = response.data;
       print("Decoded JSON response: $json");
