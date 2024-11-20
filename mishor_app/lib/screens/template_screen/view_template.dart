@@ -436,10 +436,10 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       title: Text(
-        'Template Details',
+        'Assessment Details',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      backgroundColor: AppColors.primary,
+      backgroundColor: const Color.fromARGB(0, 255, 255, 255),
     ),
     body: FutureBuilder<Assessment2>(
       future: _assessmentFuture,

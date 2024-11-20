@@ -325,7 +325,6 @@ Widget _buildCheckboxField(Field field) {
   }
 
 Widget _buildSelectField(Field field) {
-  // Initialize _fieldValues[field.id] as null or an empty string for non-required fields
   if (!_fieldValues.containsKey(field.id)) {
     _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
   }
@@ -382,12 +381,11 @@ Widget _buildSelectField(Field field) {
 List <TableData> tables=[];
 
 Widget _buildTableEditor(TableData table) {
-  // Find the table in the list, or add it if it's a new table
   final tableIndex = tables.indexWhere((t) => t.tableId == table.tableId);
   if (tableIndex == -1) {
-    tables.add(table);  // If table doesn't exist, add it
+    tables.add(table);  
   } else {
-    tables[tableIndex] = table;  // If table exists, update it
+    tables[tableIndex] = table;
   }
 
   tableName = table.tableName;
@@ -432,8 +430,8 @@ Widget _buildTableEditor(TableData table) {
                       initialValue: cell.value.toString(),
                       onChanged: (value) {
                         setState(() {
-                          table.rows[entry.key]?[cell.key] = value; // Update table row
-                          tables[tableIndex] = table;  // Update table in tables list
+                          table.rows[entry.key]?[cell.key] = value; 
+                          tables[tableIndex] = table;
                         });
                       },
                       decoration: InputDecoration(
@@ -528,9 +526,9 @@ Widget _buildTableEditor(TableData table) {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Template Details',
+        title: Text('Assessment',
             style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color.fromARGB(0, 255, 255, 255),
       ),
       body: FutureBuilder<Assessment2>(
         future: _assessmentFuture,
