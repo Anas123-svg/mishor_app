@@ -37,7 +37,7 @@ dependencies:
   intl: ^0.17.0
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
-
+  
   dropdown_search: ^6.0.1
   dio: ^5.7.0
   cloudinary_flutter: ^1.0.0
