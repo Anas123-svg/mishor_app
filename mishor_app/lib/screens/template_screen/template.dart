@@ -28,7 +28,7 @@ class _TemplateScreenState extends State<TemplateScreen> {
   TextEditingController _assessorController = TextEditingController();
   TextEditingController _dateController = TextEditingController();
   bool isAllFilled = true;
-  String? tableName; 
+  String? tableName;
   final String cloudName = 'dchubllrz';
   final String uploadPreset = 'nmafnbii';
 
@@ -94,9 +94,9 @@ class _TemplateScreenState extends State<TemplateScreen> {
       case 'textarea':
         return _buildTextArea(field);
       case 'checkbox':
-          return _buildCheckboxField(field);
+        return _buildCheckboxField(field);
       case 'select':
-          return _buildSelectField(field);
+        return _buildSelectField(field);
       case 'radio':
         return _buildRadioField(field);
       default:
@@ -104,181 +104,111 @@ class _TemplateScreenState extends State<TemplateScreen> {
     }
   }
 
+  Widget _buildTextField(Field field) {
+    if (!_fieldValues.containsKey(field.id)) {
+      _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
+    }
 
-
-
-
-
-Widget _buildTextField(Field field) {
-  if (!_fieldValues.containsKey(field.id)) {
-    _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
+    return TextField(
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.attributes['placeholder'] ?? '',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        suffixIcon: field.attributes['required'] == true
+            ? Icon(Icons.star, color: Colors.red)
+            : null,
+      ),
+      onChanged: (value) {
+        setState(() {
+          _fieldValues[field.id] = value.isNotEmpty ? value : null;
+          isAllFilled = _fieldValues.values.every((val) => val != null);
+        });
+      },
+    );
   }
 
-  return TextField(
-    decoration: InputDecoration(
-      labelText: field.label,
-      hintText: field.attributes['placeholder'] ?? '',
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      suffixIcon: field.attributes['required'] == true
-          ? Icon(Icons.star, color: Colors.red)
-          : null,
-    ),
-    onChanged: (value) {
-      setState(() {
-        _fieldValues[field.id] = value.isNotEmpty ? value : null;
-        isAllFilled = _fieldValues.values.every((val) => val != null);
-      });
-    },
-  );
-}
+  Widget _buildNumberField(Field field) {
+    if (!_fieldValues.containsKey(field.id)) {
+      print(field.id);
+      _fieldValues[field.id] =
+          field.attributes['required'] == true ? null : false;
+    }
 
-Widget _buildNumberField(Field field) {
-  if (!_fieldValues.containsKey(field.id)) {
-    print(field.id);
-    _fieldValues[field.id] =
-        field.attributes['required'] == true ? null : false;
+    return TextField(
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.attributes['placeholder'] ?? '',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        suffixIcon: field.attributes['required'] == true
+            ? Icon(Icons.star, color: Colors.red)
+            : null,
+      ),
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        int? parsedValue = int.tryParse(value);
+        print(value);
+        setState(() {
+          _fieldValues[field.id] = parsedValue ??
+              (field.attributes['required'] == true ? null : false);
+        });
+
+        print('Updated _fieldValues: $_fieldValues');
+      },
+    );
   }
-
-  return TextField(
-    decoration: InputDecoration(
-      labelText: field.label,
-      hintText: field.attributes['placeholder'] ?? '',
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      suffixIcon: field.attributes['required'] == true
-          ? Icon(Icons.star, color: Colors.red)
-          : null,
-    ),
-    keyboardType: TextInputType.number,
-    onChanged: (value) {
-      int? parsedValue = int.tryParse(value);
-      print (value);  
-      setState(() {
-        _fieldValues[field.id] = parsedValue ??
-            (field.attributes['required'] == true ? null : false);
-      });
-
-      print('Updated _fieldValues: $_fieldValues');
-    },
-  );
-}
 
 // Helper method to validate all fields
-bool _validateAllFields() {
-  bool isValid = true;
+  bool _validateAllFields() {
+    bool isValid = true;
 
-  _fieldValues.forEach((key, value) {
-    if (value == null || (value is String && value.trim().isEmpty)) {
-      isValid = false;
+    _fieldValues.forEach((key, value) {
+      if (value == null || (value is String && value.trim().isEmpty)) {
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  }
+
+  Widget _buildTextArea(Field field) {
+    if (!_fieldValues.containsKey(field.id)) {
+      _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
     }
-  });
 
-  return isValid;
-}
-
-
-Widget _buildTextArea(Field field) {
-  if (!_fieldValues.containsKey(field.id)) {
-    _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
-  }
-
-  return TextField(
-    decoration: InputDecoration(
-      labelText: field.label,
-      hintText: field.attributes['placeholder'] ?? '',
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      suffixIcon: field.attributes['required'] == true
-          ? Icon(Icons.star, color: Colors.red)
-          : null,
-    ),
-    maxLines: null,
-    onChanged: (value) {
-      setState(() {
-        if (field.attributes['required'] == true && value.isEmpty) {
-          _fieldValues[field.id] = null;
-        } else {
-          _fieldValues[field.id] = int.tryParse(value) ?? value;
-        }
-      });
-    },
-  );
-}
-
-
-Widget _buildCheckboxField(Field field) {
-  // Ensure _fieldValues for the current field is initialized as a list of strings
-  if (!_fieldValues.containsKey(field.id)) {
-    _fieldValues[field.id] = field.attributes['required'] == true ? [] : [];
-  }
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Text(
-            field.label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          if (field.attributes['required'] == true)
-            Icon(Icons.star, color: Colors.red),
-        ],
-      ),
-      ...field.options.map((option) {
-        bool isSelected = _fieldValues[field.id]?.contains(option) ?? false;
-
-        return CheckboxListTile(
-          title: Text(option),
-          value: isSelected,
-          onChanged: (value) {
-            setState(() {
-              // Initialize the list if it's null
-              _fieldValues[field.id] = _fieldValues[field.id] ?? [];
-
-              if (value == true) {
-                // Add option to the list when selected
-                _fieldValues[field.id]!.add(option);
-              } else {
-                // Remove option from the list when deselected
-                _fieldValues[field.id]!.remove(option);
-              }
-
-              // Remove the field entry if it's empty (optional behavior)
-              if (_fieldValues[field.id]!.isEmpty) {
-                _fieldValues.remove(field.id);
-              }
-            });
-          },
-          activeColor: Colors.blueAccent,
-        );
-      }).toList(),
-      if (field.attributes['required'] == true)
-        Builder(
-          builder: (context) {
-            bool isValid = _fieldValues[field.id]?.isNotEmpty ?? false;
-            if (!isValid) {
-              return Text(
-                'This field is required.',
-                style: TextStyle(color: Colors.red),
-              );
-            }
-            return SizedBox.shrink();
-          },
+    return TextField(
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.attributes['placeholder'] ?? '',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
-    ],
-  );
-}
-
-  Widget _buildRadioField(Field field) {
-                  if (!_fieldValues.containsKey(field.id)) {
-    _fieldValues[field.id] =
-        field.attributes['required'] == true ? null : '';
+        suffixIcon: field.attributes['required'] == true
+            ? Icon(Icons.star, color: Colors.red)
+            : null,
+      ),
+      maxLines: null,
+      onChanged: (value) {
+        setState(() {
+          if (field.attributes['required'] == true && value.isEmpty) {
+            _fieldValues[field.id] = null;
+          } else {
+            _fieldValues[field.id] = int.tryParse(value) ?? value;
+          }
+        });
+      },
+    );
   }
+
+  Widget _buildCheckboxField(Field field) {
+    // Ensure _fieldValues for the current field is initialized as a list of strings
+    if (!_fieldValues.containsKey(field.id)) {
+      _fieldValues[field.id] = field.attributes['required'] == true ? [] : [];
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -289,7 +219,69 @@ Widget _buildCheckboxField(Field field) {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             if (field.attributes['required'] == true)
-              Icon(Icons.star, color: Colors.red), 
+              Icon(Icons.star, color: Colors.red),
+          ],
+        ),
+        ...field.options.map((option) {
+          bool isSelected = _fieldValues[field.id]?.contains(option) ?? false;
+
+          return CheckboxListTile(
+            title: Text(option),
+            value: isSelected,
+            onChanged: (value) {
+              setState(() {
+                // Initialize the list if it's null
+                _fieldValues[field.id] = _fieldValues[field.id] ?? [];
+
+                if (value == true) {
+                  // Add option to the list when selected
+                  _fieldValues[field.id]!.add(option);
+                } else {
+                  // Remove option from the list when deselected
+                  _fieldValues[field.id]!.remove(option);
+                }
+
+                // Remove the field entry if it's empty (optional behavior)
+                if (_fieldValues[field.id]!.isEmpty) {
+                  _fieldValues.remove(field.id);
+                }
+              });
+            },
+            activeColor: Colors.blueAccent,
+          );
+        }).toList(),
+        if (field.attributes['required'] == true)
+          Builder(
+            builder: (context) {
+              bool isValid = _fieldValues[field.id]?.isNotEmpty ?? false;
+              if (!isValid) {
+                return Text(
+                  'This field is required.',
+                  style: TextStyle(color: Colors.red),
+                );
+              }
+              return SizedBox.shrink();
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRadioField(Field field) {
+    if (!_fieldValues.containsKey(field.id)) {
+      _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              field.label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (field.attributes['required'] == true)
+              Icon(Icons.star, color: Colors.red),
           ],
         ),
         ...field.options.map((option) {
@@ -300,8 +292,8 @@ Widget _buildCheckboxField(Field field) {
             onChanged: (value) {
               setState(() {
                 _fieldValues[field.id] = value;
-            _fieldValues[field.id] = value ??(field.attributes['required'] == true ? null : '');
-
+                _fieldValues[field.id] =
+                    value ?? (field.attributes['required'] == true ? null : '');
               });
             },
             activeColor: Colors.blueAccent,
@@ -310,169 +302,203 @@ Widget _buildCheckboxField(Field field) {
         if (field.attributes['required'] == true)
           Builder(
             builder: (context) {
-            bool isValid = _fieldValues[field.id] != null && _fieldValues[field.id] != '';
+              bool isValid = _fieldValues[field.id] != null &&
+                  _fieldValues[field.id] != '';
               if (!isValid) {
                 return Text(
                   'This field is required.',
                   style: TextStyle(color: Colors.red),
                 );
               }
-              return SizedBox.shrink(); 
+              return SizedBox.shrink();
             },
           ),
       ],
     );
   }
 
-Widget _buildSelectField(Field field) {
-  if (!_fieldValues.containsKey(field.id)) {
-    _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
+  Widget _buildSelectField(Field field) {
+    if (!_fieldValues.containsKey(field.id)) {
+      _fieldValues[field.id] = field.attributes['required'] == true ? null : '';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              field.label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (field.attributes['required'] == true)
+              Icon(Icons.star, color: Colors.red),
+          ],
+        ),
+        DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            labelText: field.label,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          value: _fieldValues[field.id],
+          items: field.options
+              .map((option) => DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(option),
+                  ))
+              .toList(),
+          onChanged: (value) => setState(() {
+            // Set the selected value or null if required
+            _fieldValues[field.id] =
+                value ?? (field.attributes['required'] == true ? null : '');
+          }),
+        ),
+        // Optional: Add validation message if required
+        if (field.attributes['required'] == true)
+          Builder(
+            builder: (context) {
+              bool isValid = _fieldValues[field.id] != null &&
+                  _fieldValues[field.id] != '';
+              if (!isValid) {
+                return Text(
+                  'This field is required.',
+                  style: TextStyle(color: Colors.red),
+                );
+              }
+              return SizedBox.shrink(); // Empty widget when valid
+            },
+          ),
+      ],
+    );
   }
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Text(
-            field.label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          if (field.attributes['required'] == true)
-            Icon(Icons.star, color: Colors.red),
-        ],
-      ),
-      DropdownButtonFormField<String>(
-        decoration: InputDecoration(
-          labelText: field.label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+  List<TableData> tables = [];
+
+  Widget _buildTableEditor(TableData table) {
+    final tableIndex = tables.indexWhere((t) => t.tableId == table.tableId);
+    if (tableIndex == -1) {
+      tables.add(table);
+    } else {
+      tables[tableIndex] = table;
+    }
+
+    tableName = table.tableName;
+    Columns = table.columns;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          table.tableName,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        value: _fieldValues[field.id],
-        items: field.options
-            .map((option) => DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(option),
-                ))
-            .toList(),
-        onChanged: (value) => setState(() {
-          // Set the selected value or null if required
-          _fieldValues[field.id] = value ?? (field.attributes['required'] == true ? null : '');
-        }),
-      ),
-      // Optional: Add validation message if required
-      if (field.attributes['required'] == true)
-        Builder(
-          builder: (context) {
-            bool isValid = _fieldValues[field.id] != null && _fieldValues[field.id] != '';
-            if (!isValid) {
-              return Text(
-                'This field is required.',
-                style: TextStyle(color: Colors.red),
-              );
-            }
-            return SizedBox.shrink(); // Empty widget when valid
-          },
-        ),
-    ],
-  );
-}
-List <TableData> tables=[];
-
-Widget _buildTableEditor(TableData table) {
-  final tableIndex = tables.indexWhere((t) => t.tableId == table.tableId);
-  if (tableIndex == -1) {
-    tables.add(table);  
-  } else {
-    tables[tableIndex] = table;
-  }
-
-  tableName = table.tableName;
-  Columns = table.columns;
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        table.tableName,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      SizedBox(height: 12),
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columnSpacing: 45,
-          headingRowHeight: 56,
-          dataRowHeight: 56,
-          showCheckboxColumn: false,
-          columns: [
-            DataColumn(
-              label: Text(
-                'Row',
-                style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+        SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                blurRadius: 10,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columnSpacing: 16,
+              headingRowHeight: 60,
+              dataRowHeight: 60,
+              showCheckboxColumn: false,
+              columns: [
+                DataColumn(
+                  label: Text(
+                    'Row',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: AppColors.primary),
+                  ),
+                ),
+                ...table.columns.map((col) => DataColumn(
+                      label: Text(
+                        col,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary),
+                      ),
+                    ))
+              ],
+              rows: table.rows.entries.map((entry) {
+                return DataRow(
+                  cells: [
+                    DataCell(SizedBox(
+                      width: 100, // Set a width for Row
+                      child: Text(entry.key),
+                    )),
+                    ...entry.value.entries.map((cell) {
+                      return DataCell(SizedBox(
+                        width: 150, // Set a fixed width for the cell content
+                        child: TextFormField(
+                          initialValue: cell.value.toString(),
+                          onChanged: (value) {
+                            setState(() {
+                              table.rows[entry.key]?[cell.key] = value;
+                              tables[tableIndex] = table;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 12,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                                width: 0.8,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ));
+                    }).toList(),
+                  ],
+                );
+              }).toList(),
+              border: TableBorder(
+                horizontalInside: BorderSide(color: Colors.grey, width: 0.5),
+                verticalInside: BorderSide(color: Colors.grey, width: 0.5),
+                bottom: BorderSide(color: Colors.grey, width: 0.5),
               ),
             ),
-            ...table.columns.map((col) => DataColumn(
-                  label: Text(
-                    col,
-                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
-                  ),
-                ))
-          ],
-          rows: table.rows.entries.map((entry) {
-            return DataRow(
-              cells: [
-                DataCell(Text(entry.key)),
-                ...entry.value.entries.map((cell) {
-                  return DataCell(
-                    TextFormField(
-                      initialValue: cell.value.toString(),
-                      onChanged: (value) {
-                        setState(() {
-                          table.rows[entry.key]?[cell.key] = value; 
-                          tables[tableIndex] = table;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ],
-            );
-          }).toList(),
-          border: TableBorder(
-            horizontalInside: BorderSide(color: Colors.grey, width: 0.5),
-            verticalInside: BorderSide(color: Colors.grey, width: 0.5),
-            bottom: BorderSide(color: Colors.grey, width: 0.5),
           ),
         ),
-      ),
-    ],
-  );
-}
-
+      ],
+    );
+  }
 
   void _submitData() async {
+    if (!_validateAllFields()) {
+      setState(() {
+        isAllFilled = false;
+      });
+      Get.snackbar(
+        "Incomplete Form",
+        "Please fill all required fields.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    print("tables data   ${tables}");
 
-      if (!_validateAllFields()) {
-    setState(() {
-      isAllFilled = false;
-    });
-    Get.snackbar(
-      "Incomplete Form",
-      "Please fill all required fields.",
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-    return;
-  }
-  print("tables data   ${tables}");
-
-    
     final assessmentData = {
       "complete_by_user": 1,
       "status": "pending",
@@ -490,15 +516,17 @@ Widget _buildTableEditor(TableData table) {
             "value": entry.value,
           };
         }).toList(),
-      "tables": tables.map((table) => table.toJson()).toList(), // Send tables as JSON
+        "tables": tables
+            .map((table) => table.toJson())
+            .toList(), // Send tables as JSON
         //[
-          //{
-           // "table_name": tableName,
-         //   "table_data": {
-              //"columns": Columns,
-              //"rows": _tableRowValues
-            //}
-          //}
+        //{
+        // "table_name": tableName,
+        //   "table_data": {
+        //"columns": Columns,
+        //"rows": _tableRowValues
+        //}
+        //}
         //],
         "site_images": _uploadedImageUrls.map((imageUrl) {
           return {
@@ -526,8 +554,10 @@ Widget _buildTableEditor(TableData table) {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Assessment',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Center(
+            child: Text('Assessment',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 24))),
+        centerTitle: true,
         backgroundColor: const Color.fromARGB(0, 255, 255, 255),
       ),
       body: FutureBuilder<Assessment2>(
@@ -600,10 +630,6 @@ Widget _buildTableEditor(TableData table) {
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: _buildTableEditor(table),
                       )),
-                  SizedBox(height: 16),
-                  Text("Upload Images",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -615,7 +641,14 @@ Widget _buildTableEditor(TableData table) {
                   SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: _pickImageAndUpload,
-                    child: Text("Pick and Upload Image"),
+                    style: ElevatedButton.styleFrom(
+                      
+                      minimumSize: Size(double.infinity, 48),
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text("Upload Site Image", style: TextStyle(color: AppColors.Col_White),),
                   ),
                   SizedBox(height: 16),
                   ElevatedButton(

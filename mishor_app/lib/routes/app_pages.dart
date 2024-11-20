@@ -23,7 +23,7 @@ class AppPages {
     //GetPage(name: AppRoutes.splash, page: () => SplashScreen()),
     GetPage(name: AppRoutes.resetPassword, page: () => ResetPasswordScreen()),
    // GetPage(name: AppRoutes.splash, page: () => ViewTemplate(32)),
-    GetPage(name: AppRoutes.splash, page: () => ViewTemplate(50)),
+    GetPage(name: AppRoutes.splash, page: () => TemplateScreen(52)),
     GetPage(name: AppRoutes.profile, page: () => ProfileScreen()),
     GetPage(name: AppRoutes.bottomNavBar, page: () => CustomBottomNavBar(
       screens: [

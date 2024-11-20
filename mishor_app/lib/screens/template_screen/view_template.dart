@@ -270,8 +270,6 @@ Widget _buildRadioField(Field field) {
 Widget _buildTableEditor(TableData table) {
   tableName = table.tableName;
   Columns = table.columns;
-  print("yayy");
-  print(table.columns);
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -395,7 +393,6 @@ Widget _buildTableEditor(TableData table) {
 }
 
 
-// Function to handle site_images
 Widget _buildSiteImages(List<SiteImage> siteImages) {
   if (siteImages.isEmpty) {
     return Text("No site images available.");
@@ -409,38 +406,92 @@ Widget _buildSiteImages(List<SiteImage> siteImages) {
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
       SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        children: siteImages.map((siteImage) {
-          return GestureDetector(
-            onTap: () {
-              // You can handle the tap if you want to show the image in full screen or navigate elsewhere
-              print('Image tapped: ${siteImage.siteImage}');
-            },
-            child: Image.network(
-              siteImage.siteImage, 
-              width: 100, 
-              height: 100,
-              fit: BoxFit.cover,
-            ),
-          );
-        }).toList(),
+      // Wrap the Row in a SingleChildScrollView to make it scrollable horizontally
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: siteImages.map((siteImage) {
+            return GestureDetector(
+              onTap: () {
+                // Show the tapped image in a popup
+                _showImagePopup(context, siteImage.siteImage);
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      siteImage.siteImage,
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     ],
   );
 }
 
+void _showImagePopup(BuildContext context, String imageUrl) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // Rounded corners for the dialog
+        ),
+        backgroundColor: Colors.white, 
+// White background
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.all(8),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.85, // Adjusted width for compact view
+                maxHeight: MediaQuery.of(context).size.height * 0.4, // Reduced height for a smaller background
+              ),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                width: double.infinity, // Ensures the image fits within the container
+                height: double.infinity, // Ensures the image fits within the container
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
 
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: AppBar(
-      title: Text(
-        'Assessment Details',
-        style: TextStyle(fontWeight: FontWeight.bold),
+      appBar: AppBar(
+        title:
+            Center(child: Text('Assessment Details', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 24))),
+            centerTitle: true,
+        backgroundColor: const Color.fromARGB(0, 255, 255, 255),
       ),
-      backgroundColor: const Color.fromARGB(0, 255, 255, 255),
-    ),
     body: FutureBuilder<Assessment2>(
       future: _assessmentFuture,
       builder: (context, snapshot) {
@@ -539,13 +590,16 @@ Widget build(BuildContext context) {
                 // Display Site Images
                 _buildSiteImages(siteImages), // Add this function to display site images
                 SizedBox(height: 16),
-                // Display uploaded images
-                Wrap(
-                  spacing: 8,
-                  children: _uploadedImageUrls
-                      .map((url) => Image.network(url, width: 100, height: 100))
-                      .toList(),
-                ),
+                //Row(
+                  //children: [
+                    //Wrap(
+                      //spacing: 8,
+                      //children: _uploadedImageUrls
+                        //  .map((url) => Image.network(url, width: 100, height: 100))
+                          //.toList(),
+                   // )//,
+                  //],
+                //),
               ],
             ),
           );
