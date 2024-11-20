@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Mishoe</string>
+	<string>Mishor</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -64,6 +64,13 @@
 	<array>
 		<string>fetch</string>
 		<string>processing</string>
+	</array>
+
+	<!-- Added BGTaskSchedulerPermittedIdentifiers -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.mishor.app.backgroundTask1</string>
+		<string>com.mishor.app.backgroundTask2</string>
 	</array>
 </dict>
 </plist>
